@@ -2,13 +2,16 @@ import { useState } from 'react';
 import axios from 'axios';
 import 'animate.css';
 
+// URL backend langsung
+const API_URL = "https://6ea40469-1d71-4ae9-a062-fd248795b654-00-3j49ez9d9x36p.kirk.replit.dev";
+
 const LoginForm = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const login = async () => {
     try {
-      const res = await axios.post('http://localhost:5000/login', { email, password });
+      const res = await axios.post(`${API_URL}/login`, { email, password });
       alert(res.data.message);
       onLogin(res.data.is_premium, email, res.data.is_admin);
     } catch {

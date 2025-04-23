@@ -1,14 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import EssayGenerator from "./components/EssayGenerator";
 
+// URL backend langsung (hardcoded)
+const API_URL = "https://6ea40469-1d71-4ae9-a062-fd248795b654-00-3j49ez9d9x36p.kirk.replit.dev";
+
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
 
-  useState(() => {
-    axios.get('http://localhost:5000/admin/users')
+  useEffect(() => {
+    axios.get(`${API_URL}/admin/users`)
       .then(res => setUsers(res.data))
       .catch(err => console.error('Gagal ambil data user:', err));
   }, []);

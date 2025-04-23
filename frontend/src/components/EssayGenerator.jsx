@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import 'animate.css';
+
+// URL backend langsung
+const API_URL = "https://6ea40469-1d71-4ae9-a062-fd248795b654-00-3j49ez9d9x36p.kirk.replit.dev";
 
 const EssayGenerator = ({ isPremium, email }) => {
   const [tema, setTema] = useState('');
@@ -31,15 +35,14 @@ const EssayGenerator = ({ isPremium, email }) => {
 
   const subTemaUmum = ["Umum"];
 
-  // Reset sub-tema saat ganti tema
   useEffect(() => {
     setSubTema('');
   }, [tema]);
 
   const getSubTemaList = () => {
     if (!tema) return [];
-    const subPremium = subTemaOptions[tema] || [];
-    return isPremium ? [...subTemaUmum, ...subPremium] : [...subTemaUmum];
+    const subtemas = subTemaOptions[tema] || [];
+    return isPremium ? [...subTemaUmum, ...subtemas] : [...subTemaUmum];
   };
 
   const generate = async () => {
@@ -49,36 +52,39 @@ const EssayGenerator = ({ isPremium, email }) => {
     }
 
     try {
-      const res = await axios.post('http://localhost:5000/generate-title', {
+      const res = await axios.post(`${API_URL}/generate-title`, {
         tema,
         sub_tema: subTema,
       });
-
       setJudul(res.data.title);
-    } catch (err) {
-      alert("Gagal generate judul. Silakan coba lagi.");
+    } catch {
+      alert("Gagal generate judul. Coba lagi nanti.");
     }
   };
 
   return (
-    <div className="mt-4">
-      <select className="form-select mb-2" onChange={(e) => setTema(e.target.value)} value={tema}>
+    <div className="card shadow p-4 mt-4 animate__animated animate__fadeInUp">
+      <h4 className="mb-3 text-center text-primary">🧠 Essay Title Generator</h4>
+
+      <select className="form-select mb-3" onChange={(e) => setTema(e.target.value)} value={tema}>
         <option value="">Pilih Tema</option>
         <option value="soshum">Soshum</option>
         <option value="saintek">Saintek</option>
       </select>
 
-      <select className="form-select mb-2" onChange={(e) => setSubTema(e.target.value)} disabled={!tema} value={subTema}>
+      <select className="form-select mb-3" onChange={(e) => setSubTema(e.target.value)} disabled={!tema} value={subTema}>
         <option value="">Pilih Sub Tema</option>
         {getSubTemaList().map((st, i) => (
           <option key={i} value={st.toLowerCase()}>{st}</option>
         ))}
       </select>
 
-      <button className="btn btn-primary" onClick={generate} disabled={!subTema}>Generate Judul</button>
+      <button className="btn btn-primary w-100" onClick={generate} disabled={!subTema}>
+        🎯 Generate Judul
+      </button>
 
       {judul && (
-        <div className="alert alert-success mt-3">
+        <div className="alert alert-success mt-4">
           <strong>Judul:</strong><br />
           {judul}
         </div>
