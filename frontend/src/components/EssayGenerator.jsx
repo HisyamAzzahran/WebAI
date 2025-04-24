@@ -68,7 +68,6 @@ const EssayGenerator = ({ isPremium, email, tokenSisa, setTokenSisa }) => {
     }
   };
   
-
   return (
     <div className="mt-4 animate__animated animate__fadeInUp">
       <select
