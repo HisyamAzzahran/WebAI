@@ -41,41 +41,39 @@ const EssayGenerator = ({ isPremium, email, tokenSisa, setTokenSisa }) => {
       toast.warn("Pilih tema dan sub-tema terlebih dahulu!");
       return;
     }
-
+  
     setLoading(true);
     setJudul("");
-
+  
     try {
       const res = await axios.post(`${API_URL}/generate-title`, {
         email,
         tema,
         sub_tema: subTema
       });
-
-      if (res.status === 200 && res.data.title && !res.data.title.includes('[ERROR')) {
-        setJudul(res.data.title);
+  
+      const title = res?.data?.title || "";
+  
+      if (res.status === 200 && !title.startsWith('[ERROR') && !title.startsWith('[TOKEN HABIS')) {
+        setJudul(title);
         toast.success("🎉 Judul berhasil digenerate!");
         setTokenSisa((prev) => prev - 1);
-        return;
-      }
-
-      if (res.status === 403 || res.data.title?.includes('[TOKEN HABIS')) {
+      } else if (title.startsWith('[TOKEN HABIS')) {
+        setJudul(title);
         toast.error("⚠️ Token habis. Silakan upgrade ke Premium.");
-        setJudul(res.data.title);
-        return;
+      } else {
+        setJudul("[ERROR] Gagal generate judul");
+        toast.error("❌ Terjadi kesalahan saat generate judul.");
       }
-
-      setJudul("[ERROR] Gagal generate judul");
-      toast.error("❌ Gagal generate judul.");
-
     } catch (err) {
-      console.error("🚨 Error saat generate:", err);
+      console.error("🚨 Error saat generate judul:", err);
       setJudul("[ERROR] Gagal generate judul");
-      toast.error("❌ Terjadi kesalahan saat generate judul.");
+      toast.error("❌ Error server: gagal generate judul.");
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="mt-4 animate__animated animate__fadeInUp">
