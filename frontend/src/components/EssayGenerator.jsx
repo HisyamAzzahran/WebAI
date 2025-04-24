@@ -52,27 +52,28 @@ const EssayGenerator = ({ isPremium, email, tokenSisa, setTokenSisa }) => {
         sub_tema: subTema
       });
   
-      const title = res?.data?.title || "";
+      const title = res.data?.title || "[ERROR] Judul kosong";
+      setJudul(title);
   
-      if (res.status === 200 && !title.startsWith('[ERROR') && !title.startsWith('[TOKEN HABIS')) {
-        setJudul(title);
-        toast.success("🎉 Judul berhasil digenerate!");
-        setTokenSisa((prev) => prev - 1);
-      } else if (title.startsWith('[TOKEN HABIS')) {
-        setJudul(title);
+      // Kalau ternyata token habis
+      if (title.includes("TOKEN HABIS")) {
         toast.error("⚠️ Token habis. Silakan upgrade ke Premium.");
+      } else if (title.includes("ERROR")) {
+        toast.error("❌ Gagal generate judul.");
       } else {
-        setJudul("[ERROR] Gagal generate judul");
-        toast.error("❌ Terjadi kesalahan saat generate judul.");
+        toast.success("🎉 Judul berhasil digenerate!");
+        setTokenSisa(prev => prev - 1);
       }
+  
     } catch (err) {
-      console.error("🚨 Error saat generate judul:", err);
-      setJudul("[ERROR] Gagal generate judul");
-      toast.error("❌ Error server: gagal generate judul.");
+      setJudul("[ERROR] Gagal connect ke server");
+      toast.error("❌ Gagal terhubung ke server.");
+      console.error("🔥 Error axios:", err);
     } finally {
       setLoading(false);
     }
   };
+  
   
 
   return (
