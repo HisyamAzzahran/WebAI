@@ -13,7 +13,7 @@ const LoginForm = ({ onLogin }) => {
     try {
       const res = await axios.post(`${API_URL}/login`, { email, password });
       alert(res.data.message);
-      onLogin(res.data.is_premium, email, res.data.is_admin);
+      onLogin(res.data.is_premium, email, res.data.is_admin, res.data.tokens);
     } catch {
       alert("Login gagal! Periksa kembali email dan password kamu.");
     }

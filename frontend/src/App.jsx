@@ -3,7 +3,7 @@ import axios from 'axios';
 import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import EssayGenerator from "./components/EssayGenerator";
-import AdminDashboard from "./components/AdminDashboard"; // kalau kamu pisah file
+import AdminDashboard from "./components/AdminDashboard";
 
 const API_URL = "https://6ea40469-1d71-4ae9-a062-fd248795b654-00-3j49ez9d9x36p.kirk.replit.dev";
 
@@ -12,11 +12,18 @@ const App = () => {
   const [isPremium, setIsPremium] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [email, setEmail] = useState('');
-  const [showRegister, setShowRegister] = useState(false); // toggle form login/register
+  const [showRegister, setShowRegister] = useState(false);
+  const [tokenSisa, setTokenSisa] = useState(0);
 
   return (
     <div className="container mt-4">
       <h1 className="text-center text-primary fw-bold">🎓 Web AI Essay Generator</h1>
+
+      {isLoggedIn && (
+        <div className="alert alert-info text-center mt-3">
+          🔋 <strong>Sisa Token:</strong> {tokenSisa}
+        </div>
+      )}
 
       {!isLoggedIn ? (
         <>
@@ -32,11 +39,12 @@ const App = () => {
             </>
           ) : (
             <>
-              <LoginForm onLogin={(premium, email, admin) => {
+              <LoginForm onLogin={(premium, email, admin, tokens) => {
                 setIsLoggedIn(true);
                 setIsPremium(premium);
                 setEmail(email);
                 setIsAdmin(admin);
+                setTokenSisa(tokens);
               }} />
               <div className="text-center mt-3">
                 <small>Belum punya akun?</small><br />
@@ -52,7 +60,7 @@ const App = () => {
           <AdminDashboard />
         ) : (
           <>
-            <EssayGenerator isPremium={isPremium} email={email} />
+            <EssayGenerator isPremium={isPremium} email={email} tokenSisa={tokenSisa} setTokenSisa={setTokenSisa} />
             {!isPremium && (
               <div className="alert alert-warning mt-4 text-center">
                 Kamu user basic. Untuk akses semua sub-tema, upgrade ke premium!
