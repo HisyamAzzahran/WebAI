@@ -19,7 +19,7 @@ const EssayGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
     ],
     saintek: [
       "Kesehatan", "Lingkungan dan Energi Terbarukan", "Teknologi Tepat Guna",
-      "Inovasi Pertanian", "Kecerdasan Buatan", "Bioteknologi", "Robotika Edukasi", "Ketahanan Pangan"
+      "Inovasi Pertanian", "Kecerdasan Buatan", "Bioteknologi", "Robotika Edukasi", "Ketahanan Pangan", "Teknologi Masa Depan"
     ]
   };
 
