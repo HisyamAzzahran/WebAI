@@ -38,7 +38,7 @@ const EssayGenerator = ({ isPremium, email, tokenSisa, setTokenSisa }) => {
 
   const generate = async () => {
     if (!tema || !subTema) {
-      toast.warn("Pilih tema dan sub-tema terlebih dahulu!");
+      toast.warn("⚠️ Pilih tema dan sub-tema terlebih dahulu!");
       return;
     }
   
@@ -49,29 +49,33 @@ const EssayGenerator = ({ isPremium, email, tokenSisa, setTokenSisa }) => {
       const res = await axios.post(`${API_URL}/generate-title`, {
         email,
         tema,
-        sub_tema: subTema
+        sub_tema: subTema,
       });
   
-      const title = res.data?.title || "[ERROR] Judul kosong";
-      setJudul(title);
+      const resultTitle = res?.data?.title?.trim() || "[ERROR] Gagal mengambil judul";
   
-      if (title.includes("TOKEN HABIS")) {
+      // ✅ Handle setiap kondisi secara eksplisit
+      if (resultTitle.includes("TOKEN HABIS")) {
+        setJudul(resultTitle);
         toast.error("⚠️ Token habis. Silakan upgrade ke Premium.");
-      } else if (title.includes("ERROR")) {
-        toast.error("❌ Gagal generate judul.");
+      } else if (resultTitle.includes("[ERROR") || resultTitle.includes("connect")) {
+        setJudul(resultTitle);
+        toast.error("❌ Gagal generate judul dari server.");
       } else {
+        setJudul(resultTitle);
         toast.success("🎉 Judul berhasil digenerate!");
-        setTokenSisa(prev => prev - 1);
+        setTokenSisa((prev) => prev - 1);
       }
   
-      setLoading(false); // ✅ TAMBAHKAN INI!
     } catch (err) {
-      console.error("🔥 Error axios:", err);
-      toast.error("❌ Gagal terhubung ke server.");
+      console.error("🔥 Axios Error:", err.message);
       setJudul("[ERROR] Gagal connect ke server");
-      setLoading(false); // ✅ TAMBAHKAN INI!
+      toast.error("❌ Gagal terhubung ke server.");
+    } finally {
+      setLoading(false); // ✅ Selalu akhiri dengan reset loading
     }
   };
+  
 
   return (
     <div className="mt-4 animate__animated animate__fadeInUp">
