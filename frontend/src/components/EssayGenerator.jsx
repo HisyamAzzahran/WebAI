@@ -38,7 +38,7 @@ const EssayGenerator = ({ isPremium, email, tokenSisa, setTokenSisa }) => {
 
   const generate = async () => {
     if (!tema || !subTema) {
-      toast.warn("Pilih tema dan sub-tema terlebih dahulu!");
+      toast.warn("⚠️ Pilih tema dan sub-tema terlebih dahulu!");
       return;
     }
 
@@ -50,19 +50,21 @@ const EssayGenerator = ({ isPremium, email, tokenSisa, setTokenSisa }) => {
         sub_tema: subTema
       });
 
+      console.log("📥 Respon dari backend:", res.data);
+
       if (res.status === 200 && res.data.title && !res.data.title.includes('[ERROR')) {
         setJudul(res.data.title);
         toast.success("🎉 Judul berhasil digenerate!");
-        setTokenSisa(prev => prev - 1);
+        setTokenSisa((prev) => prev - 1);
       } else if (res.status === 403 || res.data.title?.includes('[TOKEN HABIS')) {
         toast.error("⚠️ Token habis. Silakan upgrade ke Premium.");
         setJudul(res.data.title);
       } else {
-        toast.error("❌ Terjadi kesalahan saat generate judul.");
+        toast.error("❌ Gagal generate judul.");
         setJudul("[ERROR] Gagal generate judul");
       }
     } catch (err) {
-      console.error("🚨 Gagal connect ke server:", err);
+      console.error("❌ Error saat generate judul:", err);
       toast.error("❌ Gagal terhubung ke server.");
       setJudul("[ERROR] Gagal connect ke server");
     } finally {
@@ -73,7 +75,7 @@ const EssayGenerator = ({ isPremium, email, tokenSisa, setTokenSisa }) => {
   return (
     <div className="mt-4 animate__animated animate__fadeInUp">
       <select
-        className="form-select mb-2 animate__animated animate__fadeIn select-animated"
+        className="form-select mb-2 animate__animated animate__fadeIn"
         onChange={(e) => setTema(e.target.value)}
         value={tema}
       >
@@ -83,7 +85,7 @@ const EssayGenerator = ({ isPremium, email, tokenSisa, setTokenSisa }) => {
       </select>
 
       <select
-        className="form-select mb-2 animate__animated animate__fadeIn select-animated"
+        className="form-select mb-2 animate__animated animate__fadeIn"
         onChange={(e) => setSubTema(e.target.value)}
         disabled={!tema}
         value={subTema}
