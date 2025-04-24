@@ -26,14 +26,26 @@ const AdminDashboard = () => {
     try {
       await axios.post(`${API_URL}/admin/update-user`, {
         email: editing,
-        tokens: form.tokens,
-        is_premium: Number(form.is_premium)
+        tokens: Number(form.tokens),
+        is_premium: parseInt(form.is_premium)
       });
       alert("User berhasil diupdate!");
       setEditing(null);
       fetchUsers();
     } catch {
       alert("Gagal update user!");
+    }
+  };
+
+  const deleteUser = async (email) => {
+    if (confirm(`Yakin ingin menghapus user ${email}?`)) {
+      try {
+        await axios.post(`${API_URL}/admin/delete-user`, { email });
+        alert("User berhasil dihapus!");
+        fetchUsers();
+      } catch {
+        alert("Gagal hapus user!");
+      }
     }
   };
 
@@ -60,7 +72,8 @@ const AdminDashboard = () => {
               <td>{u.is_premium ? "Premium" : "Basic"}</td>
               <td>{u.tokens}</td>
               <td>
-                <button className="btn btn-sm btn-outline-info" onClick={() => startEdit(u)}>Edit</button>
+                <button className="btn btn-sm btn-outline-info me-2" onClick={() => startEdit(u)}>Edit</button>
+                <button className="btn btn-sm btn-outline-danger" onClick={() => deleteUser(u.email)}>Hapus</button>
               </td>
             </tr>
           ))}
@@ -74,13 +87,13 @@ const AdminDashboard = () => {
             type="number"
             className="form-control mb-2"
             value={form.tokens}
-            onChange={(e) => setForm({ ...form, tokens: e.target.value })}
+            onChange={(e) => setForm({ ...form, tokens: Number(e.target.value) })}
             placeholder="Token"
           />
           <select
             className="form-select mb-2"
             value={form.is_premium}
-            onChange={(e) => setForm({ ...form, is_premium: e.target.value })}
+            onChange={(e) => setForm({ ...form, is_premium: parseInt(e.target.value) })}
           >
             <option value="0">Basic</option>
             <option value="1">Premium</option>
