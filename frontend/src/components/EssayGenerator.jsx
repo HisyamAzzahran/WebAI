@@ -55,7 +55,6 @@ const EssayGenerator = ({ isPremium, email, tokenSisa, setTokenSisa }) => {
       const title = res.data?.title || "[ERROR] Judul kosong";
       setJudul(title);
   
-      // Kalau ternyata token habis
       if (title.includes("TOKEN HABIS")) {
         toast.error("⚠️ Token habis. Silakan upgrade ke Premium.");
       } else if (title.includes("ERROR")) {
@@ -65,16 +64,14 @@ const EssayGenerator = ({ isPremium, email, tokenSisa, setTokenSisa }) => {
         setTokenSisa(prev => prev - 1);
       }
   
+      setLoading(false); // ✅ TAMBAHKAN INI!
     } catch (err) {
-      setJudul("[ERROR] Gagal connect ke server");
-      toast.error("❌ Gagal terhubung ke server.");
       console.error("🔥 Error axios:", err);
-    } finally {
-      setLoading(false);
+      toast.error("❌ Gagal terhubung ke server.");
+      setJudul("[ERROR] Gagal connect ke server");
+      setLoading(false); // ✅ TAMBAHKAN INI!
     }
   };
-  
-  
 
   return (
     <div className="mt-4 animate__animated animate__fadeInUp">
