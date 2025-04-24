@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import EssayGenerator from "./components/EssayGenerator";
 import AdminDashboard from "./components/AdminDashboard";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const API_URL = "https://6ea40469-1d71-4ae9-a062-fd248795b654-00-3j49ez9d9x36p.kirk.replit.dev";
 
@@ -12,18 +14,16 @@ const App = () => {
   const [isPremium, setIsPremium] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [email, setEmail] = useState('');
+  const [tokens, setTokens] = useState(0);
   const [showRegister, setShowRegister] = useState(false);
-  const [tokenSisa, setTokenSisa] = useState(0);
 
   return (
     <div className="container mt-4">
-      <h1 className="text-center text-primary fw-bold">🎓 Web AI Essay Generator</h1>
+      <ToastContainer position="top-right" autoClose={2500} />
 
-      {isLoggedIn && (
-        <div className="alert alert-info text-center mt-3">
-          🔋 <strong>Sisa Token:</strong> {tokenSisa}
-        </div>
-      )}
+      <h1 className="text-center text-primary fw-bold mb-4">
+        🎓 Web AI Essay Generator
+      </h1>
 
       {!isLoggedIn ? (
         <>
@@ -39,13 +39,15 @@ const App = () => {
             </>
           ) : (
             <>
-              <LoginForm onLogin={(premium, email, admin, tokens) => {
-                setIsLoggedIn(true);
-                setIsPremium(premium);
-                setEmail(email);
-                setIsAdmin(admin);
-                setTokenSisa(tokens);
-              }} />
+              <LoginForm
+                onLogin={(premium, email, admin, tokenValue) => {
+                  setIsLoggedIn(true);
+                  setIsPremium(premium);
+                  setEmail(email);
+                  setIsAdmin(admin);
+                  setTokens(tokenValue);
+                }}
+              />
               <div className="text-center mt-3">
                 <small>Belum punya akun?</small><br />
                 <button className="btn btn-outline-success mt-1" onClick={() => setShowRegister(true)}>
@@ -60,9 +62,12 @@ const App = () => {
           <AdminDashboard />
         ) : (
           <>
-            <EssayGenerator isPremium={isPremium} email={email} tokenSisa={tokenSisa} setTokenSisa={setTokenSisa} />
+            <EssayGenerator isPremium={isPremium} email={email} />
+            <div className="alert alert-info text-center mt-4">
+              🎯 Token Tersisa: <strong>{tokens}</strong>
+            </div>
             {!isPremium && (
-              <div className="alert alert-warning mt-4 text-center">
+              <div className="alert alert-warning mt-2 text-center">
                 Kamu user basic. Untuk akses semua sub-tema, upgrade ke premium!
                 <br />
                 <a

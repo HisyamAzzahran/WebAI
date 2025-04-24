@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import 'animate.css';
 
 const API_URL = "https://6ea40469-1d71-4ae9-a062-fd248795b654-00-3j49ez9d9x36p.kirk.replit.dev";
 
@@ -13,8 +16,12 @@ const AdminDashboard = () => {
   }, []);
 
   const fetchUsers = async () => {
-    const res = await axios.get(`${API_URL}/admin/users`);
-    setUsers(res.data);
+    try {
+      const res = await axios.get(`${API_URL}/admin/users`);
+      setUsers(res.data);
+    } catch {
+      toast.error("❌ Gagal mengambil data user!");
+    }
   };
 
   const startEdit = (user) => {
@@ -29,11 +36,11 @@ const AdminDashboard = () => {
         tokens: Number(form.tokens),
         is_premium: parseInt(form.is_premium)
       });
-      alert("User berhasil diupdate!");
+      toast.success("✅ User berhasil diupdate!");
       setEditing(null);
       fetchUsers();
     } catch {
-      alert("Gagal update user!");
+      toast.error("❌ Gagal update user!");
     }
   };
 
@@ -41,17 +48,18 @@ const AdminDashboard = () => {
     if (confirm(`Yakin ingin menghapus user ${email}?`)) {
       try {
         await axios.post(`${API_URL}/admin/delete-user`, { email });
-        alert("User berhasil dihapus!");
+        toast.success("🗑️ User berhasil dihapus!");
         fetchUsers();
       } catch {
-        alert("Gagal hapus user!");
+        toast.error("❌ Gagal menghapus user!");
       }
     }
   };
 
   return (
-    <div className="mt-5">
+    <div className="mt-5 animate__animated animate__fadeIn">
       <h2 className="text-center text-primary">📊 Admin Dashboard</h2>
+
       <table className="table mt-4">
         <thead className="table-dark">
           <tr>
@@ -69,7 +77,11 @@ const AdminDashboard = () => {
               <td>{u.id}</td>
               <td>{u.email}</td>
               <td>{u.username}</td>
-              <td>{u.is_premium ? "Premium" : "Basic"}</td>
+              <td>
+                <span className={`badge ${u.is_premium ? 'bg-success' : 'bg-secondary'}`}>
+                  {u.is_premium ? 'Premium' : 'Basic'}
+                </span>
+              </td>
               <td>{u.tokens}</td>
               <td>
                 <button className="btn btn-sm btn-outline-info me-2" onClick={() => startEdit(u)}>Edit</button>
@@ -81,25 +93,30 @@ const AdminDashboard = () => {
       </table>
 
       {editing && (
-        <div className="card p-3 shadow mt-4">
-          <h5>Edit User: {editing}</h5>
+        <div className="card p-4 shadow mt-4 animate__animated animate__fadeInUp">
+          <h5>Edit User: <span className="text-info">{editing}</span></h5>
+
           <input
             type="number"
             className="form-control mb-2"
             value={form.tokens}
             onChange={(e) => setForm({ ...form, tokens: Number(e.target.value) })}
-            placeholder="Token"
+            placeholder="Jumlah Token"
           />
+
           <select
-            className="form-select mb-2"
+            className="form-select mb-3"
             value={form.is_premium}
             onChange={(e) => setForm({ ...form, is_premium: parseInt(e.target.value) })}
           >
             <option value="0">Basic</option>
             <option value="1">Premium</option>
           </select>
-          <button className="btn btn-success me-2" onClick={updateUser}>Simpan</button>
-          <button className="btn btn-secondary" onClick={() => setEditing(null)}>Batal</button>
+
+          <div className="d-flex justify-content-end">
+            <button className="btn btn-success me-2" onClick={updateUser}>💾 Simpan</button>
+            <button className="btn btn-secondary" onClick={() => setEditing(null)}>❌ Batal</button>
+          </div>
         </div>
       )}
     </div>
