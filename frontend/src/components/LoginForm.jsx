@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'animate.css';
 
-const API_URL = "https://6ea40469-1d71-4ae9-a062-fd248795b654-00-3j49ez9d9x36p.kirk.replit.dev";
+const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 const LoginForm = ({ onLogin }) => {
   const [email, setEmail] = useState('');
