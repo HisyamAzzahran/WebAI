@@ -159,7 +159,7 @@ const EssayGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
                   onChange={() => setIncludeMethodTech(!includeMethodTech)}
                 />
                 <label htmlFor="techCheck" className="form-check-label">
-                  Tambahkan Metode (Hukum) / Teknologi (Saintek)
+                  Tambahkan Metode (Soshum) / Teknologi (Saintek)
                 </label>
               </div>
             </div>
