@@ -50,14 +50,18 @@ const EssayGenerator = ({ isPremium, email, tokenSisa, setTokenSisa }) => {
         sub_tema: subTema
       });
 
-      if (res.status === 200) {
+      if (res.status === 200 && res.data.title && !res.data.title.includes('[ERROR')) {
         setJudul(res.data.title);
+        toast.success("🎉 Judul berhasil digenerate!");
         setTokenSisa((prev) => prev - 1);
-        toast.success("🎯 Judul berhasil dibuat!");
-      } else if (res.status === 403) {
-        setJudul(res.data.title || "[TOKEN HABIS] Silakan upgrade akun kamu.");
-        toast.error("❌ Token kamu habis!");
+      } else if (res.status === 403 || res.data.title?.includes('[TOKEN HABIS')) {
+        toast.error("⚠️ Token habis. Silakan upgrade ke Premium.");
+        setJudul(res.data.title);
+      } else {
+        setJudul("[ERROR] Gagal generate judul");
+        toast.error("❌ Gagal generate judul.");
       }
+      
     } catch (err) {
       console.error(err);
       setJudul("[ERROR] Gagal generate judul");
