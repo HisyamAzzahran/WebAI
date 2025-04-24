@@ -53,9 +53,11 @@ const EssayGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
         email,
         tema,
         sub_tema: subTema,
-        background: useBackground ? backgroundText : null,
-        explanation: includeExplanation,
-        method_or_tech: includeMethodTech
+        background_enabled: useBackground,
+        background_text: backgroundText,
+        advanced_enabled: showAdvanced,
+        include_explanation: includeExplanation,
+        include_method_or_tech: includeMethodTech
       });
 
       if (res.status === 200 && res.data.title && !res.data.title.includes("[ERROR")) {
