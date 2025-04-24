@@ -5,7 +5,7 @@ import { ClipLoader } from 'react-spinners';
 import 'animate.css';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_URL = "https://6ea40469-1d71-4ae9-a062-fd248795b654-00-3j49ez9d9x36p.kirk.replit.dev";
+const API_URL = "https://6ea40469-1d71-4ae9-a062-fd248795b654-00-3j49ez9d9x36p.kirk.replit.dev/";
 
 const EssayGenerator = ({ isPremium, email, tokenSisa, setTokenSisa }) => {
   const [tema, setTema] = useState('');
