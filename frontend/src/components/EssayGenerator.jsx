@@ -44,30 +44,24 @@ const EssayGenerator = ({ isPremium, email, tokenSisa, setTokenSisa }) => {
 
     setLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/generate-title`, {
+      const res = await axios.post(`${API_URL}/generate-title`, {
         email,
         tema,
         sub_tema: subTema
       });
 
-      const { title } = response.data;
-      console.log("📥 Response dari server:", response.data);
-
-      if (response.status === 200 && title && !title.includes('[ERROR')) {
-        setJudul(title);
-        toast.success("🎉 Judul berhasil digenerate!");
+      if (res.status === 200) {
+        setJudul(res.data.title);
         setTokenSisa((prev) => prev - 1);
-      } else if (response.status === 403 || title?.includes('[TOKEN HABIS')) {
-        setJudul(title);
-        toast.error("⚠️ Token habis. Silakan upgrade ke Premium.");
-      } else {
-        setJudul(title || "[ERROR] Tidak diketahui");
-        toast.error("❌ Gagal generate judul.");
+        toast.success("🎯 Judul berhasil dibuat!");
+      } else if (res.status === 403) {
+        setJudul(res.data.title || "[TOKEN HABIS] Silakan upgrade akun kamu.");
+        toast.error("❌ Token kamu habis!");
       }
     } catch (err) {
-      console.error("❌ Axios error saat generate judul:", err);
-      setJudul("[ERROR] Gagal connect ke server");
-      toast.error("❌ Gagal terhubung ke server.");
+      console.error(err);
+      setJudul("[ERROR] Gagal generate judul");
+      toast.error("💥 Terjadi kesalahan saat generate judul.");
     } finally {
       setLoading(false);
     }
@@ -76,7 +70,7 @@ const EssayGenerator = ({ isPremium, email, tokenSisa, setTokenSisa }) => {
   return (
     <div className="mt-4 animate__animated animate__fadeInUp">
       <select
-        className="form-select mb-2 animate__animated animate__fadeIn"
+        className="form-select mb-2 animate__animated animate__fadeIn select-animated"
         onChange={(e) => setTema(e.target.value)}
         value={tema}
       >
@@ -86,7 +80,7 @@ const EssayGenerator = ({ isPremium, email, tokenSisa, setTokenSisa }) => {
       </select>
 
       <select
-        className="form-select mb-2 animate__animated animate__fadeIn"
+        className="form-select mb-2 animate__animated animate__fadeIn select-animated"
         onChange={(e) => setSubTema(e.target.value)}
         disabled={!tema}
         value={subTema}
