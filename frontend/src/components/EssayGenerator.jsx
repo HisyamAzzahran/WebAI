@@ -38,44 +38,37 @@ const EssayGenerator = ({ isPremium, email, tokenSisa, setTokenSisa }) => {
 
   const generate = async () => {
     if (!tema || !subTema) {
-      toast.warn("⚠️ Pilih tema dan sub-tema terlebih dahulu!");
+      toast.warn("Pilih tema dan sub-tema terlebih dahulu!");
       return;
     }
-  
+
     setLoading(true);
-    setJudul("");
-  
     try {
       const res = await axios.post(`${API_URL}/generate-title`, {
         email,
         tema,
-        sub_tema: subTema,
+        sub_tema: subTema
       });
-  
-      const resultTitle = res?.data?.title?.trim() || "[ERROR] Gagal mengambil judul";
-  
-      // ✅ Handle setiap kondisi secara eksplisit
-      if (resultTitle.includes("TOKEN HABIS")) {
-        setJudul(resultTitle);
-        toast.error("⚠️ Token habis. Silakan upgrade ke Premium.");
-      } else if (resultTitle.includes("[ERROR") || resultTitle.includes("connect")) {
-        setJudul(resultTitle);
-        toast.error("❌ Gagal generate judul dari server.");
-      } else {
-        setJudul(resultTitle);
+
+      if (res.status === 200 && res.data.title && !res.data.title.includes('[ERROR')) {
+        setJudul(res.data.title);
         toast.success("🎉 Judul berhasil digenerate!");
-        setTokenSisa((prev) => prev - 1);
+        setTokenSisa(prev => prev - 1);
+      } else if (res.status === 403 || res.data.title?.includes('[TOKEN HABIS')) {
+        toast.error("⚠️ Token habis. Silakan upgrade ke Premium.");
+        setJudul(res.data.title);
+      } else {
+        toast.error("❌ Terjadi kesalahan saat generate judul.");
+        setJudul("[ERROR] Gagal generate judul");
       }
-  
     } catch (err) {
-      console.error("🔥 Axios Error:", err.message);
-      setJudul("[ERROR] Gagal connect ke server");
+      console.error("🚨 Gagal connect ke server:", err);
       toast.error("❌ Gagal terhubung ke server.");
+      setJudul("[ERROR] Gagal connect ke server");
     } finally {
-      setLoading(false); // ✅ Selalu akhiri dengan reset loading
+      setLoading(false);
     }
   };
-  
 
   return (
     <div className="mt-4 animate__animated animate__fadeInUp">
