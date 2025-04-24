@@ -1,21 +1,32 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import 'animate.css';
 
-// Langsung URL backend Replit kamu
-const BACKEND_URL = "https://6ea40469-1d71-4ae9-a062-fd248795b654-00-3j49ez9d9x36p.kirk.replit.dev";
+// URL backend kamu
+const API_URL = "https://6ea40469-1d71-4ae9-a062-fd248795b654-00-3j49ez9d9x36p.kirk.replit.dev";
 
 const LoginForm = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const login = async () => {
+    if (!email || !password) {
+      toast.warn("⚠️ Email dan password harus diisi!");
+      return;
+    }
+
+    setLoading(true);
     try {
-      const res = await axios.post(`${BACKEND_URL}/login`, { email, password });
-      alert(res.data.message);
-      onLogin(res.data.is_premium, email, res.data.is_admin);
+      const res = await axios.post(`${API_URL}/login`, { email, password });
+      toast.success("✅ " + res.data.message);
+      onLogin(res.data.is_premium, email, res.data.is_admin, res.data.tokens);
     } catch {
-      alert("Login gagal! Periksa kembali email dan password kamu.");
+      toast.error("❌ Login gagal! Cek kembali email dan password.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -29,6 +40,7 @@ const LoginForm = ({ onLogin }) => {
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        disabled={loading}
       />
 
       <input
@@ -37,10 +49,15 @@ const LoginForm = ({ onLogin }) => {
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+        disabled={loading}
       />
 
-      <button className="btn btn-primary w-100" onClick={login}>
-        Masuk
+      <button
+        className="btn btn-primary w-100"
+        onClick={login}
+        disabled={loading}
+      >
+        {loading ? "⏳ Memproses..." : "Masuk"}
       </button>
     </div>
   );
