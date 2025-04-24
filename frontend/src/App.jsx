@@ -7,7 +7,8 @@ import AdminDashboard from "./components/AdminDashboard";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL;
+// Ganti URL backend kamu di sini:
+const API_URL = "https://6ea40469-1d71-4ae9-a062-fd248795b654-00-3j49ez9d9x36p.kirk.replit.dev";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -20,7 +21,6 @@ const App = () => {
   return (
     <div className="container mt-4">
       <ToastContainer position="top-right" autoClose={2500} />
-
       <h1 className="text-center text-primary fw-bold mb-4">
         🎓 Web AI Essay Generator
       </h1>
@@ -29,7 +29,7 @@ const App = () => {
         <>
           {showRegister ? (
             <>
-              <RegisterForm />
+              <RegisterForm apiUrl={API_URL} />
               <div className="text-center mt-3">
                 <small>Sudah punya akun?</small><br />
                 <button className="btn btn-outline-primary mt-1" onClick={() => setShowRegister(false)}>
@@ -40,6 +40,7 @@ const App = () => {
           ) : (
             <>
               <LoginForm
+                apiUrl={API_URL}
                 onLogin={(premium, email, admin, tokenValue) => {
                   setIsLoggedIn(true);
                   setIsPremium(premium);
@@ -59,10 +60,16 @@ const App = () => {
         </>
       ) : (
         isAdmin ? (
-          <AdminDashboard />
+          <AdminDashboard apiUrl={API_URL} />
         ) : (
           <>
-            <EssayGenerator isPremium={isPremium} email={email} />
+            <EssayGenerator
+              isPremium={isPremium}
+              email={email}
+              tokenSisa={tokens}
+              setTokenSisa={setTokens}
+              apiUrl={API_URL}
+            />
             <div className="alert alert-info text-center mt-4">
               🎯 Token Tersisa: <strong>{tokens}</strong>
             </div>
