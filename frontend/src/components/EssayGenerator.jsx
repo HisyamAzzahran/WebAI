@@ -22,7 +22,7 @@ const EssayGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
   const subTemaOptions = {
     soshum: [
       "Pengabdian Masyarakat", "Sosial Budaya", "Ekonomi Kreatif", "Pendidikan Inklusif",
-      "Hukum dan HAM", "Politik Digital", "Budaya Lokal", "Gender & Kesetaraan"
+      "Hukum dan HAM", "Politik Digital", "Budaya Lokal", "Gender & Kesetaraan", "Kearsipan"
     ],
     saintek: [
       "Kesehatan", "Lingkungan dan Energi Terbarukan", "Teknologi Tepat Guna",
