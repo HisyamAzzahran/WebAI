@@ -3,12 +3,13 @@ import axios from 'axios';
 import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import EssayGenerator from "./components/EssayGenerator";
+import KTIGenerator from "./components/KTIGenerator"; // ⬅️ Tambahkan import KTIGenerator
 import AdminDashboard from "./components/AdminDashboard";
-import ModeSelector from "./components/ModeSelector"; // 👈 Import komponen pilihan mode
+import ModeSelector from "./components/ModeSelector";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Ganti URL backend kamu di sini:
+// Ganti URL backend kamu di sini
 const API_URL = "https://6ea40469-1d71-4ae9-a062-fd248795b654-00-3j49ez9d9x36p.kirk.replit.dev";
 
 const App = () => {
@@ -18,13 +19,14 @@ const App = () => {
   const [email, setEmail] = useState('');
   const [tokens, setTokens] = useState(0);
   const [showRegister, setShowRegister] = useState(false);
-  const [selectedMode, setSelectedMode] = useState(null); // 👈 Tambahkan state untuk pilihan mode
+  const [selectedMode, setSelectedMode] = useState(null); // Mode pilihan: essay atau kti
 
   return (
     <div className="container mt-4">
       <ToastContainer position="top-right" autoClose={2500} />
+
       <h1 className="text-center text-primary fw-bold mb-4">
-        🎓 Web AI Essay Generator
+        🎓 ElevaAI: Bestie AI Asisten Buat Lomba Kamu
       </h1>
 
       {!isLoggedIn ? (
@@ -66,32 +68,47 @@ const App = () => {
         ) : (
           <>
             {!selectedMode ? (
-              <ModeSelector onSelectMode={setSelectedMode} /> // 👈 Tampilkan pilihan mode kalau belum milih
+              <ModeSelector onSelectMode={setSelectedMode} />
             ) : (
               <>
+                {/* Tombol Kembali */}
+                <div className="text-center mb-3">
+                  <button
+                    className="btn btn-outline-secondary"
+                    onClick={() => setSelectedMode(null)}
+                  >
+                    ⬅️ Kembali ke Menu
+                  </button>
+                </div>
+
+                {/* Konten berdasarkan pilihan mode */}
                 {selectedMode === "essay" ? (
-  <EssayGenerator
-    isPremium={isPremium}
-    email={email}
-    tokenSisa={tokens}
-    setTokenSisa={setTokens}
-    apiUrl={API_URL}
-  />
-) : (
-  <KTIGenerator
-    isPremium={isPremium}
-    email={email}
-    tokenSisa={tokens}
-    setTokenSisa={setTokens}
-    apiUrl={API_URL}
-  />
-)}         
+                  <EssayGenerator
+                    isPremium={isPremium}
+                    email={email}
+                    tokenSisa={tokens}
+                    setTokenSisa={setTokens}
+                    apiUrl={API_URL}
+                  />
+                ) : (
+                  <KTIGenerator
+                    isPremium={isPremium}
+                    email={email}
+                    tokenSisa={tokens}
+                    setTokenSisa={setTokens}
+                    apiUrl={API_URL}
+                  />
+                )}
+
+                {/* Info Token */}
                 <div className="alert alert-info text-center mt-4">
                   🎯 Token Tersisa: <strong>{tokens}</strong>
                 </div>
+
+                {/* Info Upgrade Premium */}
                 {!isPremium && (
                   <div className="alert alert-warning mt-2 text-center">
-                    Kamu user basic. Untuk akses semua fitur premium, upgrade akunmu!
+                    🚀 Kamu user basic. Untuk akses semua fitur premium, upgrade akunmu!
                     <br />
                     <a
                       href="https://wa.me/6282211929271"
