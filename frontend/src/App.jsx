@@ -4,6 +4,7 @@ import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import EssayGenerator from "./components/EssayGenerator";
 import AdminDashboard from "./components/AdminDashboard";
+import ModeSelector from "./components/ModeSelector"; // 👈 Import komponen pilihan mode
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -17,6 +18,7 @@ const App = () => {
   const [email, setEmail] = useState('');
   const [tokens, setTokens] = useState(0);
   const [showRegister, setShowRegister] = useState(false);
+  const [selectedMode, setSelectedMode] = useState(null); // 👈 Tambahkan state untuk pilihan mode
 
   return (
     <div className="container mt-4">
@@ -63,29 +65,45 @@ const App = () => {
           <AdminDashboard apiUrl={API_URL} />
         ) : (
           <>
-            <EssayGenerator
-              isPremium={isPremium}
-              email={email}
-              tokenSisa={tokens}
-              setTokenSisa={setTokens}
-              apiUrl={API_URL}
-            />
-            <div className="alert alert-info text-center mt-4">
-              🎯 Token Tersisa: <strong>{tokens}</strong>
-            </div>
-            {!isPremium && (
-              <div className="alert alert-warning mt-2 text-center">
-                Kamu user basic. Untuk akses semua sub-tema, upgrade ke premium!
-                <br />
-                <a
-                  href="https://wa.me/6282211929271"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-success mt-2"
-                >
-                  Upgrade ke Premium
-                </a>
-              </div>
+            {!selectedMode ? (
+              <ModeSelector onSelectMode={setSelectedMode} /> // 👈 Tampilkan pilihan mode kalau belum milih
+            ) : (
+              <>
+                {selectedMode === "essay" ? (
+  <EssayGenerator
+    isPremium={isPremium}
+    email={email}
+    tokenSisa={tokens}
+    setTokenSisa={setTokens}
+    apiUrl={API_URL}
+  />
+) : (
+  <KTIGenerator
+    isPremium={isPremium}
+    email={email}
+    tokenSisa={tokens}
+    setTokenSisa={setTokens}
+    apiUrl={API_URL}
+  />
+)}         
+                <div className="alert alert-info text-center mt-4">
+                  🎯 Token Tersisa: <strong>{tokens}</strong>
+                </div>
+                {!isPremium && (
+                  <div className="alert alert-warning mt-2 text-center">
+                    Kamu user basic. Untuk akses semua fitur premium, upgrade akunmu!
+                    <br />
+                    <a
+                      href="https://wa.me/6282211929271"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-success mt-2"
+                    >
+                      Upgrade ke Premium
+                    </a>
+                  </div>
+                )}
+              </>
             )}
           </>
         )
