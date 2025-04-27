@@ -3,7 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'animate.css';
 
-const API_URL = "https://6ea40469-1d71-4ae9-a062-fd248795b654-00-3j49ez9d9x36p.kirk.replit.dev";
+const API_URL = "https://c4339e7a-eefa-4bed-869b-93375b57f9e6-00-1si4rcqukplco.sisko.replit.dev";
 
 const RegisterForm = () => {
   const [form, setForm] = useState({ username: '', email: '', password: '' });
