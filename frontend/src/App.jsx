@@ -7,6 +7,7 @@ import KTIGenerator from "./components/KTIGenerator";
 import BusinessPlanGenerator from "./components/BusinessPlanGenerator"; // 🔥 Tambahan BusinessPlanGenerator
 import AdminDashboard from "./components/AdminDashboard";
 import ModeSelector from "./components/ModeSelector";
+import EssayExchangesGenerator from "./components/EssayExchangesGenerator";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -101,6 +102,14 @@ const App = () => {
                   />
                 ) : selectedMode === "bp" ? (
                   <BusinessPlanGenerator
+                    isPremium={isPremium}
+                    email={email}
+                    tokenSisa={tokens}
+                    setTokenSisa={setTokens}
+                    apiUrl={API_URL}
+                  />
+                ) : selectedMode === "exchanges" ? (
+                  <EssayExchangesGenerator
                     isPremium={isPremium}
                     email={email}
                     tokenSisa={tokens}

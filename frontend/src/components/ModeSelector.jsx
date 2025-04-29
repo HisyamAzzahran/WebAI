@@ -41,8 +41,15 @@ const ModeSelector = ({ onSelectMode }) => {
             Buat ide bisnis baru kekinian!
           </p>
         </div>
+
+        <div className="col-md-4 mb-3">
+        <div className="mode-card exchange-mode" onClick={() => onSelectMode("exchange")}>
+          <h3 className="text-info fw-bold">✈️ Essay Exchanges Generator (Premium)</h3>
+          <p className="text-muted">Asisten AI bantu motivation letter exchange kamu!</p>
+        </div>
       </div>
     </div>
+      </div>
   );
 };
 
