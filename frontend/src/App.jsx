@@ -99,7 +99,7 @@ const App = () => {
                     setTokenSisa={setTokens}
                     apiUrl={API_URL}
                   />
-                ) : selectedMode === "bp" (
+                ) : selectedMode === "bp" ? (
                   <BusinessPlanGenerator
                     isPremium={isPremium}
                     email={email}
