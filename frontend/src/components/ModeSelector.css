@@ -51,3 +51,43 @@
     border-color: #ffc107;
   }
   
+  .mode-card {
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    padding: 30px 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    background-color: #fff;
+    height: 100%;
+    cursor: pointer;
+  }
+  
+  .mode-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Warna border spesifik */
+  .essay-mode {
+    border-color: #007bff;
+  }
+  
+  .kti-mode {
+    border-color: #28a745;
+  }
+  
+  .bp-mode {
+    border-color: #ffc107;
+  }
+  
+  .exchange-mode {
+    border-color: #17a2b8;
+  }
+  
+  /* Responsive di device kecil */
+  @media (max-width: 768px) {
+    .mode-card {
+      margin-bottom: 20px;
+    }
+  }
+  
