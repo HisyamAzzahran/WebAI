@@ -28,7 +28,7 @@ const ModeSelector = ({ onSelectMode }) => {
         </div>
 
         <div className="col-md-6 col-lg-4">
-          <div className="mode-card exchange-mode" onClick={() => onSelectMode("exchange")}>
+          <div className="mode-card exchange-mode" onClick={() => onSelectMode("exchanges")}>
             <h3 className="text-info fw-bold">✈️ Essay Exchanges Generator (Premium)</h3>
             <p className="text-muted">Asisten AI untuk Motivation Letter Exchange!</p>
           </div>
