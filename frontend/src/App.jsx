@@ -4,13 +4,13 @@ import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import EssayGenerator from "./components/EssayGenerator";
 import KTIGenerator from "./components/KTIGenerator";
-import BusinessPlanGenerator from "./components/BusinessPlanGenerator"; // 🔥 Tambah ini
+import BusinessPlanGenerator from "./components/BusinessPlanGenerator"; // 🔥 Tambahan BusinessPlanGenerator
 import AdminDashboard from "./components/AdminDashboard";
 import ModeSelector from "./components/ModeSelector";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Ganti URL backend kamu di sini
+// URL backend kamu
 const API_URL = "https://c4339e7a-eefa-4bed-869b-93375b57f9e6-00-1si4rcqukplco.sisko.replit.dev";
 
 const App = () => {
@@ -20,7 +20,7 @@ const App = () => {
   const [email, setEmail] = useState('');
   const [tokens, setTokens] = useState(0);
   const [showRegister, setShowRegister] = useState(false);
-  const [selectedMode, setSelectedMode] = useState(null); // Mode pilihan: essay, kti, atau businessplan
+  const [selectedMode, setSelectedMode] = useState(null); // Mode: essay, kti, atau bp
 
   return (
     <div className="container mt-4">
@@ -107,7 +107,7 @@ const App = () => {
                     setTokenSisa={setTokens}
                     apiUrl={API_URL}
                   />
-                )}
+                ) : null}
 
                 {/* Info Token */}
                 <div className="alert alert-info text-center mt-4">
