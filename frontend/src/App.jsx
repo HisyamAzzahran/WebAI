@@ -3,7 +3,8 @@ import axios from 'axios';
 import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import EssayGenerator from "./components/EssayGenerator";
-import KTIGenerator from "./components/KTIGenerator"; // ⬅️ Tambahkan import KTIGenerator
+import KTIGenerator from "./components/KTIGenerator";
+import BusinessPlanGenerator from "./components/BusinessPlanGenerator"; // 🔥 Tambah ini
 import AdminDashboard from "./components/AdminDashboard";
 import ModeSelector from "./components/ModeSelector";
 import { ToastContainer } from 'react-toastify';
@@ -19,7 +20,7 @@ const App = () => {
   const [email, setEmail] = useState('');
   const [tokens, setTokens] = useState(0);
   const [showRegister, setShowRegister] = useState(false);
-  const [selectedMode, setSelectedMode] = useState(null); // Mode pilihan: essay atau kti
+  const [selectedMode, setSelectedMode] = useState(null); // Mode pilihan: essay, kti, atau businessplan
 
   return (
     <div className="container mt-4">
@@ -90,8 +91,16 @@ const App = () => {
                     setTokenSisa={setTokens}
                     apiUrl={API_URL}
                   />
-                ) : (
+                ) : selectedMode === "kti" ? (
                   <KTIGenerator
+                    isPremium={isPremium}
+                    email={email}
+                    tokenSisa={tokens}
+                    setTokenSisa={setTokens}
+                    apiUrl={API_URL}
+                  />
+                ) : selectedMode === "bp" (
+                  <BusinessPlanGenerator
                     isPremium={isPremium}
                     email={email}
                     tokenSisa={tokens}

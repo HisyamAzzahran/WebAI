@@ -23,3 +23,31 @@
     border-color: #28a745; /* Hijau kti */
   }
   
+  .mode-card {
+    background-color: #ffffff;
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+    height: 100%;
+  }
+  
+  .mode-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  }
+  
+  .essay-mode {
+    border-color: #0d6efd;
+  }
+
+  .kti-mode {
+    border-color: #198754;
+  }
+  
+  .bp-mode {
+    border-color: #ffc107;
+  }
+  
