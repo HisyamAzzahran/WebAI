@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'animate.css';
 
-const API_URL = "http://asia-southeast1.registry.rlwy.net/c8cbb86a-b1ef-430c-b83c-0ce0ac333d41:dea91d7b-b45b-4ad2-92d7-069cc26d7530";
+const API_URL = "https://webai-production.ip.railway.app";
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
