@@ -1,10 +1,10 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
-import google.generativeai as genai
 import sqlite3
 import os
 import bcrypt
+import openai
 from auth import init_db, register_user, login_user
 
 # Load environment
@@ -13,25 +13,23 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Configure Gemini
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# Configure OpenAI
+openai.api_key = os.getenv("OPENAI_API_KEY")
 DB_NAME = "database.db"
 
 # Init DB
 init_db()
 
+def generate_openai_response(prompt):
+    response = openai.ChatCompletion.create(
+        model="gpt-4o-search-preview",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.7
+    )
+    return response['choices'][0]['message']['content'].strip()
+
 @app.route("/register", methods=["POST"])
 def register():
-    #data = request.json
-    #username = data.get("username")
-    #email = data.get("email")
-    #password = data.get("password")
-
-    #if not username or not email or not password:
-    #return jsonify({"message": "Data tidak lengkap"}), 400
-
-    #success = register_user(username, email, password)
-    #return jsonify({"message": "Berhasil daftar!" if success else "Registrasi gagal: username atau email sudah terdaftar"}), 200 if success else 400
     return jsonify({"message": "Fitur pendaftaran sedang dinonaktifkan. Silakan gunakan akun yang sudah ada."}), 403
 
 @app.route("/login", methods=["POST"])
@@ -39,7 +37,6 @@ def login():
     data = request.json
     email = data.get("email")
     password = data.get("password")
-
     result = login_user(email, password)
     if result:
         return jsonify({
@@ -76,10 +73,14 @@ def generate_title():
         if tokens <= 0:
             return jsonify({"title": "[TOKEN HABIS] Silakan upgrade akun kamu."}), 403
 
-        # 🎯 PROMPT DASAR
+        # Prompt asli tidak diubah
         prompt = (
             f"Kamu adalah seorang peneliti profesional. Tugasmu adalah membuat **satu ide essay** yang kompleks, inovatif, dan kritis "
-            f"dengan struktur (1. Judul Pendek/Singkatan Judul/PunchLine Judul 2. Ide/Gagasan Inti 3. Daerah/Lokasi Implementasi Ide 4. Metode Riset 5. Tujuan Riset) buatkan yang kompleks yahh dan ingat harus menarik dan masuk akal kemudian sebenernya garis besarnya ini saya tuhh inginnya essai ini berdasarkan nanti saya bakal buat solusi permasalahan terkait nan inovatif sesuai dengan tujuan dibentuknya essai tapi untuk sementara buatkan dulu saja yaa judulnya, ohh iyaa kalau bisa metode yang dipakai tuhh yang ada bahasa penelitiannya gitu lohh jangan template kayak kualitatif kuantitatif tapi buat lebih menarik kalau bisa dikaitkan dengan beberapa ilmu mata kuliah terkait yang berkaitan dengan gagasan idenya, judulnya panjang maksimal 20 kata, jangan singkat judulnya pastikan sesuai format diatas"
+            f"dengan struktur (1. Judul Pendek/Singkatan Judul/PunchLine Judul 2. Ide/Gagasan Inti 3. Daerah/Lokasi Implementasi Ide 4. Metode Riset 5. Tujuan Riset) "
+            f"buatkan yang kompleks yahh dan ingat harus menarik dan masuk akal kemudian sebenernya garis besarnya ini saya tuhh inginnya essai ini berdasarkan nanti saya bakal buat solusi "
+            f"permasalahan terkait nan inovatif sesuai dengan tujuan dibentuknya essai tapi untuk sementara buatkan dulu saja yaa judulnya, ohh iyaa kalau bisa metode yang dipakai tuhh yang "
+            f"ada bahasa penelitiannya gitu lohh jangan template kayak kualitatif kuantitatif tapi buat lebih menarik kalau bisa dikaitkan dengan beberapa ilmu mata kuliah terkait yang "
+            f"berkaitan dengan gagasan idenya, judulnya panjang maksimal 20 kata, jangan singkat judulnya pastikan sesuai format diatas "
             f"mengenai topik '{sub_tema}' dalam bidang '{tema}'."
         )
 
@@ -113,13 +114,8 @@ def generate_title():
             )
 
         print("📤 PROMPT TERKIRIM:\n", prompt)
+        output = generate_openai_response(prompt)
 
-        # 🌐 CALL Gemini API
-        model = genai.GenerativeModel("models/gemini-1.5-pro-latest")
-        response = model.generate_content(prompt)
-        output = response.text.strip()
-
-        # 🔄 KURANGI TOKEN
         cursor.execute("UPDATE users SET tokens = tokens - 1 WHERE email = ?", (email,))
         conn.commit()
 
@@ -138,7 +134,7 @@ def generate_kti():
     email = data.get("email")
     tema = data.get("tema")
     sub_tema = data.get("sub_tema")
-    features = data.get("features", {})  # 🔥 Baca semua ceklis dari frontend
+    features = data.get("features", {})
     background_urgensi = features.get("backgroundUrgensi", False)
     keterbaruan = features.get("keterbaruan", False)
     step_konkrit = features.get("stepKonkrit", False)
@@ -146,12 +142,9 @@ def generate_kti():
     penelitian_terdahulu = features.get("penelitianTerdahulu", False)
     success_rate = features.get("successRate", False)
 
-
     try:
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
-
-        # Cek token user
         cursor.execute("SELECT is_premium, tokens FROM users WHERE email = ?", (email,))
         user = cursor.fetchone()
 
@@ -162,41 +155,25 @@ def generate_kti():
         if tokens <= 0:
             return jsonify({"title": "[TOKEN HABIS] Silakan upgrade akun kamu."}), 403
 
-        # 🔥 PROMPT DASAR
         prompt = (
             f"Kamu adalah seorang peneliti profesional. Buat satu ide Karya Tulis Ilmiah (KTI) "
             f"yang kompleks, inovatif, relevan, dan kritis mengenai topik '{sub_tema}' dalam bidang '{tema}'. "
         )
 
         if is_premium:
-            # 🔥 Tambahkan sesuai ceklis yang aktif
-            if features.get("backgroundUrgensi"):
-                prompt += (
-                    "\n- Jelaskan latar belakang permasalahan dan urgensi topik tersebut "
-                    "secara akademik dan faktual."
-                )
-            if features.get("keterbaruan"):
-                prompt += (
-                    "\n- Tunjukkan keterbaruan ide dibandingkan penelitian sebelumnya."
-                )
-            if features.get("stepKonkrit"):
-                prompt += (
-                    "\n- Jabarkan langkah-langkah konkret (step-by-step) dalam implementasi ide KTI."
-                )
-            if features.get("efisiensi"):
-                prompt += (
-                    "\n- Sertakan bagaimana ide tersebut dapat dieksekusi secara efisien dan hemat sumber daya."
-                )
-            if features.get("penelitianTerdahulu"):
-                prompt += (
-                    "\n- Berikan contoh minimal satu penelitian terdahulu kredibel yang relevan sebagai basis ide."
-                )
-            if features.get("successRate"):
-                prompt += (
-                    "\n- Estimasikan success rate ide tersebut dan berikan contoh input-output sederhana terkait ide."
-                )
+            if background_urgensi:
+                prompt += "\n- Jelaskan latar belakang permasalahan dan urgensi topik tersebut secara akademik dan faktual."
+            if keterbaruan:
+                prompt += "\n- Tunjukkan keterbaruan ide dibandingkan penelitian sebelumnya."
+            if step_konkrit:
+                prompt += "\n- Jabarkan langkah-langkah konkret (step-by-step) dalam implementasi ide KTI."
+            if efisiensi:
+                prompt += "\n- Sertakan bagaimana ide tersebut dapat dieksekusi secara efisien dan hemat sumber daya."
+            if penelitian_terdahulu:
+                prompt += "\n- Berikan contoh minimal satu penelitian terdahulu kredibel yang relevan sebagai basis ide."
+            if success_rate:
+                prompt += "\n- Estimasikan success rate ide tersebut dan berikan contoh input-output sederhana terkait ide."
 
-        # Format keluaran
         prompt += (
             "\n\nTulis hasil dalam format berikut dengan terstruktur:\n"
             "**Judul:** [Satu kalimat singkat untuk judul KTI yang menarik]\n"
@@ -205,18 +182,13 @@ def generate_kti():
         if is_premium:
             prompt += (
                 "**Deskripsi:** [Ringkasan ide utama KTI, termasuk urgensi, solusi, dan novelty]\n"
-                "**Target Luaran:** [Produk akhir riset, seperti modul, prototipe, rekomendasi kebijakan, dll] Pastikan untuk deskripsi dan target luaran jangan terlalu panjang jika di promt ini akan ada Latar Belakang\n"
+                "**Target Luaran:** [Produk akhir riset, seperti modul, prototipe, rekomendasi kebijakan, dll] "
+                "Pastikan untuk deskripsi dan target luaran jangan terlalu panjang jika di promt ini akan ada Latar Belakang\n"
             )
 
-        # 🌐 Panggil Gemini API
-        model = genai.GenerativeModel("models/gemini-1.5-pro-latest")
-        response = model.generate_content(prompt)
-        output = response.text.strip()
-
-        # 🔄 Kurangi token
+        output = generate_openai_response(prompt)
         cursor.execute("UPDATE users SET tokens = tokens - 1 WHERE email = ?", (email,))
         conn.commit()
-
         return jsonify({"title": output}), 200
 
     except Exception as e:
@@ -230,10 +202,9 @@ def generate_kti():
 def generate_bp():
     data = request.json
     email = data.get("email")
-    deskripsi_ide = data.get("deskripsi_ide", "").strip()  # ✅ Sesuaikan dengan frontend
+    deskripsi_ide = data.get("deskripsi_ide", "").strip()
     features = data.get("features", {})
 
-    # Premium Feature Flags
     executive_summary_enabled = features.get("ringkasanEksekutif", False)
     market_analysis_enabled = features.get("analisisPasar", False)
     marketing_strategy_enabled = features.get("strategiPemasaran", False)
@@ -253,7 +224,6 @@ def generate_bp():
         if tokens <= 0:
             return jsonify({"title": "[TOKEN HABIS] Silakan upgrade akun kamu."}), 403
 
-        # PROMPT DASAR
         prompt = (
             f"Kamu adalah AI bisnis profesional. Gunakan deskripsi berikut sebagai konteks ide bisnis:\n"
             f"\"{deskripsi_ide}\"\n\n"
@@ -263,7 +233,6 @@ def generate_bp():
             f"- Deskripsi singkat (maksimal 2 kalimat per ide).\n"
         )
 
-        # Premium Features
         if is_premium:
             if executive_summary_enabled:
                 prompt += "\n\nTambahkan Ringkasan Eksekutif mencakup target pasar, visi, dan sumber daya awal."
@@ -278,15 +247,9 @@ def generate_bp():
 
         prompt += "\n\nTulis hasilnya dengan bahasa profesional, komunikatif, padat, dan rapi."
 
-        # Generate dengan Gemini
-        model = genai.GenerativeModel("models/gemini-1.5-pro-latest")
-        response = model.generate_content(prompt)
-        output = response.text.strip()
-
-        # Update token
+        output = generate_openai_response(prompt)
         cursor.execute("UPDATE users SET tokens = tokens - 1 WHERE email = ?", (email,))
         conn.commit()
-
         return jsonify({"title": output}), 200
 
     except Exception as e:
@@ -336,13 +299,9 @@ Gunakan format:
 Jawaban maksimal 1 halaman, terstruktur, bahasa profesional dan komunikatif.
 """
 
-        model = genai.GenerativeModel("models/gemini-1.5-pro-latest")
-        response = model.generate_content(prompt)
-        output = response.text.strip()
-
+        output = generate_openai_response(prompt)
         cursor.execute("UPDATE users SET tokens = tokens - 1 WHERE email = ?", (email,))
         conn.commit()
-
         return jsonify({"title": output}), 200
 
     except Exception as e:
@@ -351,46 +310,6 @@ Jawaban maksimal 1 halaman, terstruktur, bahasa profesional dan komunikatif.
 
     finally:
         conn.close()
-
-@app.route("/admin/users", methods=["GET"])
-def get_all_users():
-    try:
-        with sqlite3.connect(DB_NAME) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT id, username, email, is_premium, tokens FROM users")
-            users = cursor.fetchall()
-            return jsonify([
-                {"id": row[0], "username": row[1], "email": row[2], "is_premium": row[3], "tokens": row[4]}
-                for row in users
-            ])
-    except Exception as e:
-        print("🚨 ADMIN USER FETCH ERROR:", e)
-        return jsonify([])
-
-@app.route("/admin/add-user", methods=["POST"])
-def admin_add_user():
-    data = request.json
-    username = data.get("username")
-    email = data.get("email")
-    password = data.get("password")
-    is_premium = int(data.get("is_premium"))
-    hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
-    token_value = 25 if is_premium else 10
-
-    try:
-        with sqlite3.connect(DB_NAME) as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                "INSERT INTO users (username, email, password, is_premium, tokens) VALUES (?, ?, ?, ?, ?)",
-                (username, email, hashed, is_premium, token_value)
-            )
-            conn.commit()
-        return jsonify({"message": "User baru berhasil ditambahkan!"}), 200
-    except sqlite3.IntegrityError:
-        return jsonify({"message": "Email/Username sudah digunakan!"}), 400
-    except Exception as e:
-        print("🚨 ADD USER ERROR:", e)
-        return jsonify({"message": "Gagal menambahkan user"}), 500
 
 @app.route("/admin/update-user", methods=["POST"])
 def admin_update_user():
