@@ -349,20 +349,13 @@ def get_all_users():
             cursor = conn.cursor()
             cursor.execute("SELECT id, username, email, is_premium, tokens FROM users")
             users = cursor.fetchall()
-
             return jsonify([
-                {
-                    "id": row[0],
-                    "username": row[1],
-                    "email": row[2],
-                    "is_premium": bool(row[3]),
-                    "tokens": row[4]
-                }
+                {"id": row[0], "username": row[1], "email": row[2], "is_premium": row[3], "tokens": row[4]}
                 for row in users
             ])
     except Exception as e:
         print("🚨 ADMIN USER FETCH ERROR:", e)
-        return jsonify([]), 500
+        return jsonify([])
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
