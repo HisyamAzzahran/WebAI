@@ -13,7 +13,7 @@ load_dotenv()
 # Init Flask & OpenAI Client
 app = Flask(__name__)
 CORS(app)
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key="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")
 DB_NAME = "database.db"
 
 # Init DB
