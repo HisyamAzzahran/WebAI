@@ -3,7 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'animate.css';
 
-const API_URL = "webai-production-b975.up.railway.app";
+const API_URL = "https://webai-production-b975.up.railway.app";
 
 const RegisterForm = () => {
   const [form, setForm] = useState({ username: '', email: '', password: '' });

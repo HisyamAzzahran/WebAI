@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'animate.css';
 
-const API_URL = "webai-production-b975.up.railway.app";
+const API_URL = "https://webai-production-b975.up.railway.app";
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);

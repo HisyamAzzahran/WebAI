@@ -12,7 +12,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 // URL backend kamu
-const API_URL = "webai-production-b975.up.railway.app";
+const API_URL = "https://webai-production-b975.up.railway.app";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);

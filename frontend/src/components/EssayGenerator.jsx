@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { ClipLoader } from 'react-spinners';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_URL = "webai-production-b975.up.railway.app";
+const API_URL = "https://webai-production-b975.up.railway.app";
 
 const EssayGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
   const [tema, setTema] = useState('');
