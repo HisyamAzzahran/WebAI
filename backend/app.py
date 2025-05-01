@@ -15,7 +15,7 @@ app = Flask(__name__)
 CORS(app)
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 DB_NAME = "database.db"
-
+print("OPENAI_API_KEY:", os.getenv("OPENAI_API_KEY"))
 # Init DB
 init_db()
 
