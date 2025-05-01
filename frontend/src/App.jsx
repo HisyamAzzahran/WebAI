@@ -12,7 +12,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 // URL backend kamu
-const API_URL = "https://c4339e7a-eefa-4bed-869b-93375b57f9e6-00-1si4rcqukplco.sisko.replit.dev";
+const API_URL = "http://asia-southeast1.registry.rlwy.net/c8cbb86a-b1ef-430c-b83c-0ce0ac333d41:dea91d7b-b45b-4ad2-92d7-069cc26d7530";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
