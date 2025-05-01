@@ -22,7 +22,7 @@ init_db()
 # Function for generating content
 def generate_openai_response(prompt):
     response = client.chat.completions.create(
-        model="o1",
+        model="gpt-4.1",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7
     )
