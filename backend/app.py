@@ -299,11 +299,19 @@ Jawaban maksimal 1 halaman, terstruktur, bahasa profesional dan komunikatif.
 @app.route("/admin/update-user", methods=["POST"])
 def admin_update_user():
     data = request.json
+
     email = data.get("email")
-    tokens = int(data.get("tokens"))
-    is_premium = int(data.get("is_premium"))
+    tokens = data.get("tokens")
+    is_premium = data.get("is_premium")
+
+    # Validasi input
+    if email is None or tokens is None or is_premium is None:
+        return jsonify({"message": "Data tidak lengkap!"}), 400
 
     try:
+        tokens = int(tokens)
+        is_premium = int(is_premium)
+
         with sqlite3.connect(DB_NAME) as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -312,9 +320,11 @@ def admin_update_user():
             )
             conn.commit()
         return jsonify({"message": "Berhasil update user!"}), 200
+
     except Exception as e:
         print("🚨 UPDATE USER ERROR:", e)
         return jsonify({"message": "Gagal update user"}), 500
+
 
 @app.route("/admin/delete-user", methods=["POST"])
 def delete_user():
