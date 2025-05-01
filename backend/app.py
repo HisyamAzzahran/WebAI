@@ -15,14 +15,14 @@ app = Flask(__name__)
 CORS(app)
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 DB_NAME = "database.db"
-print("OPENAI_API_KEY:", os.getenv("OPENAI_API_KEY"))
+
 # Init DB
 init_db()
 
 # Function for generating content
 def generate_openai_response(prompt):
     response = client.chat.completions.create(
-        model="gpt-4o-search-preview",
+        model="gpt-4o",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7
     )
