@@ -4,29 +4,29 @@ from dotenv import load_dotenv
 import sqlite3
 import os
 import bcrypt
-import openai
 from auth import init_db, register_user, login_user
+from openai import OpenAI
 
-# Load environment
+# Load .env
 load_dotenv()
 
+# Init Flask & OpenAI Client
 app = Flask(__name__)
 CORS(app)
-
-# Configure OpenAI
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 DB_NAME = "database.db"
 
 # Init DB
 init_db()
 
+# Function for generating content
 def generate_openai_response(prompt):
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4o-search-preview",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7
     )
-    return response['choices'][0]['message']['content'].strip()
+    return response.choices[0].message.content.strip()
 
 @app.route("/register", methods=["POST"])
 def register():
@@ -62,25 +62,18 @@ def generate_title():
     try:
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
-
         cursor.execute("SELECT is_premium, tokens FROM users WHERE email = ?", (email,))
         user = cursor.fetchone()
 
         if not user:
             return jsonify({"title": "[ERROR] User tidak ditemukan"}), 404
-
         is_premium, tokens = user
         if tokens <= 0:
             return jsonify({"title": "[TOKEN HABIS] Silakan upgrade akun kamu."}), 403
 
-        # Prompt asli tidak diubah
         prompt = (
             f"Kamu adalah seorang peneliti profesional. Tugasmu adalah membuat **satu ide essay** yang kompleks, inovatif, dan kritis "
-            f"dengan struktur (1. Judul Pendek/Singkatan Judul/PunchLine Judul 2. Ide/Gagasan Inti 3. Daerah/Lokasi Implementasi Ide 4. Metode Riset 5. Tujuan Riset) "
-            f"buatkan yang kompleks yahh dan ingat harus menarik dan masuk akal kemudian sebenernya garis besarnya ini saya tuhh inginnya essai ini berdasarkan nanti saya bakal buat solusi "
-            f"permasalahan terkait nan inovatif sesuai dengan tujuan dibentuknya essai tapi untuk sementara buatkan dulu saja yaa judulnya, ohh iyaa kalau bisa metode yang dipakai tuhh yang "
-            f"ada bahasa penelitiannya gitu lohh jangan template kayak kualitatif kuantitatif tapi buat lebih menarik kalau bisa dikaitkan dengan beberapa ilmu mata kuliah terkait yang "
-            f"berkaitan dengan gagasan idenya, judulnya panjang maksimal 20 kata, jangan singkat judulnya pastikan sesuai format diatas "
+            f"dengan struktur (1. Judul Pendek/Singkatan Judul/PunchLine Judul 2. Ide/Gagasan Inti 3. Daerah/Lokasi Implementasi Ide 4. Metode Riset 5. Tujuan Riset) buatkan yang kompleks yahh dan ingat harus menarik dan masuk akal kemudian sebenernya garis besarnya ini saya tuhh inginnya essai ini berdasarkan nanti saya bakal buat solusi permasalahan terkait nan inovatif sesuai dengan tujuan dibentuknya essai tapi untuk sementara buatkan dulu saja yaa judulnya, ohh iyaa kalau bisa metode yang dipakai tuhh yang ada bahasa penelitiannya gitu lohh jangan template kayak kualitatif kuantitatif tapi buat lebih menarik kalau bisa dikaitkan dengan beberapa ilmu mata kuliah terkait yang berkaitan dengan gagasan idenya, judulnya panjang maksimal 20 kata, jangan singkat judulnya pastikan sesuai format diatas"
             f"mengenai topik '{sub_tema}' dalam bidang '{tema}'."
         )
 
@@ -113,18 +106,14 @@ def generate_title():
                 "Jangan sertakan penjelasan tambahan, metode, atau teknologi apapun."
             )
 
-        print("📤 PROMPT TERKIRIM:\n", prompt)
         output = generate_openai_response(prompt)
-
         cursor.execute("UPDATE users SET tokens = tokens - 1 WHERE email = ?", (email,))
         conn.commit()
-
         return jsonify({"title": output}), 200
 
     except Exception as e:
         print("🚨 ERROR generate judul:", e)
         return jsonify({"title": "[ERROR] Gagal generate judul dari server"}), 500
-
     finally:
         conn.close()
 
@@ -182,8 +171,7 @@ def generate_kti():
         if is_premium:
             prompt += (
                 "**Deskripsi:** [Ringkasan ide utama KTI, termasuk urgensi, solusi, dan novelty]\n"
-                "**Target Luaran:** [Produk akhir riset, seperti modul, prototipe, rekomendasi kebijakan, dll] "
-                "Pastikan untuk deskripsi dan target luaran jangan terlalu panjang jika di promt ini akan ada Latar Belakang\n"
+                "**Target Luaran:** [Produk akhir riset, seperti modul, prototipe, rekomendasi kebijakan, dll] Pastikan untuk deskripsi dan target luaran jangan terlalu panjang jika di promt ini akan ada Latar Belakang\n"
             )
 
         output = generate_openai_response(prompt)
@@ -194,7 +182,6 @@ def generate_kti():
     except Exception as e:
         print("🚨 ERROR generate KTI:", e)
         return jsonify({"title": "[ERROR] Gagal generate KTI dari server"}), 500
-
     finally:
         conn.close()
 
@@ -255,7 +242,6 @@ def generate_bp():
     except Exception as e:
         print("🚨 ERROR generate Business Plan:", e)
         return jsonify({"title": "[ERROR] Gagal generate Business Plan dari server"}), 500
-
     finally:
         conn.close()
 
@@ -307,7 +293,6 @@ Jawaban maksimal 1 halaman, terstruktur, bahasa profesional dan komunikatif.
     except Exception as e:
         print("🚨 ERROR generate Essay Exchange:", e)
         return jsonify({"title": "[ERROR] Gagal generate Essay Exchange dari server"}), 500
-
     finally:
         conn.close()
 
@@ -342,23 +327,18 @@ def delete_user():
     try:
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
-
-        # Cek apakah user ada
         cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
         user = cursor.fetchone()
         if not user:
             return jsonify({"message": "User tidak ditemukan."}), 404
 
-        # Hapus user
         cursor.execute("DELETE FROM users WHERE email = ?", (email,))
         conn.commit()
-
         return jsonify({"message": f"User dengan email {email} berhasil dihapus."}), 200
 
     except Exception as e:
         print("❌ ERROR delete user:", e)
         return jsonify({"message": "Terjadi kesalahan saat menghapus user."}), 500
-
     finally:
         conn.close()
 
