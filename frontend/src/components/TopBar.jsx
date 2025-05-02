@@ -5,39 +5,49 @@ const TopBar = ({ email, isPremium }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
-    <div
-      className="topbar-container"
-      onMouseEnter={() => setIsDropdownOpen(true)}
-      onMouseLeave={() => setIsDropdownOpen(false)}
-    >
-      <div className="logo-title">
-        <h3 className="fw-bold text-primary m-0">🎓 ElevaAI</h3>
+    <div className="topbar-container">
+      <div className="topbar-left">
+        <h3 className="logo-text">🎓 ElevaAI: Bestie AI Asisten Buat Lomba Kamu</h3>
       </div>
 
-      <div className="d-flex align-items-center gap-3">
-        <div className="user-info text-end">
-          <div><strong>👤 {email}</strong></div>
-          <div className={`badge ${isPremium ? 'bg-success' : 'bg-secondary'}`}>
+      <div
+        className="topbar-right"
+        onMouseEnter={() => setIsDropdownOpen(true)}
+        onMouseLeave={() => setIsDropdownOpen(false)}
+      >
+        <div className="user-info">
+          <div className="user-email">👤 <strong>{email}</strong></div>
+          <div className={`user-badge ${isPremium ? 'premium' : 'basic'}`}>
             {isPremium ? 'Premium User' : 'Basic User'}
           </div>
         </div>
 
-        <div className="cart-icon">
-          🛒
+        <div className="cart-wrapper">
+          <button className="cart-icon">🛒</button>
           {isDropdownOpen && (
-            <div className="dropdown-content">
-              <a href="https://wa.me/6282211929271?text=Halo%20saya%20mau%20order%20Token%20untuk%20ElevaAI" target="_blank" rel="noreferrer">
-                🎯 Order Token
+            <div className="cart-dropdown animate-fade">
+              <a
+                href="https://wa.me/6282211929271?text=Halo%20saya%20mau%20order%20Token%20untuk%20ElevaAI"
+                target="_blank"
+                rel="noreferrer"
+                className="dropdown-link"
+              >
+                🎯 <strong>Order Token</strong>
               </a>
               <div className="divider" />
-              <p><strong>Keuntungan Premium:</strong></p>
+              <p className="fw-bold mb-1">Keuntungan Premium:</p>
               <ul>
                 <li>✅ Akses semua sub-tema</li>
                 <li>✅ Fitur KTI & Business Plan lanjutan</li>
                 <li>✅ Essay Exchanges Generator</li>
               </ul>
-              <a href="https://wa.me/6282211929271?text=Halo%20saya%20mau%20upgrade%20ke%20Premium%20ElevaAI" target="_blank" rel="noreferrer">
-                💎 Order Premium
+              <a
+                href="https://wa.me/6282211929271?text=Halo%20saya%20mau%20upgrade%20ke%20Premium%20ElevaAI"
+                target="_blank"
+                rel="noreferrer"
+                className="dropdown-link"
+              >
+                💎 <strong>Order Premium</strong>
               </a>
             </div>
           )}
