@@ -8,9 +8,10 @@ import BusinessPlanGenerator from "./components/BusinessPlanGenerator";
 import AdminDashboard from "./components/AdminDashboard";
 import ModeSelector from "./components/ModeSelector";
 import EssayExchangesGenerator from "./components/EssayExchangesGenerator";
-import TopBar from './components/TopBar'; // ✅ Tambahkan ini
+import TopBar from './components/TopBar';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import './App.css'; // Tambahkan CSS custom
 
 const API_URL = "https://webai-production-b975.up.railway.app";
 
@@ -21,50 +22,56 @@ const App = () => {
   const [email, setEmail] = useState('');
   const [tokens, setTokens] = useState(0);
   const [showRegister, setShowRegister] = useState(false);
-  const [selectedMode, setSelectedMode] = useState(null); // essay, kti, bp, exchanges
+  const [selectedMode, setSelectedMode] = useState(null);
 
   return (
-    <div className="container mt-4">
-      {/* TopBar Section */}
+    <>
+      {/* TopBar tetap di luar container */}
       <TopBar email={email} isPremium={isPremium} />
 
       <ToastContainer position="top-right" autoClose={2500} />
 
-      {!isLoggedIn ? (
-        <>
-          {showRegister ? (
-            <>
-              <RegisterForm apiUrl={API_URL} />
-              <div className="text-center mt-3">
-                <small>Sudah punya akun?</small><br />
-                <button className="btn btn-outline-primary mt-1" onClick={() => setShowRegister(false)}>
-                  Masuk
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <LoginForm
-                apiUrl={API_URL}
-                onLogin={(premium, email, admin, tokenValue) => {
-                  setIsLoggedIn(true);
-                  setIsPremium(premium);
-                  setEmail(email);
-                  setIsAdmin(admin);
-                  setTokens(tokenValue);
-                }}
-              />
-              <div className="text-center mt-2">
-    <small>Belum punya akun?</small><br />
-    <button className="btn btn-outline-success mt-1" onClick={() => setShowRegister(true)}>
-      Daftar
-    </button>
-  </div>
-            </>
-          )}
-        </>
-      ) : (
-        isAdmin ? (
+      <div className="container mt-4">
+        {!isLoggedIn ? (
+          <div className="login-register-wrapper">
+            {showRegister ? (
+              <>
+                <RegisterForm apiUrl={API_URL} />
+                <div className="text-center mt-2">
+                  <small>Sudah punya akun?</small><br />
+                  <button
+                    className="btn btn-outline-primary mt-1"
+                    onClick={() => setShowRegister(false)}
+                  >
+                    Masuk
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <LoginForm
+                  apiUrl={API_URL}
+                  onLogin={(premium, email, admin, tokenValue) => {
+                    setIsLoggedIn(true);
+                    setIsPremium(premium);
+                    setEmail(email);
+                    setIsAdmin(admin);
+                    setTokens(tokenValue);
+                  }}
+                />
+                <div className="text-center mt-2">
+                  <small>Belum punya akun?</small><br />
+                  <button
+                    className="btn btn-outline-success mt-1"
+                    onClick={() => setShowRegister(true)}
+                  >
+                    Daftar
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        ) : isAdmin ? (
           <AdminDashboard apiUrl={API_URL} />
         ) : (
           <>
@@ -72,7 +79,6 @@ const App = () => {
               <ModeSelector onSelectMode={setSelectedMode} />
             ) : (
               <>
-                {/* Tombol Kembali */}
                 <div className="text-center mb-3">
                   <button
                     className="btn btn-outline-secondary"
@@ -82,7 +88,6 @@ const App = () => {
                   </button>
                 </div>
 
-                {/* Mode Konten */}
                 {selectedMode === "essay" && (
                   <EssayGenerator
                     isPremium={isPremium}
@@ -120,12 +125,10 @@ const App = () => {
                   />
                 )}
 
-                {/* Token Info */}
                 <div className="alert alert-info text-center mt-4">
                   🎯 Token Tersisa: <strong>{tokens}</strong>
                 </div>
 
-                {/* Upgrade Reminder */}
                 {!isPremium && (
                   <div className="alert alert-warning mt-2 text-center">
                     🚀 Kamu user basic. Untuk akses semua fitur premium, upgrade akunmu!
@@ -143,9 +146,9 @@ const App = () => {
               </>
             )}
           </>
-        )
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 };
 
