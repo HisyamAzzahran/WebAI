@@ -30,10 +30,6 @@ const App = () => {
 
       <ToastContainer position="top-right" autoClose={2500} />
 
-      <h1 className="text-center text-primary fw-bold mb-4">
-        🎓 ElevaAI: Bestie AI Asisten Buat Lomba Kamu
-      </h1>
-
       {!isLoggedIn ? (
         <>
           {showRegister ? (
