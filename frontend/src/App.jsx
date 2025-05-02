@@ -4,14 +4,14 @@ import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import EssayGenerator from "./components/EssayGenerator";
 import KTIGenerator from "./components/KTIGenerator";
-import BusinessPlanGenerator from "./components/BusinessPlanGenerator"; // 🔥 Tambahan BusinessPlanGenerator
+import BusinessPlanGenerator from "./components/BusinessPlanGenerator";
 import AdminDashboard from "./components/AdminDashboard";
 import ModeSelector from "./components/ModeSelector";
 import EssayExchangesGenerator from "./components/EssayExchangesGenerator";
+import TopBar from './components/TopBar'; // ✅ Tambahkan ini
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// URL backend kamu
 const API_URL = "https://webai-production-b975.up.railway.app";
 
 const App = () => {
@@ -21,10 +21,13 @@ const App = () => {
   const [email, setEmail] = useState('');
   const [tokens, setTokens] = useState(0);
   const [showRegister, setShowRegister] = useState(false);
-  const [selectedMode, setSelectedMode] = useState(null); // Mode: essay, kti, atau bp
+  const [selectedMode, setSelectedMode] = useState(null); // essay, kti, bp, exchanges
 
   return (
     <div className="container mt-4">
+      {/* TopBar Section */}
+      <TopBar email={email} isPremium={isPremium} />
+
       <ToastContainer position="top-right" autoClose={2500} />
 
       <h1 className="text-center text-primary fw-bold mb-4">
@@ -83,8 +86,8 @@ const App = () => {
                   </button>
                 </div>
 
-                {/* Konten berdasarkan pilihan mode */}
-                {selectedMode === "essay" ? (
+                {/* Mode Konten */}
+                {selectedMode === "essay" && (
                   <EssayGenerator
                     isPremium={isPremium}
                     email={email}
@@ -92,7 +95,8 @@ const App = () => {
                     setTokenSisa={setTokens}
                     apiUrl={API_URL}
                   />
-                ) : selectedMode === "kti" ? (
+                )}
+                {selectedMode === "kti" && (
                   <KTIGenerator
                     isPremium={isPremium}
                     email={email}
@@ -100,7 +104,8 @@ const App = () => {
                     setTokenSisa={setTokens}
                     apiUrl={API_URL}
                   />
-                ) : selectedMode === "bp" ? (
+                )}
+                {selectedMode === "bp" && (
                   <BusinessPlanGenerator
                     isPremium={isPremium}
                     email={email}
@@ -108,7 +113,8 @@ const App = () => {
                     setTokenSisa={setTokens}
                     apiUrl={API_URL}
                   />
-                ) : selectedMode === "exchanges" ? (
+                )}
+                {selectedMode === "exchanges" && (
                   <EssayExchangesGenerator
                     isPremium={isPremium}
                     email={email}
@@ -116,14 +122,14 @@ const App = () => {
                     setTokenSisa={setTokens}
                     apiUrl={API_URL}
                   />
-                ) : null}
+                )}
 
-                {/* Info Token */}
+                {/* Token Info */}
                 <div className="alert alert-info text-center mt-4">
                   🎯 Token Tersisa: <strong>{tokens}</strong>
                 </div>
 
-                {/* Info Upgrade Premium */}
+                {/* Upgrade Reminder */}
                 {!isPremium && (
                   <div className="alert alert-warning mt-2 text-center">
                     🚀 Kamu user basic. Untuk akses semua fitur premium, upgrade akunmu!

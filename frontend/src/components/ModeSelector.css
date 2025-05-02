@@ -1,93 +1,47 @@
 .mode-card {
-    border: 2px solid #e0e0e0;
-    padding: 30px;
-    border-radius: 15px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-    background: #fff;
-  }
-  
-  .mode-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    border-color: #007bff;
-  }
-  
-  .essay-mode:hover {
-    border-color: #0d6efd; /* Biru essay */
-  }
-  
-  .kti-mode:hover {
-    border-color: #28a745; /* Hijau kti */
-  }
-  
-  .mode-card {
-    background-color: #ffffff;
-    border: 2px solid #dee2e6;
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    transition: transform 0.3s, box-shadow 0.3s;
-    cursor: pointer;
-    height: 100%;
-  }
-  
-  .mode-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-  }
-  
-  .essay-mode {
-    border-color: #0d6efd;
-  }
+  padding: 25px;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: white;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+  text-align: center;
+}
 
-  .kti-mode {
-    border-color: #198754;
-  }
-  
-  .bp-mode {
-    border-color: #ffc107;
-  }
-  
+/* Hover effect */
+.mode-card:hover {
+  animation: pulse 1s;
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+
+/* Mode gradients */
+.essay-mode {
+  background: linear-gradient(135deg, #007bff, #00c6ff);
+}
+
+.kti-mode {
+  background: linear-gradient(135deg, #28a745, #85e085);
+}
+
+.bp-mode {
+  background: linear-gradient(135deg, #ffc107, #ffdd57);
+  color: #333;
+}
+
+.exchange-mode {
+  background: linear-gradient(135deg, #17a2b8, #7de2fc);
+}
+
+/* Responsive for small devices */
+@media (max-width: 768px) {
   .mode-card {
-    border: 2px solid #ddd;
-    border-radius: 12px;
-    padding: 30px 20px;
-    text-align: center;
-    transition: all 0.3s ease;
-    background-color: #fff;
-    height: 100%;
-    cursor: pointer;
+    margin-bottom: 20px;
   }
-  
-  .mode-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  }
-  
-  /* Warna border spesifik */
-  .essay-mode {
-    border-color: #007bff;
-  }
-  
-  .kti-mode {
-    border-color: #28a745;
-  }
-  
-  .bp-mode {
-    border-color: #ffc107;
-  }
-  
-  .exchange-mode {
-    border-color: #17a2b8;
-  }
-  
-  /* Responsive di device kecil */
-  @media (max-width: 768px) {
-    .mode-card {
-      margin-bottom: 20px;
-    }
-  }
-  
+}
+
