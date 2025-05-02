@@ -54,12 +54,12 @@ const App = () => {
                   setTokens(tokenValue);
                 }}
               />
-              <div className="text-center mt-3">
-                <small>Belum punya akun?</small><br />
-                <button className="btn btn-outline-success mt-1" onClick={() => setShowRegister(true)}>
-                  Daftar
-                </button>
-              </div>
+              <div className="text-center mt-2">
+    <small>Belum punya akun?</small><br />
+    <button className="btn btn-outline-success mt-1" onClick={() => setShowRegister(true)}>
+      Daftar
+    </button>
+  </div>
             </>
           )}
         </>

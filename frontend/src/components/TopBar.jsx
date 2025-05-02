@@ -1,59 +1,58 @@
 import React, { useState } from 'react';
 import './TopBar.css';
+import Modal from './Modal'; // Komponen Modal buatan sendiri
 
 const TopBar = ({ email, isPremium }) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showTokenModal, setShowTokenModal] = useState(false);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
 
   return (
-    <div className="topbar-container">
-      <div className="topbar-left">
-        <h3 className="logo-text">🎓 ElevaAI: Bestie AI Asisten Buat Lomba Kamu</h3>
-      </div>
+    <>
+      <div className="topbar-container">
+        <div className="logo-text">🎓 ElevaAI</div>
 
-      <div
-        className="topbar-right"
-        onMouseEnter={() => setIsDropdownOpen(true)}
-        onMouseLeave={() => setIsDropdownOpen(false)}
-      >
-        <div className="user-info">
-          <div className="user-email">👤 <strong>{email}</strong></div>
-          <div className={`user-badge ${isPremium ? 'premium' : 'basic'}`}>
-            {isPremium ? 'Premium User' : 'Basic User'}
+        <div className="topbar-right">
+          <div className="user-info">
+            <strong>👤 {email}</strong><br />
+            <span className={`badge ${isPremium ? 'bg-success' : 'bg-secondary'}`}>
+              {isPremium ? 'Premium User' : 'Basic User'}
+            </span>
+          </div>
+
+          <div className="cart-dropdown-box">
+            <div className="card-option" onClick={() => setShowTokenModal(true)}>🎯 Beli Token</div>
+            <div className="card-option" onClick={() => setShowPremiumModal(true)}>💎 Premium</div>
           </div>
         </div>
-
-        <div className="cart-wrapper">
-          <button className="cart-icon">🛒</button>
-          {isDropdownOpen && (
-            <div className="cart-dropdown animate-fade">
-              <a
-                href="https://wa.me/6282211929271?text=Halo%20saya%20mau%20order%20Token%20untuk%20ElevaAI"
-                target="_blank"
-                rel="noreferrer"
-                className="dropdown-link"
-              >
-                🎯 <strong>Order Token</strong>
-              </a>
-              <div className="divider" />
-              <p className="fw-bold mb-1">Keuntungan Premium:</p>
-              <ul>
-                <li>✅ Akses semua sub-tema</li>
-                <li>✅ Fitur KTI & Business Plan lanjutan</li>
-                <li>✅ Essay Exchanges Generator</li>
-              </ul>
-              <a
-                href="https://wa.me/6282211929271?text=Halo%20saya%20mau%20upgrade%20ke%20Premium%20ElevaAI"
-                target="_blank"
-                rel="noreferrer"
-                className="dropdown-link"
-              >
-                💎 <strong>Order Premium</strong>
-              </a>
-            </div>
-          )}
-        </div>
       </div>
-    </div>
+
+      {/* Modal Token */}
+      {showTokenModal && (
+        <Modal onClose={() => setShowTokenModal(false)}>
+          <h5>🎯 Beli Token ElevaAI</h5>
+          <p>Hubungi Admin untuk melakukan pembelian token.</p>
+          <a href="https://wa.me/6282211929271" target="_blank" rel="noreferrer" className="btn-modal-green">
+            Chat Admin di WhatsApp
+          </a>
+        </Modal>
+      )}
+
+      {/* Modal Premium */}
+      {showPremiumModal && (
+        <Modal onClose={() => setShowPremiumModal(false)}>
+          <h5>💎 Upgrade ke Premium</h5>
+          <ul className="feature-list">
+            <li>✅ Akses semua sub-tema</li>
+            <li>✅ KTI & Business Plan Lanjutan</li>
+            <li>✅ Essay Exchanges Generator</li>
+            <li>✅ Penjelasan Judul Premium</li>
+          </ul>
+          <a href="https://wa.me/6282211929271" target="_blank" rel="noreferrer" className="btn-modal-blue">
+            Upgrade Premium di WhatsApp
+          </a>
+        </Modal>
+      )}
+    </>
   );
 };
 

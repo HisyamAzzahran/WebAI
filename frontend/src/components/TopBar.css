@@ -138,4 +138,25 @@
       top: 42px;
     }
   }
+  .cart-dropdown-box {
+    display: flex;
+    gap: 10px;
+    margin-left: 20px;
+  }
+  
+  .card-option {
+    background: #f8f9fa;
+    padding: 10px 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  
+  .card-option:hover {
+    background: #e2e6ea;
+    transform: translateY(-2px);
+  }
+  
   
