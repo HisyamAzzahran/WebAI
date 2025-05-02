@@ -5,15 +5,16 @@ const TopBar = ({ email, isPremium }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
-    <div className="topbar-container">
+    <div
+      className="topbar-container"
+      onMouseEnter={() => setIsDropdownOpen(true)}
+      onMouseLeave={() => setIsDropdownOpen(false)}
+    >
       <div className="logo-title">
-        <h3 className="fw-bold text-primary m-0">🎓 ElevaAI: Bestie AI Asisten Buat Lomba Kamu</h3>
+        <h3 className="fw-bold text-primary m-0">🎓 ElevaAI</h3>
       </div>
 
-      <div
-        className="d-flex align-items-center gap-3 mt-2 mt-md-0"
-        onMouseLeave={() => setIsDropdownOpen(false)}
-      >
+      <div className="d-flex align-items-center gap-3">
         <div className="user-info text-end">
           <div><strong>👤 {email}</strong></div>
           <div className={`badge ${isPremium ? 'bg-success' : 'bg-secondary'}`}>
@@ -21,18 +22,11 @@ const TopBar = ({ email, isPremium }) => {
           </div>
         </div>
 
-        <div
-          className="cart-icon"
-          onMouseEnter={() => setIsDropdownOpen(true)}
-        >
+        <div className="cart-icon">
           🛒
           {isDropdownOpen && (
             <div className="dropdown-content">
-              <a
-                href="https://wa.me/6282211929271?text=Halo%20saya%20mau%20order%20Token%20untuk%20ElevaAI"
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a href="https://wa.me/6282211929271?text=Halo%20saya%20mau%20order%20Token%20untuk%20ElevaAI" target="_blank" rel="noreferrer">
                 🎯 Order Token
               </a>
               <div className="divider" />
@@ -42,11 +36,7 @@ const TopBar = ({ email, isPremium }) => {
                 <li>✅ Fitur KTI & Business Plan lanjutan</li>
                 <li>✅ Essay Exchanges Generator</li>
               </ul>
-              <a
-                href="https://wa.me/6282211929271?text=Halo%20saya%20mau%20upgrade%20ke%20Premium%20ElevaAI"
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a href="https://wa.me/6282211929271?text=Halo%20saya%20mau%20upgrade%20ke%20Premium%20ElevaAI" target="_blank" rel="noreferrer">
                 💎 Order Premium
               </a>
             </div>

@@ -10,6 +10,7 @@
     top: 0;
     z-index: 1000;
     flex-wrap: wrap;
+    margin-bottom: 20px;
   }
   
   /* Judul / Logo */

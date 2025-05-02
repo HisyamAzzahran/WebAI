@@ -30,6 +30,10 @@ const App = () => {
 
       <ToastContainer position="top-right" autoClose={2500} />
 
+      <h1 className="text-center text-primary fw-bold mb-4">
+        Halooo, Selamat Datang👋👋
+      </h1>
+
       {!isLoggedIn ? (
         <>
           {showRegister ? (
