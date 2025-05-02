@@ -3,8 +3,8 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'animate.css';
+import './LoginForm.css';
 
-// URL backend kamu
 const API_URL = "https://webai-production-b975.up.railway.app";
 
 const LoginForm = ({ onLogin }) => {
@@ -31,34 +31,36 @@ const LoginForm = ({ onLogin }) => {
   };
 
   return (
-    <div className="card shadow p-4 animate__animated animate__fadeInLeft" data-aos="zoom-in">
-      <h4 className="mb-3 text-center text-primary">🔐 Login</h4>
+    <div className="login-wrapper animate__animated animate__fadeInUp">
+      <div className="login-card">
+        <h3 className="text-primary mb-4">🔐 Masuk ke ElevaAI</h3>
 
-      <input
-        className="form-control mb-3"
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        disabled={loading}
-      />
+        <input
+          className="login-input"
+          type="email"
+          placeholder="Email kamu"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={loading}
+        />
 
-      <input
-        className="form-control mb-4"
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        disabled={loading}
-      />
+        <input
+          className="login-input"
+          type="password"
+          placeholder="Kata sandi"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          disabled={loading}
+        />
 
-      <button
-        className="btn btn-primary w-100"
-        onClick={login}
-        disabled={loading}
-      >
-        {loading ? "⏳ Memproses..." : "Masuk"}
-      </button>
+        <button
+          className="login-button"
+          onClick={login}
+          disabled={loading}
+        >
+          {loading ? "⏳ Memproses..." : "Masuk"}
+        </button>
+      </div>
     </div>
   );
 };

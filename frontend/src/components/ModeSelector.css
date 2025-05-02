@@ -3,6 +3,7 @@
   text-align: center;
   z-index: 1;
   position: relative;
+  margin-top: 40px;
 }
 
 .welcome-text {
