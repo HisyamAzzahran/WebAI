@@ -9,6 +9,8 @@ from openai import OpenAI
 from threading import Timer
 import time
 from flask import send_file
+import re
+import json
 
 def delete_file_later(path, delay=30):
     def delete():
