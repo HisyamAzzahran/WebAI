@@ -22,9 +22,9 @@ function AudioRecorder({ onTranscription }) {
       };
 
       mediaRecorderRef.current.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         const formData = new FormData();
-        formData.append('audio', audioBlob);
+        formData.append('audio', audioBlob, 'recording.webm');
 
         try {
           const response = await fetch(`${API_BASE}/transcribe`, {
