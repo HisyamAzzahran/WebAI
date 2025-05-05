@@ -1,20 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 
 function ResultPage() {
   const location = useLocation();
-  const { username, answers } = location.state || {};
+  const navigate = useNavigate();
+  const { username, answers, email, isPremium, tokenSisa } = location.state || {};
+
   const [scores, setScores] = useState([]);
   const [totalScore, setTotalScore] = useState(null);
   const [feedback, setFeedback] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const API_URL = "https://webai-production-b975.up.railway.app";
+  const API_URL = import.meta.env.VITE_API_URL || "https://webai-production-b975.up.railway.app";
 
   useEffect(() => {
-    const evaluate = async () => {
-      if (!answers || answers.length === 0) return;
+    if (!answers || answers.length === 0 || !username || !email) {
+      alert("Data tidak lengkap. Silakan mulai ulang sesi.");
+      navigate('/');
+      return;
+    }
 
+    const evaluate = async () => {
       try {
         const response = await fetch(`${API_URL}/evaluate`, {
           method: 'POST',
@@ -27,6 +33,17 @@ function ResultPage() {
           setScores(data.scores);
           setTotalScore(data.total);
           setFeedback(data.feedback);
+
+          // Kurangi token pengguna sebanyak 5 setelah evaluasi berhasil
+          await fetch(`${API_URL}/admin/update-user`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email,
+              tokens: tokenSisa - 5,
+              is_premium: isPremium ? 1 : 0,
+            }),
+          });
         }
       } catch (error) {
         console.error("Gagal evaluasi jawaban:", error);
@@ -36,7 +53,7 @@ function ResultPage() {
     };
 
     evaluate();
-  }, [answers, username]);
+  }, [answers, username, email]);
 
   if (loading) {
     return (
@@ -76,7 +93,6 @@ function ResultPage() {
         <div style={{ marginTop: '30px', padding: '20px', backgroundColor: '#f1f3f5', borderRadius: '10px' }}>
           <h3>✨ Total Skor: {totalScore} / 25</h3>
           <p style={{ marginTop: '10px', fontStyle: 'italic' }}>{feedback}</p>
-
           <p style={{ marginTop: '10px' }}>
             {totalScore >= 22
               ? "💯 Sangat Baik! Kamu siap menghadapi interview nyata."

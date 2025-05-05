@@ -100,7 +100,15 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl }) {
       if (setTokenSisa && typeof tokenSisa === 'number') {
         setTokenSisa(tokenSisa - 5);
       }
-      navigate('/result', { state: { username, answers: updatedAnswers } });
+      navigate('/result', {
+        state: {
+          username,
+          answers: updatedAnswers,
+          email,
+          tokenSisa,
+          isPremium
+        }
+      });
       return;
     }
 
