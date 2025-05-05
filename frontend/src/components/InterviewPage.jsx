@@ -20,6 +20,7 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl }) {
 
   useEffect(() => {
     setUsername('');
+    setShowModal(true);
     localStorage.removeItem('username');
   }, []);
 
