@@ -80,3 +80,7 @@
     min-height: 160px;
   }
 }
+.interview-mode:hover {
+  border-color: #f39c12; /* Kuning Interview */
+}
+
