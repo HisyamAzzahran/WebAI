@@ -6,6 +6,17 @@ import os
 import bcrypt
 from auth import init_db, register_user, login_user
 from openai import OpenAI
+from threading import Timer
+
+def delete_file_later(path, delay=30):
+    def delete():
+        try:
+            if os.path.exists(path):
+                os.remove(path)
+                print(f"[Auto Delete] File {path} telah dihapus.")
+        except Exception as e:
+            print(f"[Auto Delete Error] {str(e)}")
+    Timer(delay, delete).start()
 
 # Load .env
 load_dotenv()
@@ -32,6 +43,140 @@ def generate_openai_response(prompt):
 def register():
     return jsonify({"message": "Fitur pendaftaran sedang dinonaktifkan. Silakan gunakan akun yang sudah ada."}), 403
 
+@app.route('/ask', methods=['POST'])
+def ask():
+    data = request.get_json()
+    user_answer = data.get('answer', '')
+    username = data.get('username', 'pelamar')
+    history = data.get('history', [])  # list of {q, a}
+
+    history_block = "\n".join([
+        f"Pertanyaan: {item['q']}\nJawaban: {item['a']}" for item in history
+    ]) if history else "(Belum ada riwayat sebelumnya.)"
+
+    prompt = f"""
+Sebagai pewawancara profesional seleksi beasiswa universitas ternama, kamu sedang melakukan wawancara dengan pelamar bernama Saudara {username}.
+Berikut ini adalah riwayat wawancara sebelumnya:
+
+{history_block}
+
+Jawaban terbaru dari pelamar:
+"{user_answer}"
+
+Berdasarkan semua informasi di atas, ajukan SATU pertanyaan lanjutan yang profesional, relevan, dan mendalam terkait beasiswa. Hindari pengulangan.
+"""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "Anda adalah pewawancara profesional."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=150,
+            temperature=0.6
+        )
+        question = response.choices[0].message.content.strip()
+        return jsonify({"question": question})
+    except Exception as e:
+        print("[ERROR - /ask]", str(e))
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/speak', methods=['POST'])
+def speak():
+    data = request.get_json()
+    text = data.get('text', '').strip()
+
+    if not text:
+        return jsonify({"error": "Teks kosong tidak dapat dibacakan."}), 400
+
+    try:
+        tts_response = client.audio.speech.create(
+            model="tts-1",
+            voice="nova",
+            input=text
+        )
+
+        timestamp = str(int(time.time()))
+        output_path = f"static/audio_{timestamp}.mp3"
+
+        with open(output_path, "wb") as f:
+            f.write(tts_response.content)
+            
+        delete_file_later(output_path, delay=30)
+
+        return send_file(output_path, mimetype='audio/mpeg')
+    except Exception as e:
+        print("[ERROR - /speak]", str(e))
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/evaluate', methods=['POST'])
+def evaluate():
+    data = request.get_json()
+    answers = data.get('answers', [])
+    username = data.get('username', 'pelamar')
+
+    combined = "\n".join([f"{i+1}. {ans}" for i, ans in enumerate(answers)])
+
+    prompt = f"""
+Kamu adalah juri seleksi beasiswa profesional. Evaluasilah jawaban Saudara {username} dari sesi wawancara berikut:
+
+{combined}
+
+Beri skor 1–5 untuk setiap jawaban dengan mempertimbangkan kejelasan, relevansi, dan kedalaman argumen. Kemudian, beri total skor dan feedback singkat.
+
+Tulis hasil evaluasi dalam format JSON seperti ini:
+{{
+  "scores": [4, 3, 5, 4, 3],
+  "total": 19,
+  "feedback": "Jawaban Saudara {username} cukup meyakinkan dengan kekuatan utama pada motivasi studi dan kontribusi sosial, meskipun perlu penguatan pada tujuan jangka panjang."
+}}
+"""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "Anda adalah juri beasiswa."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+            max_tokens=400
+        )
+        content = response.choices[0].message.content.strip()
+        json_block = re.search(r'{.*}', content, re.DOTALL)
+        if not json_block:
+            raise ValueError("Gagal menemukan JSON pada hasil evaluasi.")
+        parsed = json.loads(json_block.group())
+        return jsonify(parsed)
+    except Exception as e:
+        print("[ERROR - /evaluate]", str(e))
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/transcribe', methods=['POST'])
+def transcribe():
+    try:
+        audio_file = request.files['audio']
+        if not audio_file:
+            return jsonify({"error": "File audio tidak ditemukan"}), 400
+
+        with open("temp_audio.webm", "wb") as f:
+            f.write(audio_file.read())
+
+        with open("temp_audio.webm", "rb") as f:
+            transcript = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=f,
+                response_format="text"
+            )
+        
+        delete_file_later(temp_path, delay=30)
+
+        return jsonify({"transcription": transcript})
+    except Exception as e:
+        print("[ERROR - /transcribe]", str(e))
+        return jsonify({"error": str(e)}), 500
+    
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
