@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, json, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 import sqlite3
@@ -7,6 +7,8 @@ import bcrypt
 from auth import init_db, register_user, login_user
 from openai import OpenAI
 from threading import Timer
+import time
+from flask import send_file
 
 def delete_file_later(path, delay=30):
     def delete():
@@ -170,7 +172,7 @@ def transcribe():
                 response_format="text"
             )
         
-        delete_file_later(temp_path, delay=30)
+        delete_file_later("temp_audio.webm", delay=30)
 
         return jsonify({"transcription": transcript})
     except Exception as e:

@@ -9,11 +9,26 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl }) {
   const [answersHistory, setAnswersHistory] = useState([]);
   const [questionsHistory, setQuestionsHistory] = useState([]);
   const [questionCount, setQuestionCount] = useState(0);
-  const [username, setUsername] = useState(email || '');
+  const [username, setUsername] = useState('');
   const [showTyping, setShowTyping] = useState(false);
   const navigate = useNavigate();
 
   const API_BASE = apiUrl || import.meta.env.VITE_API_URL || 'https://webai-production-b975.up.railway.app';
+
+  // Ambil username dari localStorage atau prompt satu kali
+  useEffect(() => {
+    const storedName = localStorage.getItem("username");
+    if (storedName) {
+      setUsername(storedName);
+    } else {
+      const name = prompt("Halo! Siapa nama panggilan kamu?");
+      if (name?.trim()) {
+        setUsername(name.trim());
+        localStorage.setItem("username", name.trim());
+        alert(`Terima kasih, ${name.trim()}. Silakan klik tombol untuk memulai interview.`);
+      }
+    }
+  }, []);
 
   const askQuestion = async (jawaban, fullHistory = []) => {
     try {
@@ -47,11 +62,12 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl }) {
 
   const handleStart = async () => {
     if (!username) {
-      const name = prompt("Halo! Siapa nama panggilan kamu?");
-      if (name?.trim()) {
-        setUsername(name.trim());
-        alert(`Terima kasih, ${name.trim()}. Klik lagi tombol untuk memulai interview.`);
-      }
+      alert("Nama belum dimasukkan. Refresh halaman untuk mengisi ulang.");
+      return;
+    }
+
+    if (tokenSisa < 5) {
+      alert("Token kamu tidak cukup untuk memulai sesi wawancara.");
       return;
     }
 
@@ -68,7 +84,6 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl }) {
 
   const handleTranscription = async (transcript) => {
     setAnswer(transcript);
-
     const updatedAnswers = [...answersHistory, transcript];
     const updatedQuestions = [...questionsHistory];
 
@@ -77,7 +92,6 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl }) {
       a: updatedAnswers[i] || ""
     }));
 
-    // Selesai: redirect dan kurangi token 5
     if (questionCount >= 4) {
       if (setTokenSisa && typeof tokenSisa === 'number') {
         setTokenSisa(tokenSisa - 5);
