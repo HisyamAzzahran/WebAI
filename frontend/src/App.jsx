@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import axios from 'axios';
 
 import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
@@ -27,6 +26,8 @@ const App = () => {
   const [tokens, setTokens] = useState(0);
   const [showRegister, setShowRegister] = useState(false);
   const [selectedMode, setSelectedMode] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [resultData, setResultData] = useState(null);
 
   return (
     <div className="container mt-4">
@@ -34,7 +35,6 @@ const App = () => {
       <ToastContainer position="top-right" autoClose={2500} />
 
       <Routes>
-        {/* ✅ Halaman utama */}
         <Route
           path="/"
           element={
@@ -80,12 +80,16 @@ const App = () => {
                     <div className="text-center mb-3">
                       <button
                         className="btn btn-outline-secondary"
-                        onClick={() => setSelectedMode(null)}
+                        onClick={() => {
+                          setShowResult(false);
+                          setSelectedMode(null);
+                        }}
                       >
                         ⬅️ Kembali ke Menu
                       </button>
                     </div>
 
+                    {/* Generator Components */}
                     {selectedMode === "essay" && (
                       <EssayGenerator
                         isPremium={isPremium}
@@ -122,16 +126,32 @@ const App = () => {
                         apiUrl={API_URL}
                       />
                     )}
-                    {selectedMode === "interview" && (
+
+                    {/* Interview + Result */}
+                    {selectedMode === "interview" && !showResult && (
                       <InterviewPage
                         isPremium={isPremium}
                         email={email}
                         tokenSisa={tokens}
                         setTokenSisa={setTokens}
                         apiUrl={API_URL}
+                        onFinish={(result) => {
+                          setResultData(result);
+                          setShowResult(true);
+                        }}
+                      />
+                    )}
+                    {selectedMode === "interview" && showResult && (
+                      <ResultPage
+                        {...resultData}
+                        onRestart={() => {
+                          setShowResult(false);
+                          setSelectedMode(null);
+                        }}
                       />
                     )}
 
+                    {/* Token info */}
                     <div className="alert alert-info text-center mt-4">
                       🎯 Token Tersisa: <strong>{tokens}</strong>
                     </div>
@@ -157,10 +177,7 @@ const App = () => {
           }
         />
 
-        {/* Result hanya diakses setelah interview selesai */}
-        <Route path="/result" element={<ResultPage />} />
-
-        {/* ✅ Fallback ke login jika route tidak dikenali */}
+        {/* Fallback route */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import '../styles/InterviewPage.css';
 import 'animate.css';
 import AudioRecorder from './AudioRecorder';
 
-function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl }) {
+function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl, onFinish }) {
   const [question, setQuestion] = useState('Klik "Mulai Interview" untuk memulai.');
   const [answer, setAnswer] = useState('');
   const [answersHistory, setAnswersHistory] = useState([]);
@@ -15,7 +14,6 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl }) {
   const [showModal, setShowModal] = useState(true);
   const [tempName, setTempName] = useState('');
   const [showTokenModal, setShowTokenModal] = useState(false);
-  const navigate = useNavigate();
 
   const API_BASE = apiUrl || import.meta.env.VITE_API_URL || 'https://webai-production-b975.up.railway.app';
 
@@ -107,15 +105,16 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl }) {
       if (setTokenSisa && typeof tokenSisa === 'number') {
         setTokenSisa(tokenSisa - 5);
       }
-      navigate('/result', {
-        state: {
+
+      if (onFinish) {
+        onFinish({
           username,
           answers: updatedAnswers,
           email,
-          tokenSisa,
+          tokenSisa: tokenSisa - 5,
           isPremium
-        }
-      });
+        });
+      }
       return;
     }
 
@@ -133,7 +132,7 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl }) {
 
   return (
     <div className="container">
-      {/* Modal Nama */}
+      {/* Modal Input Nama */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content animate__animated animate__zoomIn">
@@ -159,8 +158,8 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl }) {
             <h3>🚫 Token Tidak Cukup</h3>
             <p>Kamu membutuhkan minimal <strong>5 token</strong> untuk memulai sesi interview.</p>
             <p>Silakan beli token atau upgrade akun untuk lanjut menggunakan fitur ini.</p>
-            <button onClick={() => navigate('/')} className="btn btn-outline-danger mt-3">
-              Kembali ke Beranda
+            <button onClick={() => setShowTokenModal(false)} className="btn btn-outline-danger mt-3">
+              Kembali
             </button>
           </div>
         </div>

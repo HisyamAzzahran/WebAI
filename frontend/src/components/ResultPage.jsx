@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation, Link, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-function ResultPage() {
+function ResultPage({ onRestart }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { username, answers, email, isPremium, tokenSisa } = location.state || {};
@@ -34,7 +34,7 @@ function ResultPage() {
           setTotalScore(data.total);
           setFeedback(data.feedback);
 
-          // Kurangi token pengguna sebanyak 5 setelah evaluasi berhasil
+          // Update token di backend setelah evaluasi
           await fetch(`${API_URL}/admin/update-user`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -59,15 +59,6 @@ function ResultPage() {
     return (
       <div style={{ textAlign: 'center', paddingTop: '60px' }}>
         <h2>⏳ Menilai jawaban kamu...</h2>
-      </div>
-    );
-  }
-
-  if (!answers || answers.length === 0) {
-    return (
-      <div style={{ textAlign: 'center', paddingTop: '60px' }}>
-        <h2>❌ Jawaban tidak ditemukan.</h2>
-        <Link to="/" className="btn btn-primary">Kembali ke Halaman Utama</Link>
       </div>
     );
   }
@@ -103,10 +94,19 @@ function ResultPage() {
         </div>
       )}
 
-      <div style={{ marginTop: '30px', textAlign: 'center' }}>
-        <Link to="/" style={{ textDecoration: 'none', color: 'white', backgroundColor: '#4c6ef5', padding: '10px 20px', borderRadius: '8px' }}>
-          🔁 Ulangi Interview
-        </Link>
+      <div style={{ marginTop: '40px', textAlign: 'center' }}>
+        <button
+          onClick={() => {
+            if (onRestart) {
+              onRestart(); // Kembali ke ModeSelector
+            } else {
+              navigate('/'); // fallback kalau tidak ada onRestart
+            }
+          }}
+          className="btn btn-primary"
+        >
+          🔁 Kembali ke Menu
+        </button>
       </div>
     </div>
   );
