@@ -92,6 +92,11 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl, onFi
   };
 
   const handleTranscription = async (transcript) => {
+    if (isPremium && tokenSisa < 5) {
+      alert("Token tidak cukup untuk melanjutkan interview.");
+      return;
+    }
+
     setAnswer(transcript);
     const updatedAnswers = [...answersHistory, transcript];
     const updatedQuestions = [...questionsHistory];
@@ -176,13 +181,23 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl, onFi
         )}
       </div>
 
-      <div className="button-group">
-        <button onClick={handleStart} className="btn btn-primary">
-          Mulai Interview
-        </button>
-      </div>
+      {(!isPremium || tokenSisa >= 5) && (
+        <>
+          <div className="button-group">
+            <button onClick={handleStart} className="btn btn-primary">
+              Mulai Interview
+            </button>
+          </div>
 
-      <AudioRecorder onTranscription={handleTranscription} />
+          <AudioRecorder onTranscription={handleTranscription} />
+        </>
+      )}
+
+      {isPremium && tokenSisa < 5 && !showModal && (
+        <div className="alert alert-danger mt-4 text-center">
+          🚫 Token kamu tidak mencukupi untuk menggunakan fitur ini.
+        </div>
+      )}
 
       <div className="answer-box">
         <p><strong>Jawaban terakhir kamu:</strong></p>
