@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
 
 import LoginForm from "./components/LoginForm";
@@ -34,51 +34,47 @@ const App = () => {
       <ToastContainer position="top-right" autoClose={2500} />
 
       <Routes>
+        {/* ✅ Halaman utama */}
         <Route
           path="/"
           element={
             !isLoggedIn ? (
-              <>
-                {showRegister ? (
-                  <>
-                    <RegisterForm apiUrl={API_URL} />
-                    <div className="text-center mt-3">
-                      <small>Sudah punya akun?</small><br />
-                      <button className="btn btn-outline-primary mt-1" onClick={() => setShowRegister(false)}>
-                        Masuk
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <LoginForm
-                      apiUrl={API_URL}
-                      onLogin={(premium, email, admin, tokenValue) => {
-                        setIsLoggedIn(true);
-                        setIsPremium(premium);
-                        setEmail(email);
-                        setIsAdmin(admin);
-                        setTokens(tokenValue);
-                      }}
-                    />
-                    <div className="text-center mt-2">
-                      <small>Belum punya akun?</small><br />
-                      <button className="btn btn-outline-success mt-1" onClick={() => setShowRegister(true)}>
-                        Daftar
-                      </button>
-                    </div>
-                  </>
-                )}
-              </>
+              showRegister ? (
+                <>
+                  <RegisterForm apiUrl={API_URL} />
+                  <div className="text-center mt-3">
+                    <small>Sudah punya akun?</small><br />
+                    <button className="btn btn-outline-primary mt-1" onClick={() => setShowRegister(false)}>
+                      Masuk
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <LoginForm
+                    apiUrl={API_URL}
+                    onLogin={(premium, email, admin, tokenValue) => {
+                      setIsLoggedIn(true);
+                      setIsPremium(premium);
+                      setEmail(email);
+                      setIsAdmin(admin);
+                      setTokens(tokenValue);
+                    }}
+                  />
+                  <div className="text-center mt-2">
+                    <small>Belum punya akun?</small><br />
+                    <button className="btn btn-outline-success mt-1" onClick={() => setShowRegister(true)}>
+                      Daftar
+                    </button>
+                  </div>
+                </>
+              )
             ) : isAdmin ? (
               <AdminDashboard apiUrl={API_URL} />
             ) : (
               <>
                 {!selectedMode ? (
-                  <ModeSelector
-                    onSelectMode={setSelectedMode}
-                    isPremium={isPremium}
-                  />
+                  <ModeSelector onSelectMode={setSelectedMode} isPremium={isPremium} />
                 ) : (
                   <>
                     <div className="text-center mb-3">
@@ -161,8 +157,11 @@ const App = () => {
           }
         />
 
-        {/* Tetap butuh ini karena ResultPage diakses setelah interview selesai */}
+        {/* Result hanya diakses setelah interview selesai */}
         <Route path="/result" element={<ResultPage />} />
+
+        {/* ✅ Fallback ke login jika route tidak dikenali */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
   );
