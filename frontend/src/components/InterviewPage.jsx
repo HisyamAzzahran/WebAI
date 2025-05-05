@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/InterviewPage.css';
+import 'animate.css';
 import AudioRecorder from './AudioRecorder';
 
 function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl }) {
@@ -11,24 +12,26 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl }) {
   const [questionCount, setQuestionCount] = useState(0);
   const [username, setUsername] = useState('');
   const [showTyping, setShowTyping] = useState(false);
+  const [showModal, setShowModal] = useState(true);
+  const [tempName, setTempName] = useState('');
   const navigate = useNavigate();
 
   const API_BASE = apiUrl || import.meta.env.VITE_API_URL || 'https://webai-production-b975.up.railway.app';
 
-  // Ambil username dari localStorage atau prompt satu kali
   useEffect(() => {
-    const storedName = localStorage.getItem("username");
-    if (storedName) {
-      setUsername(storedName);
-    } else {
-      const name = prompt("Halo! Siapa nama panggilan kamu?");
-      if (name?.trim()) {
-        setUsername(name.trim());
-        localStorage.setItem("username", name.trim());
-        alert(`Terima kasih, ${name.trim()}. Silakan klik tombol untuk memulai interview.`);
-      }
-    }
+    setUsername('');
+    localStorage.removeItem('username');
   }, []);
+
+  const handleNameSubmit = () => {
+    if (tempName.trim()) {
+      setUsername(tempName.trim());
+      setShowModal(false);
+      alert(`Terima kasih, ${tempName.trim()}. Silakan klik tombol untuk memulai interview.`);
+    } else {
+      alert("Nama tidak boleh kosong.");
+    }
+  };
 
   const askQuestion = async (jawaban, fullHistory = []) => {
     try {
@@ -62,7 +65,7 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl }) {
 
   const handleStart = async () => {
     if (!username) {
-      alert("Nama belum dimasukkan. Refresh halaman untuk mengisi ulang.");
+      alert("Nama belum dimasukkan. Silakan isi nama dulu.");
       return;
     }
 
@@ -114,6 +117,24 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl }) {
 
   return (
     <div className="container">
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-content animate__animated animate__zoomIn">
+            <h3>👋 Hai, siapa nama panggilan kamu?</h3>
+            <input
+              type="text"
+              className="form-control my-3"
+              value={tempName}
+              onChange={(e) => setTempName(e.target.value)}
+              placeholder="Masukkan nama kamu..."
+            />
+            <button onClick={handleNameSubmit} className="btn btn-success">
+              Mulai!
+            </button>
+          </div>
+        </div>
+      )}
+
       <h1 className="title">🎓 Simulasi Interview Beasiswa</h1>
 
       <div className="question-box fade-in">
