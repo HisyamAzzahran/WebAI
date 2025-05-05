@@ -12,6 +12,8 @@ from flask import send_file
 import re
 import json
 
+if not os.path.exists("static"):
+    os.makedirs("static")
 def delete_file_later(path, delay=30):
     def delete():
         try:
