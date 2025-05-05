@@ -32,8 +32,8 @@ function AudioRecorder({ onTranscription }) {
             body: formData
           });
           const data = await response.json();
-          setTranscript(data.transcript);
-          onTranscription(data.transcript);
+          setTranscript(data.transcription);
+          onTranscription(data.transcription);
         } catch (err) {
           console.error('Transcription failed:', err);
           alert('Gagal mentranskripsi audio.');
