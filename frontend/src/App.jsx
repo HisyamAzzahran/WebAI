@@ -12,6 +12,8 @@ import EssayExchangesGenerator from "./components/EssayExchangesGenerator";
 import InterviewPage from './components/InterviewPage';
 import ResultPage from './components/ResultPage';
 import TopBar from './components/TopBar';
+import BioAnalyzer from "./components/BioAnalyzer";
+
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -150,7 +152,16 @@ const App = () => {
                         }}
                       />
                     )}
-
+                    {selectedMode === "bio" && (
+                      <BioAnalyzer
+                        isPremium={isPremium}
+                        email={email}
+                        tokenSisa={tokens}
+                        setTokenSisa={setTokens}
+                        apiUrl={API_URL}
+                      />
+                    )}
+                    
                     {/* Token info */}
                     <div className="alert alert-info text-center mt-4">
                       🎯 Token Tersisa: <strong>{tokens}</strong>

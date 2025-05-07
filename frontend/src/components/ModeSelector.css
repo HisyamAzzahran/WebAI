@@ -87,3 +87,7 @@
   background: linear-gradient(to right, #d3bfff, #f3e8ff);
 }
 
+.bio-mode:hover {
+  border-color: #e1306c; /* Warna pink IG */
+}
+

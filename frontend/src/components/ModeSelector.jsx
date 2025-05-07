@@ -39,6 +39,14 @@ const ModeSelector = ({ onSelectMode, isPremium }) => {
           </div>
           <p>Simulasi interview beasiswa berbasis AI!</p>
         </div>
+
+        <div className="mode-card bio-mode" onClick={() => onSelectMode("bio")}>
+          <div className="d-flex justify-content-between align-items-center mb-2">
+            <h3>📸 Instagram Bio Analyzer</h3>
+            <span className="badge-premium">Premium</span>
+          </div>
+          <p>Optimalkan bio IG kamu sesuai gaya dan keahlian!</p>
+        </div>
       </div>
     </div>
   );

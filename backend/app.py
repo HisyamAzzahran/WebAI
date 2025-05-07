@@ -11,6 +11,7 @@ import time
 from flask import send_file
 import re
 import json
+import base64
 
 if not os.path.exists("static"):
     os.makedirs("static")
@@ -48,6 +49,125 @@ def generate_openai_response(prompt):
 @app.route("/register", methods=["POST"])
 def register():
     return jsonify({"message": "Fitur pendaftaran sedang dinonaktifkan. Silakan gunakan akun yang sudah ada."}), 403
+
+import base64
+import json
+import sqlite3
+from flask import Flask, request, jsonify
+from openai import OpenAI
+
+# Pastikan sudah ada client OpenAI
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+@app.route("/analyze-bio", methods=["POST"])
+def analyze_bio():
+    if "image" not in request.files:
+        return jsonify({"error": "No image uploaded"}), 400
+
+    image = request.files["image"]
+    email = request.form.get("email")
+
+    if not email:
+        return jsonify({"error": "No email provided"}), 400
+
+    # Cari user di DB
+    conn = sqlite3.connect("database.db")
+    cur = conn.cursor()
+    cur.execute("SELECT is_premium, token FROM users WHERE email = ?", (email,))
+    result = cur.fetchone()
+
+    if not result:
+        return jsonify({"error": "User not found"}), 404
+
+    is_premium, token = result
+    if not is_premium or token < 3:
+        return jsonify({"error": "Not enough token or not premium"}), 403
+
+    # Encode gambar ke base64
+    img_bytes = image.read()
+    base64_img = base64.b64encode(img_bytes).decode("utf-8")
+    image_url = f"data:image/png;base64,{base64_img}"
+
+    # Prompt powerfull
+    prompt = (
+        "Lihatlah screenshot bio Instagram berikut ini. Evaluasi dan identifikasi elemen-elemen penting "
+        "yang kurang atau belum optimal, seperti: penekanan identitas profesional, ajakan (CTA), personal branding, "
+        "highlight skill, link penting, dan tone keseluruhan bio.\n\n"
+        "Lalu, buatkan 3 versi bio yang ditulis ulang berdasarkan analisis tersebut. Setiap versi bio harus unik dan menyesuaikan gaya berikut:\n"
+        "1. Profesional: Tampilkan posisi, institusi, keahlian inti, dan ajakan untuk koneksi profesional.\n"
+        "2. Personal Branding: Fokus pada kepribadian, cerita, nilai-nilai personal, dan kesan inspiratif.\n"
+        "3. Showcase Skill: Soroti skill utama seperti MC, Desainer, Penulis, dan pengalaman/karya relevan.\n\n"
+        "Tampilkan hasil Anda dalam format JSON seperti ini:\n\n"
+        "{\n"
+        '  "review": "Penilaian dan hal yang kurang dari bio saat ini...",\n'
+        '  "recommendations": [\n'
+        '    { "style": "Profesional", "bio": "..." },\n'
+        '    { "style": "Personal Branding", "bio": "..." },\n'
+        '    { "style": "Showcase Skill", "bio": "..." }\n'
+        "  ]\n"
+        "}\n\n"
+        "Pastikan bio tidak lebih dari 150 karakter, sesuai batas Instagram."
+    )
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "user", "content": [
+                    {"type": "image_url", "image_url": {"url": image_url}},
+                    {"type": "text", "text": prompt}
+                ]}
+            ],
+            max_tokens=1000,
+            temperature=0.8,
+        )
+
+        # Parse response
+        content = response.choices[0].message.content
+        try:
+            data_json = json.loads(content)
+            review = data_json.get("review", "")
+            recommendations = data_json.get("recommendations", [])
+        except json.JSONDecodeError:
+            # Fallback manual parsing (kalau GPT nggak ngasih JSON beneran)
+            review = "Format GPT tidak sesuai, parsing gagal."
+            recommendations = []
+
+        # Kurangi token
+        new_token = token - 3
+        cur.execute("UPDATE users SET token = ? WHERE email = ?", (new_token, email))
+        conn.commit()
+        conn.close()
+
+        return jsonify({
+            "review": review,
+            "recommendations": recommendations
+        })
+
+    except Exception as e:
+        print("GPT Vision error:", str(e))
+        return jsonify({"error": "Vision API failed", "details": str(e)}), 500
+
+@app.route("/generate-final-bio", methods=["POST"])
+def generate_final_bio():
+    data = request.get_json()
+    email = data.get("email")
+    prompt = data.get("prompt")
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=300,
+            temperature=0.7
+        )
+        bio = response.choices[0].message.content.strip()
+        return jsonify({"bio": bio})
+    except Exception as e:
+        print("Final bio generation error:", e)
+        return jsonify({"error": "Failed to generate bio"}), 500
 
 @app.route('/ask', methods=['POST'])
 def ask():
