@@ -87,7 +87,14 @@
   background: linear-gradient(to right, #d3bfff, #f3e8ff);
 }
 
+.bio-mode {
+  background-color: #fce4ec; /* Warna pink muda seperti tema IG */
+  border: 2px solid #e91e63;
+}
+
 .bio-mode:hover {
-  border-color: #e1306c; /* Warna pink IG */
+  border-color: #c2185b;
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(233, 30, 99, 0.3);
 }
 
