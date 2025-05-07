@@ -70,26 +70,40 @@ def analyze_bio():
     if not email:
         return jsonify({"error": "No email provided"}), 400
 
-    # Cari user di DB
-    conn = sqlite3.connect("database.db")
-    cur = conn.cursor()
-    cur.execute("SELECT is_premium, token FROM users WHERE email = ?", (email,))
-    result = cur.fetchone()
+    try:
+        # Cek user di database
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        cursor.execute("PRAGMA table_info(users);")
+        columns = [row[1] for row in cursor.fetchall()]
+        
+        # Tambahkan kolom token dan is_premium jika belum ada
+        if "token" not in columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN token INTEGER DEFAULT 10;")
+        if "is_premium" not in columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN is_premium BOOLEAN DEFAULT 0;")
 
-    if not result:
-        return jsonify({"error": "User not found"}), 404
+        conn.commit()
 
-    is_premium, token = result
-    if not is_premium or token < 3:
-        return jsonify({"error": "Not enough token or not premium"}), 403
+        # Ambil data user
+        cursor.execute("SELECT is_premium, token FROM users WHERE email = ?", (email,))
+        user = cursor.fetchone()
 
-    # Encode gambar ke base64
-    img_bytes = image.read()
-    base64_img = base64.b64encode(img_bytes).decode("utf-8")
-    image_url = f"data:image/png;base64,{base64_img}"
+        if not user:
+            return jsonify({"error": "User not found"}), 404
 
-    # Prompt powerfull
-    prompt = (
+        is_premium, token = user
+
+        if not is_premium or token < 3:
+            return jsonify({"error": "Not enough token or not premium"}), 403
+
+        # Encode image to base64
+        img_bytes = image.read()
+        base64_img = base64.b64encode(img_bytes).decode("utf-8")
+        image_url = f"data:image/png;base64,{base64_img}"
+
+        # Prompt powerful
+        prompt = (
         "Lihatlah screenshot bio Instagram berikut ini. Evaluasi dan identifikasi elemen-elemen penting "
         "yang kurang atau belum optimal, seperti: penekanan identitas profesional, ajakan (CTA), personal branding, "
         "highlight skill, link penting, dan tone keseluruhan bio.\n\n"
@@ -109,33 +123,35 @@ def analyze_bio():
         "Pastikan bio tidak lebih dari 150 karakter, sesuai batas Instagram."
     )
 
-    try:
+        # Kirim ke GPT-4o Vision
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "user", "content": [
-                    {"type": "image_url", "image_url": {"url": image_url}},
-                    {"type": "text", "text": prompt}
-                ]}
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "image_url", "image_url": {"url": image_url}},
+                        {"type": "text", "text": prompt}
+                    ]
+                }
             ],
-            max_tokens=1000,
             temperature=0.8,
+            max_tokens=1000
         )
 
-        # Parse response
         content = response.choices[0].message.content
+
         try:
-            data_json = json.loads(content)
-            review = data_json.get("review", "")
-            recommendations = data_json.get("recommendations", [])
+            result_json = json.loads(content)
+            review = result_json.get("review", "")
+            recommendations = result_json.get("recommendations", [])
         except json.JSONDecodeError:
-            # Fallback manual parsing (kalau GPT nggak ngasih JSON beneran)
-            review = "Format GPT tidak sesuai, parsing gagal."
+            review = "Format tidak valid, gagal parse JSON."
             recommendations = []
 
-        # Kurangi token
+        # Potong token
         new_token = token - 3
-        cur.execute("UPDATE users SET token = ? WHERE email = ?", (new_token, email))
+        cursor.execute("UPDATE users SET token = ? WHERE email = ?", (new_token, email))
         conn.commit()
         conn.close()
 
@@ -145,8 +161,9 @@ def analyze_bio():
         })
 
     except Exception as e:
-        print("GPT Vision error:", str(e))
-        return jsonify({"error": "Vision API failed", "details": str(e)}), 500
+        print("❌ ERROR analyze-bio:", e)
+        return jsonify({"error": "Internal error", "details": str(e)}), 500
+
 
 @app.route("/generate-final-bio", methods=["POST"])
 def generate_final_bio():
