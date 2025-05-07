@@ -50,15 +50,6 @@ def generate_openai_response(prompt):
 def register():
     return jsonify({"message": "Fitur pendaftaran sedang dinonaktifkan. Silakan gunakan akun yang sudah ada."}), 403
 
-import base64
-import json
-import sqlite3
-from flask import Flask, request, jsonify
-from openai import OpenAI
-
-# Pastikan sudah ada client OpenAI
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
 @app.route("/analyze-bio", methods=["POST"])
 def analyze_bio():
     if "image" not in request.files:
@@ -71,18 +62,16 @@ def analyze_bio():
         return jsonify({"error": "No email provided"}), 400
 
     try:
-        # Cek user di database
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
+
+        # Pastikan kolom token dan is_premium ada
         cursor.execute("PRAGMA table_info(users);")
         columns = [row[1] for row in cursor.fetchall()]
-        
-        # Tambahkan kolom token dan is_premium jika belum ada
         if "token" not in columns:
             cursor.execute("ALTER TABLE users ADD COLUMN token INTEGER DEFAULT 10;")
         if "is_premium" not in columns:
             cursor.execute("ALTER TABLE users ADD COLUMN is_premium BOOLEAN DEFAULT 0;")
-
         conn.commit()
 
         # Ambil data user
@@ -97,31 +86,31 @@ def analyze_bio():
         if not is_premium or token < 3:
             return jsonify({"error": "Not enough token or not premium"}), 403
 
-        # Encode image to base64
+        # Encode image ke base64 untuk Vision API
         img_bytes = image.read()
         base64_img = base64.b64encode(img_bytes).decode("utf-8")
         image_url = f"data:image/png;base64,{base64_img}"
 
-        # Prompt powerful
+        # Prompt kuat
         prompt = (
-        "Lihatlah screenshot bio Instagram berikut ini. Evaluasi dan identifikasi elemen-elemen penting "
-        "yang kurang atau belum optimal, seperti: penekanan identitas profesional, ajakan (CTA), personal branding, "
-        "highlight skill, link penting, dan tone keseluruhan bio.\n\n"
-        "Lalu, buatkan 3 versi bio yang ditulis ulang berdasarkan analisis tersebut. Setiap versi bio harus unik dan menyesuaikan gaya berikut:\n"
-        "1. Profesional: Tampilkan posisi, institusi, keahlian inti, dan ajakan untuk koneksi profesional.\n"
-        "2. Personal Branding: Fokus pada kepribadian, cerita, nilai-nilai personal, dan kesan inspiratif.\n"
-        "3. Showcase Skill: Soroti skill utama seperti MC, Desainer, Penulis, dan pengalaman/karya relevan.\n\n"
-        "Tampilkan hasil Anda dalam format JSON seperti ini:\n\n"
-        "{\n"
-        '  "review": "Penilaian dan hal yang kurang dari bio saat ini...",\n'
-        '  "recommendations": [\n'
-        '    { "style": "Profesional", "bio": "..." },\n'
-        '    { "style": "Personal Branding", "bio": "..." },\n'
-        '    { "style": "Showcase Skill", "bio": "..." }\n'
-        "  ]\n"
-        "}\n\n"
-        "Pastikan bio tidak lebih dari 150 karakter, sesuai batas Instagram."
-    )
+            "Lihatlah screenshot bio Instagram berikut ini. Evaluasi dan identifikasi elemen-elemen penting "
+            "yang kurang atau belum optimal, seperti: penekanan identitas profesional, ajakan (CTA), personal branding, "
+            "highlight skill, link penting, dan tone keseluruhan bio.\n\n"
+            "Lalu, buatkan 3 versi bio yang ditulis ulang berdasarkan analisis tersebut. Setiap versi bio harus unik dan menyesuaikan gaya berikut:\n"
+            "1. Profesional: Tampilkan posisi, institusi, keahlian inti, dan ajakan untuk koneksi profesional.\n"
+            "2. Personal Branding: Fokus pada kepribadian, cerita, nilai-nilai personal, dan kesan inspiratif.\n"
+            "3. Showcase Skill: Soroti skill utama seperti MC, Desainer, Penulis, dan pengalaman/karya relevan.\n\n"
+            "Tampilkan hasil Anda dalam format JSON seperti ini:\n\n"
+            "{\n"
+            '  "review": "Penilaian dan hal yang kurang dari bio saat ini...",\n'
+            '  "recommendations": [\n'
+            '    { "style": "Profesional", "bio": "..." },\n'
+            '    { "style": "Personal Branding", "bio": "..." },\n'
+            '    { "style": "Showcase Skill", "bio": "..." }\n'
+            "  ]\n"
+            "}\n\n"
+            "Pastikan bio tidak lebih dari 150 karakter, sesuai batas Instagram."
+        )
 
         # Kirim ke GPT-4o Vision
         response = client.chat.completions.create(
@@ -141,15 +130,20 @@ def analyze_bio():
 
         content = response.choices[0].message.content
 
+        # 🔐 Parsing aman menggunakan regex
         try:
-            result_json = json.loads(content)
+            json_block = re.search(r'{.*}', content, re.DOTALL)
+            if not json_block:
+                raise ValueError("Blok JSON tidak ditemukan dalam respons GPT.")
+            result_json = json.loads(json_block.group())
             review = result_json.get("review", "")
             recommendations = result_json.get("recommendations", [])
-        except json.JSONDecodeError:
+        except Exception as e:
+            print("[JSON PARSE ERROR]", e)
             review = "Format tidak valid, gagal parse JSON."
             recommendations = []
 
-        # Potong token
+        # Kurangi token
         new_token = token - 3
         cursor.execute("UPDATE users SET token = ? WHERE email = ?", (new_token, email))
         conn.commit()
@@ -161,30 +155,55 @@ def analyze_bio():
         })
 
     except Exception as e:
-        print("❌ ERROR analyze-bio:", e)
+        print("❌ ERROR analyze-bio:", str(e))
         return jsonify({"error": "Internal error", "details": str(e)}), 500
-
 
 @app.route("/generate-final-bio", methods=["POST"])
 def generate_final_bio():
     data = request.get_json()
     email = data.get("email")
-    prompt = data.get("prompt")
+    prompt_text = data.get("prompt")
+    
+    if not email or not prompt_text:
+        return jsonify({"error": "Email dan prompt harus disertakan."}), 400
 
     try:
+        # Validasi user
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        cursor.execute("SELECT is_premium FROM users WHERE email = ?", (email,))
+        user = cursor.fetchone()
+        if not user:
+            return jsonify({"error": "User tidak ditemukan."}), 404
+        is_premium = user[0]
+        if not is_premium:
+            return jsonify({"error": "Hanya user premium yang bisa akses fitur ini."}), 403
+
+        # Prompt ke GPT
+        full_prompt = (
+            "Buat bio Instagram yang singkat, menarik, dan powerful, dengan batas maksimal 150 karakter.\n"
+            "Gunakan informasi dari user berikut ini:\n\n"
+            f"{prompt_text}\n\n"
+            "Output hanya satu baris bio. Hindari penggunaan tanda kutip, dan jangan sertakan label atau heading apa pun."
+        )
+
         response = client.chat.completions.create(
             model="gpt-4o",
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=300,
-            temperature=0.7
+            messages=[{"role": "user", "content": full_prompt}],
+            temperature=0.7,
+            max_tokens=150
         )
+
         bio = response.choices[0].message.content.strip()
-        return jsonify({"bio": bio})
+
+        return jsonify({"bio": bio}), 200
+
     except Exception as e:
-        print("Final bio generation error:", e)
-        return jsonify({"error": "Failed to generate bio"}), 500
+        print("❌ Final bio generation error:", e)
+        return jsonify({"error": "Gagal membuat bio akhir.", "details": str(e)}), 500
+
+    finally:
+        conn.close()
 
 @app.route('/ask', methods=['POST'])
 def ask():

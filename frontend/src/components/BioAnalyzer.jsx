@@ -7,7 +7,6 @@ const API_URL = "https://webai-production-b975.up.railway.app";
 
 function BioAnalyzer({ email, tokenSisa, setTokenSisa, isPremium }) {
   const [image, setImage] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [review, setReview] = useState('');
   const [recommendations, setRecommendations] = useState([]);
@@ -17,8 +16,9 @@ function BioAnalyzer({ email, tokenSisa, setTokenSisa, isPremium }) {
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    setImage(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    if (file) {
+      setImage(file); // No preview shown
+    }
   };
 
   const handleAnalyze = async () => {
@@ -113,21 +113,32 @@ Buat bio Instagram yang menarik, maksimal 150 karakter, mencerminkan gaya ini da
     <div className="bio-analyzer-container">
       <h2 className="title">🔍 Instagram Bio Analyzer</h2>
 
-      <input type="file" accept="image/*" onChange={handleImageUpload} />
-      {previewUrl && <img src={previewUrl} alt="Preview" className="bio-preview" />}
+      <input type="file" accept="image/*" onChange={handleImageUpload} className="form-control mb-3" />
 
-      <button className="analyze-button" onClick={handleAnalyze} disabled={loading}>
-        {loading ? '⏳ Analyzing...' : '✨ Analisis Bio Saya'}
+      <button
+        className="btn-analyze"
+        onClick={handleAnalyze}
+        disabled={!image}
+      >
+        🔍 Analyze Bio
       </button>
 
+      {loading && (
+        <div className="loading-overlay">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      )}
+
       {review && (
-        <div className="result-section">
-          <h4 className="fade-in">📋 Review Bio Kamu:</h4>
+        <div className="result-section mt-4">
+          <h4>📋 Review Bio Kamu:</h4>
           <p className="review-text">{review}</p>
 
-          <h4 className="fade-in">🎯 Pilih Gaya Bio Baru:</h4>
+          <h4>🎯 Pilih Gaya Bio Baru:</h4>
           {recommendations.map((opt, idx) => (
-            <div key={idx} className="bio-option slide-up">
+            <div key={idx} className="bio-option">
               <strong>{opt.style}</strong>
               <p>{opt.bio}</p>
               <button className="choose-btn" onClick={() => handleSelectStyle(opt.style)}>
@@ -139,7 +150,7 @@ Buat bio Instagram yang menarik, maksimal 150 karakter, mencerminkan gaya ini da
       )}
 
       {selectedStyle && (
-        <div className="followup-section fade-in">
+        <div className="followup-section mt-4">
           <h5>📑 Pertanyaan Lanjutan - Gaya {selectedStyle}</h5>
           {questionList[selectedStyle].map((q, i) => (
             <div key={i} className="form-group mb-2">

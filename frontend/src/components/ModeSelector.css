@@ -88,8 +88,7 @@
 }
 
 .bio-mode {
-  background-color: #fce4ec; /* Warna pink muda seperti tema IG */
-  border: 2px solid #e91e63;
+  background-color: #e91e63; /* Warna pink muda seperti tema IG */
 }
 
 .bio-mode:hover {
