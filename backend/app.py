@@ -191,7 +191,7 @@ def generate_final_bio():
             model="gpt-4o",
             messages=[{"role": "user", "content": full_prompt}],
             temperature=0.7,
-            max_tokens=150
+            max_tokens=300
         )
 
         bio = response.choices[0].message.content.strip()
