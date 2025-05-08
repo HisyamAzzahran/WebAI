@@ -1,7 +1,8 @@
 flask
 flask-cors
-google-generativeai
 python-dotenv
-bcrypt
 openai
+bcrypt
 requests
+PyMuPDF
+python-docx

@@ -12,6 +12,8 @@ from flask import send_file
 import re
 import json
 import base64
+import fitz  # PyMuPDF
+from docx import Document
 
 if not os.path.exists("static"):
     os.makedirs("static")
@@ -49,6 +51,56 @@ def generate_openai_response(prompt):
 @app.route("/register", methods=["POST"])
 def register():
     return jsonify({"message": "Fitur pendaftaran sedang dinonaktifkan. Silakan gunakan akun yang sudah ada."}), 403
+
+@app.route('/upload_cv', methods=['POST'])
+def upload_cv():
+    try:
+        file = request.files.get('cv')
+        if not file:
+            return jsonify({"error": "File CV tidak ditemukan."}), 400
+
+        filename = file.filename.lower()
+        if filename.endswith('.pdf'):
+            text = extract_text_from_pdf(file)
+        elif filename.endswith('.docx'):
+            text = extract_text_from_docx(file)
+        else:
+            return jsonify({"error": "Format file tidak didukung. Hanya PDF atau DOCX."}), 400
+
+        # Lakukan ringkasan jika perlu (sementara langsung return semua isi)
+        summary = summarize_cv_text(text)
+        return jsonify({"cv_summary": summary})
+
+    except Exception as e:
+        print("[ERROR - /upload_cv]", str(e))
+        return jsonify({"error": str(e)}), 500
+
+
+def extract_text_from_pdf(file):
+    text = ""
+    doc = fitz.open(stream=file.read(), filetype="pdf")
+    for page in doc:
+        text += page.get_text()
+    return text
+
+def extract_text_from_docx(file):
+    doc = Document(file)
+    return "\n".join([para.text for para in doc.paragraphs])
+
+
+def summarize_cv_text(text):
+    # Placeholder ringkasan: ambil max 1000 karakter
+    cleaned = text.replace('\n', ' ').strip()
+    return cleaned[:1000] + "..." if len(cleaned) > 1000 else cleaned
+
+@app.route('/delete_cv', methods=['POST'])
+def delete_cv():
+    try:
+        for filename in os.listdir("temp_cv"):
+            os.remove(os.path.join("temp_cv", filename))
+        return jsonify({"message": "Semua CV sementara dihapus."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/analyze-bio", methods=["POST"])
 def analyze_bio():
@@ -208,35 +260,95 @@ def generate_final_bio():
 @app.route('/ask', methods=['POST'])
 def ask():
     data = request.get_json()
+
     user_answer = data.get('answer', '')
     username = data.get('username', 'pelamar')
     history = data.get('history', [])  # list of {q, a}
+    interview_type = data.get('interviewType', 'beasiswa')
+    language = data.get('language', 'id')
+    scholarship_name = data.get('scholarshipName', '')
+    internship_position = data.get('internshipPosition', '')
+    cv_summary = data.get('cv_summary', '')
 
     history_block = "\n".join([
         f"Pertanyaan: {item['q']}\nJawaban: {item['a']}" for item in history
     ]) if history else "(Belum ada riwayat sebelumnya.)"
 
-    prompt = f"""
-Sebagai pewawancara profesional seleksi beasiswa universitas ternama, kamu sedang melakukan wawancara dengan pelamar bernama Saudara {username}.
-Berikut ini adalah riwayat wawancara sebelumnya:
+    # 📌 Prompt Generator
+    if interview_type == 'magang':
+        base_desc_id = f"""
+Kamu adalah pewawancara profesional dari perusahaan yang sedang menyeleksi Saudara {username} untuk posisi magang sebagai "{internship_position}".
+Jika CV tersedia, berikut ringkasannya:
+{cv_summary if cv_summary else '(CV tidak tersedia)'}
 
+Berikut riwayat wawancara:
 {history_block}
 
 Jawaban terbaru dari pelamar:
 "{user_answer}"
 
-Berdasarkan semua informasi di atas, ajukan SATU pertanyaan lanjutan yang profesional, relevan, dan mendalam terkait beasiswa. Hindari pengulangan.
+Tugasmu: Ajukan SATU pertanyaan lanjutan yang relevan dengan posisi tersebut. Fokus pada motivasi kerja, kesiapan profesional, atau kecocokan skill teknis.
+Hindari pertanyaan yang terlalu umum atau repetitif.
 """
+
+        base_desc_en = f"""
+You are a professional interviewer from a company assessing Mr./Ms. {username} for an internship position as "{internship_position}".
+If available, here is a summary of the CV:
+{cv_summary if cv_summary else '(No CV provided)'}
+
+Interview history:
+{history_block}
+
+The latest answer from the candidate:
+"{user_answer}"
+
+Your task: Ask ONE follow-up question relevant to the internship, focusing on work motivation, technical preparedness, or professional attitude. Avoid repetitive or shallow questions.
+"""
+
+        prompt = base_desc_en if language == "en" else base_desc_id
+
+    else:  # Default: beasiswa
+        base_desc_id = f"""
+Kamu adalah pewawancara profesional dalam seleksi beasiswa "{scholarship_name}".
+Sedang mewawancarai Saudara {username}.
+Jika CV tersedia, berikut ringkasannya:
+{cv_summary if cv_summary else '(CV tidak tersedia)'}
+
+Berikut riwayat wawancara:
+{history_block}
+
+Jawaban terbaru dari pelamar:
+"{user_answer}"
+
+Tugasmu: Ajukan SATU pertanyaan lanjutan yang profesional dan mendalam. Fokus pada konsistensi tujuan studi, kontribusi sosial, kekuatan personal, atau pengalaman yang relevan dengan beasiswa ini. Hindari pertanyaan klise dan repetitif.
+"""
+
+        base_desc_en = f"""
+You are a professional interviewer in the selection process for the "{scholarship_name}" scholarship.
+Interviewing Mr./Ms. {username}.
+If a CV is available, here's the summary:
+{cv_summary if cv_summary else '(No CV provided)'}
+
+Interview history:
+{history_block}
+
+Latest answer from the applicant:
+"{user_answer}"
+
+Your task: Ask ONE insightful and professional follow-up question. Focus on study goals, social impact, personal strengths, or relevant experience. Avoid clichés and repeated questions.
+"""
+
+        prompt = base_desc_en if language == "en" else base_desc_id
 
     try:
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "Anda adalah pewawancara profesional."},
+                {"role": "system", "content": "Anda adalah pewawancara cerdas, kritis, dan profesional. Tugas Anda adalah menggali kualitas pelamar secara mendalam."},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=150,
-            temperature=0.6
+            temperature=0.7
         )
         question = response.choices[0].message.content.strip()
         return jsonify({"question": question})
@@ -274,36 +386,118 @@ def speak():
 
 @app.route('/evaluate', methods=['POST'])
 def evaluate():
+    import re, json
+
     data = request.get_json()
     answers = data.get('answers', [])
     username = data.get('username', 'pelamar')
+    interview_type = data.get('interviewType', 'beasiswa')
+    language = data.get('language', 'id')
+    scholarship_name = data.get('scholarshipName', '')
+    internship_position = data.get('internshipPosition', '')
+    cv_summary = data.get('cv_summary', '')
 
-    combined = "\n".join([f"{i+1}. {ans}" for i, ans in enumerate(answers)])
+    combined_answers = "\n".join([f"{i+1}. {ans}" for i, ans in enumerate(answers)])
 
-    prompt = f"""
-Kamu adalah juri seleksi beasiswa profesional. Evaluasilah jawaban Saudara {username} dari sesi wawancara berikut:
+    if interview_type == 'magang':
+        prompt_id = f"""
+Kamu adalah juri profesional dari perusahaan yang sedang mengevaluasi hasil wawancara pelamar magang bernama Saudara {username}, untuk posisi "{internship_position}".
 
-{combined}
+Jika tersedia, berikut ringkasan CV pelamar:
+{cv_summary if cv_summary else '(CV tidak tersedia)'}
 
-Beri skor 1–5 untuk setiap jawaban dengan mempertimbangkan kejelasan, relevansi, dan kedalaman argumen. Kemudian, beri total skor dan feedback singkat.
+Berikut jawaban dari sesi wawancaranya:
+{combined_answers}
 
-Tulis hasil evaluasi dalam format JSON seperti ini:
+Beri skor untuk setiap jawaban dari 1–5 berdasarkan: relevansi terhadap posisi, kesiapan kerja, kejelasan komunikasi, dan kedalaman argumen.
+
+Kemudian, hitung total skor dan berikan feedback singkat.
+
+Format JSON:
 {{
-  "scores": [4, 3, 5, 4, 3],
-  "total": 19,
-  "feedback": "Jawaban Saudara {username} cukup meyakinkan dengan kekuatan utama pada motivasi studi dan kontribusi sosial, meskipun perlu penguatan pada tujuan jangka panjang."
+  "scores": [4, 4, 5, 3, 4],
+  "total": 20,
+  "feedback": "Pelamar cukup siap dan mampu menjelaskan motivasinya dengan baik. Disarankan untuk memperkuat contoh konkret terkait pengalaman kerja sebelumnya."
 }}
 """
+
+        prompt_en = f"""
+You are a company recruiter evaluating the interview answers of an internship candidate named {username}, applying for the position of "{internship_position}".
+
+CV Summary:
+{cv_summary if cv_summary else '(No CV provided)'}
+
+Interview Answers:
+{combined_answers}
+
+Evaluate each answer on a scale of 1–5 based on: relevance to the role, preparedness, clarity of communication, and depth of reasoning.
+
+Then, calculate total score and give concise feedback.
+
+JSON Format:
+{{
+  "scores": [4, 4, 5, 3, 4],
+  "total": 20,
+  "feedback": "The candidate is fairly prepared and articulated motivation clearly. Suggest adding concrete examples of prior work experience."
+}}
+"""
+
+        prompt = prompt_en if language == 'en' else prompt_id
+
+    else:  # default: beasiswa
+        prompt_id = f"""
+Kamu adalah juri profesional seleksi beasiswa "{scholarship_name}". Evaluasilah hasil wawancara pelamar bernama Saudara {username}.
+
+Jika tersedia, berikut ringkasan CV pelamar:
+{cv_summary if cv_summary else '(CV tidak tersedia)'}
+
+Berikut jawaban wawancaranya:
+{combined_answers}
+
+Nilai setiap jawaban dengan skala 1–5 berdasarkan: kejelasan, kedalaman argumen, relevansi terhadap tujuan studi dan kontribusi sosial.
+
+Lalu, berikan total skor dan satu paragraf feedback.
+
+Format JSON:
+{{
+  "scores": [4, 4, 5, 4, 4],
+  "total": 21,
+  "feedback": "Pelamar menunjukkan motivasi kuat dan pemahaman mendalam terhadap visi beasiswa. Perlu memperkuat aspek rencana kontribusi pasca studi."
+}}
+"""
+
+        prompt_en = f"""
+You are a professional jury for the "{scholarship_name}" scholarship. Evaluate the interview responses of the candidate {username}.
+
+CV Summary:
+{cv_summary if cv_summary else '(No CV provided)'}
+
+Interview Answers:
+{combined_answers}
+
+Score each answer (1–5) based on: clarity, depth of thought, relevance to study goals, and potential for social contribution.
+
+Provide total score and concise feedback.
+
+JSON Format:
+{{
+  "scores": [4, 4, 5, 4, 4],
+  "total": 21,
+  "feedback": "The candidate demonstrates strong motivation and good alignment with the scholarship’s vision. The post-study contribution plan could be stronger."
+}}
+"""
+
+        prompt = prompt_en if language == 'en' else prompt_id
 
     try:
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "Anda adalah juri beasiswa."},
+                {"role": "system", "content": "Anda adalah juri evaluasi wawancara yang sangat teliti, kritis, dan profesional. Formatkan hasil secara rapi."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.3,
-            max_tokens=400
+            max_tokens=500
         )
         content = response.choices[0].message.content.strip()
         json_block = re.search(r'{.*}', content, re.DOTALL)

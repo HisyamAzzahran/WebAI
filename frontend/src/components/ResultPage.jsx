@@ -4,7 +4,18 @@ import { useLocation, useNavigate } from 'react-router-dom';
 function ResultPage({ onRestart }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { username, answers, email, isPremium, tokenSisa } = location.state || {};
+  const {
+    username,
+    answers,
+    email,
+    isPremium,
+    tokenSisa,
+    interviewType,
+    language,
+    scholarshipName,
+    internshipPosition,
+    cv_summary
+  } = location.state || {};  
 
   const [scores, setScores] = useState([]);
   const [totalScore, setTotalScore] = useState(null);
@@ -25,7 +36,15 @@ function ResultPage({ onRestart }) {
         const response = await fetch(`${API_URL}/evaluate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ answers, username }),
+          body: JSON.stringify({
+            answers,
+            username,
+            interviewType,
+            language,
+            scholarshipName,
+            internshipPosition,
+            cv_summary
+          }),
         });
 
         const data = await response.json();
@@ -67,7 +86,10 @@ function ResultPage({ onRestart }) {
     <div style={{ maxWidth: '700px', margin: 'auto', padding: '30px', fontFamily: 'Arial, sans-serif' }}>
       <h1 style={{ textAlign: 'center', marginBottom: '20px' }}>📋 Hasil Simulasi Wawancara</h1>
       <h2>Halo, <span style={{ color: '#4c6ef5' }}>{username}</span> 👋</h2>
-      <p>Berikut ini adalah ringkasan jawaban kamu selama simulasi interview beasiswa:</p>
+      <p>
+        Berikut ini adalah ringkasan jawaban kamu selama simulasi interview 
+        {interviewType === 'magang' ? ' magang' : ` beasiswa ${scholarshipName}`}:
+      </p>
 
       <ol>
         {answers.map((ans, index) => (
