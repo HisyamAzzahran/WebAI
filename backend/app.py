@@ -560,24 +560,31 @@ def generate_title():
     include_explanation = data.get("include_explanation", False)
     include_method_or_tech = data.get("include_method_or_tech", False)
 
+    if not email or not tema or not sub_tema:
+        return jsonify({"title": "[ERROR] Data tidak lengkap"}), 400
+
     try:
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
+
+        # Validasi user
         cursor.execute("SELECT is_premium, tokens FROM users WHERE email = ?", (email,))
         user = cursor.fetchone()
-
         if not user:
             return jsonify({"title": "[ERROR] User tidak ditemukan"}), 404
+
         is_premium, tokens = user
         if tokens <= 0:
             return jsonify({"title": "[TOKEN HABIS] Silakan upgrade akun kamu."}), 403
 
+        # Prompt tetap seperti yang kamu tulis
         prompt = (
             f"Kamu adalah seorang peneliti profesional. Tugasmu adalah membuat **satu ide essay** yang kompleks, inovatif, dan kritis "
             f"dengan struktur (1. Judul Pendek/Singkatan Judul/PunchLine Judul 2. Ide/Gagasan Inti 3. Daerah/Lokasi Implementasi Ide 4. Metode Riset 5. Tujuan Riset) buatkan yang kompleks yahh dan ingat harus menarik dan masuk akal kemudian sebenernya garis besarnya ini saya tuhh inginnya essai ini berdasarkan nanti saya bakal buat solusi permasalahan terkait nan inovatif sesuai dengan tujuan dibentuknya essai tapi untuk sementara buatkan dulu saja yaa judulnya, ohh iyaa kalau bisa metode yang dipakai tuhh yang ada bahasa penelitiannya gitu lohh jangan template kayak kualitatif kuantitatif tapi buat lebih menarik kalau bisa dikaitkan dengan beberapa ilmu mata kuliah terkait yang berkaitan dengan gagasan idenya, judulnya panjang maksimal 20 kata, jangan singkat judulnya pastikan sesuai format diatas"
             f"mengenai topik '{sub_tema}' dalam bidang '{tema}'."
         )
 
+        # Premium logic
         if is_premium:
             if background_enabled and background_text:
                 prompt += (
@@ -602,19 +609,25 @@ def generate_title():
                     elif tema in ["soshum", "hukum"]:
                         prompt += "**Metode:** [Sebutkan metode penelitian yang sesuai untuk topik tersebut.]\n"
         else:
+            # User non-premium
             prompt += (
                 "\nOutput hanya boleh berupa satu kalimat judul essay akademik. "
                 "Jangan sertakan penjelasan tambahan, metode, atau teknologi apapun."
             )
 
+        # Call to LLM
         output = generate_openai_response(prompt)
+
+        # Kurangi token user
         cursor.execute("UPDATE users SET tokens = tokens - 1 WHERE email = ?", (email,))
         conn.commit()
+
         return jsonify({"title": output}), 200
 
     except Exception as e:
         print("🚨 ERROR generate judul:", e)
         return jsonify({"title": "[ERROR] Gagal generate judul dari server"}), 500
+
     finally:
         conn.close()
 

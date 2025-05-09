@@ -3,16 +3,17 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ClipLoader } from 'react-spinners';
 import 'react-toastify/dist/ReactToastify.css';
+import '../styles/EssayGenerator.css'; // Pastikan file ini ada
 
 const API_URL = "https://webai-production-b975.up.railway.app";
 
 const EssayGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
   const [tema, setTema] = useState('');
   const [subTema, setSubTema] = useState('');
-  const [judul, setJudul] = useState('');
+  const [judulList, setJudulList] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // State tambahan fitur premium
+  // State fitur premium
   const [useBackground, setUseBackground] = useState(false);
   const [backgroundText, setBackgroundText] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -61,16 +62,16 @@ const EssayGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
       });
 
       if (res.status === 200 && res.data.title && !res.data.title.includes("[ERROR")) {
-        setJudul(res.data.title);
+        setJudulList(prev => [...prev, res.data.title]);
         toast.success("🎉 Judul berhasil digenerate!");
-        setTokenSisa((prev) => prev - 1);
+        setTokenSisa(prev => prev - 1);
       } else {
         toast.error("❌ Gagal generate judul.");
-        setJudul(res.data.title);
+        setJudulList(prev => [...prev, res.data.title]);
       }
     } catch (err) {
       toast.error("❌ Gagal connect ke server.");
-      setJudul("[ERROR] Gagal connect ke server");
+      setJudulList(prev => [...prev, "[ERROR] Gagal connect ke server"]);
     } finally {
       setLoading(false);
     }
@@ -101,7 +102,6 @@ const EssayGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
       {/* Fitur Premium */}
       {isPremium && (
         <>
-          {/* Latar Belakang */}
           <div className="form-check mt-3">
             <input
               type="checkbox"
@@ -124,7 +124,6 @@ const EssayGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
             />
           )}
 
-          {/* Advanced Option */}
           <div className="form-check mt-3">
             <input
               type="checkbox"
@@ -169,16 +168,27 @@ const EssayGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
         </>
       )}
 
-      {/* Tombol */}
+      {/* Tombol Generate */}
       <button className="btn btn-primary w-100 mt-3" onClick={generateTitle} disabled={loading || !subTema}>
         {loading ? <ClipLoader size={20} color="#fff" /> : "🎯 Generate Judul"}
       </button>
 
-      {/* Hasil */}
-      {judul && (
-        <div className="alert alert-success mt-3">
-          <strong>Judul:</strong><br />
-          {judul}
+      {/* Tombol Reset */}
+      {judulList.length > 0 && (
+        <button className="btn btn-outline-danger w-100 mt-2" onClick={() => setJudulList([])}>
+          🔄 Reset Semua Judul
+        </button>
+      )}
+
+      {/* Hasil Judul */}
+      {judulList.length > 0 && (
+        <div className="mt-4">
+          {judulList.map((j, i) => (
+            <div key={i} className="result-box mb-3">
+              <h5 className="result-title">🎓 Judul {i + 1}</h5>
+              <p className="result-content">{j}</p>
+            </div>
+          ))}
         </div>
       )}
     </div>
