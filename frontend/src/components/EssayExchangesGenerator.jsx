@@ -3,12 +3,13 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ClipLoader } from 'react-spinners';
 import 'react-toastify/dist/ReactToastify.css';
+import '../styles/EssayExchangesGenerator.css'; // jika pakai styling terpisah
 
 const API_URL = "https://webai-production-b975.up.railway.app";
 
 const EssayExchangesGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
   const [motivasi, setMotivasi] = useState('');
-  const [hasil, setHasil] = useState('');
+  const [hasilList, setHasilList] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const generateExchangeEssay = async () => {
@@ -25,17 +26,17 @@ const EssayExchangesGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) 
       });
 
       if (res.status === 200 && res.data.title && !res.data.title.includes("[ERROR")) {
-        setHasil(res.data.title);
-        toast.success("🎯 Essai Exchange berhasil digenerate!");
+        setHasilList((prev) => [...prev, res.data.title]);
+        toast.success("🎯 Essay berhasil digenerate!");
         setTokenSisa((prev) => prev - 1);
       } else {
         toast.error("❌ Gagal generate Essay Exchange.");
-        setHasil(res.data.title);
+        setHasilList((prev) => [...prev, res.data.title]);
       }
     } catch (err) {
       console.error("❌ Error:", err);
       toast.error("❌ Gagal connect ke server.");
-      setHasil("[ERROR] Gagal connect ke server");
+      setHasilList((prev) => [...prev, "[ERROR] Gagal connect ke server"]);
     } finally {
       setLoading(false);
     }
@@ -52,6 +53,7 @@ const EssayExchangesGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) 
 
   return (
     <div className="mt-4">
+      {/* Input Motivasi */}
       <textarea
         className="form-control mb-3"
         rows="4"
@@ -60,14 +62,31 @@ const EssayExchangesGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) 
         onChange={(e) => setMotivasi(e.target.value)}
       />
 
-      <button className="btn btn-primary w-100" onClick={generateExchangeEssay} disabled={loading || !motivasi}>
+      {/* Tombol Generate */}
+      <button
+        className="btn btn-primary w-100"
+        onClick={generateExchangeEssay}
+        disabled={loading || !motivasi}
+      >
         {loading ? <ClipLoader size={20} color="#fff" /> : "🚀 Generate Motivation Letter"}
       </button>
 
-      {hasil && (
-        <div className="alert alert-success mt-3">
-          <strong>Hasil:</strong><br />
-          {hasil}
+      {/* Tombol Reset */}
+      {hasilList.length > 0 && (
+        <button className="btn btn-outline-danger w-100 mt-2" onClick={() => setHasilList([])}>
+          🔄 Reset Semua Hasil
+        </button>
+      )}
+
+      {/* Output */}
+      {hasilList.length > 0 && (
+        <div className="mt-4">
+          {hasilList.map((item, index) => (
+            <div key={index} className="result-box mb-3">
+              <h5 className="result-title">📄 Motivation Letter {index + 1}</h5>
+              <p className="result-content">{item}</p>
+            </div>
+          ))}
         </div>
       )}
     </div>

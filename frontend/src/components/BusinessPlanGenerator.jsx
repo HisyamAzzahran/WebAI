@@ -3,15 +3,15 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ClipLoader } from 'react-spinners';
 import 'react-toastify/dist/ReactToastify.css';
+import '../styles/BPGenerator.css'; // Optional styling
 
 const API_URL = "https://webai-production-b975.up.railway.app";
 
 const BusinessPlanGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
   const [deskripsiIde, setDeskripsiIde] = useState('');
-  const [hasil, setHasil] = useState('');
+  const [hasilList, setHasilList] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Fitur Premium Checklist
   const [features, setFeatures] = useState({
     ringkasanEksekutif: false,
     analisisPasar: false,
@@ -42,17 +42,17 @@ const BusinessPlanGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) =>
       });
 
       if (res.status === 200 && res.data.title && !res.data.title.includes("[ERROR")) {
-        setHasil(res.data.title);
+        setHasilList((prev) => [...prev, res.data.title]);
         toast.success("🎯 Business Plan berhasil digenerate!");
         setTokenSisa((prev) => prev - 1);
       } else {
         toast.error("❌ Gagal generate Business Plan.");
-        setHasil(res.data.title);
+        setHasilList((prev) => [...prev, res.data.title]);
       }
     } catch (err) {
       console.error("❌ Error:", err);
       toast.error("❌ Gagal connect ke server.");
-      setHasil("[ERROR] Gagal connect ke server");
+      setHasilList((prev) => [...prev, "[ERROR] Gagal connect ke server"]);
     } finally {
       setLoading(false);
     }
@@ -73,30 +73,28 @@ const BusinessPlanGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) =>
       {isPremium && (
         <div className="border p-3 rounded mb-3">
           <h5 className="mb-3">🔧 Fitur Premium Tambahan:</h5>
-
-          {Object.keys(features).map((featureKey, index) => (
-            <div className="form-check mb-2" key={index}>
+          {Object.entries({
+            ringkasanEksekutif: 'Ringkasan Eksekutif',
+            analisisPasar: 'Analisis Pasar',
+            strategiPemasaran: 'Strategi Pemasaran',
+            keuangan: 'Keuangan',
+            analisisSWOT: 'Analisis SWOT',
+          }).map(([key, label], i) => (
+            <div className="form-check mb-2" key={i}>
               <input
                 type="checkbox"
                 className="form-check-input"
-                id={featureKey}
-                checked={features[featureKey]}
-                onChange={() => handleFeatureChange(featureKey)}
+                id={key}
+                checked={features[key]}
+                onChange={() => handleFeatureChange(key)}
               />
-              <label htmlFor={featureKey} className="form-check-label">
-                {featureKey
-                  .replace('ringkasanEksekutif', 'Ringkasan Eksekutif')
-                  .replace('analisisPasar', 'Analisis Pasar')
-                  .replace('strategiPemasaran', 'Strategi Pemasaran')
-                  .replace('keuangan', 'Keuangan')
-                  .replace('analisisSWOT', 'Analisis SWOT')}
-              </label>
+              <label htmlFor={key} className="form-check-label">{label}</label>
             </div>
           ))}
         </div>
       )}
 
-      {/* Tombol */}
+      {/* Tombol Generate */}
       <button
         className="btn btn-success w-100"
         onClick={generateBusinessPlan}
@@ -105,11 +103,22 @@ const BusinessPlanGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) =>
         {loading ? <ClipLoader size={20} color="#fff" /> : "🚀 Generate Business Plan"}
       </button>
 
-      {/* Hasil */}
-      {hasil && (
-        <div className="alert alert-success mt-3">
-          <strong>Hasil:</strong><br />
-          {hasil}
+      {/* Tombol Reset */}
+      {hasilList.length > 0 && (
+        <button className="btn btn-outline-danger w-100 mt-2" onClick={() => setHasilList([])}>
+          🔄 Reset Semua Output
+        </button>
+      )}
+
+      {/* Output */}
+      {hasilList.length > 0 && (
+        <div className="mt-4">
+          {hasilList.map((item, index) => (
+            <div key={index} className="result-box mb-3">
+              <h5 className="result-title">📌 Business Plan {index + 1}</h5>
+              <p className="result-content">{item}</p>
+            </div>
+          ))}
         </div>
       )}
     </div>

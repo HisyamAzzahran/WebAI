@@ -3,16 +3,16 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ClipLoader } from 'react-spinners';
 import 'react-toastify/dist/ReactToastify.css';
+import '../styles/KTIGenerator.css'; // optional CSS jika kamu pakai
 
 const API_URL = "https://webai-production-b975.up.railway.app";
 
 const KTIGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
   const [tema, setTema] = useState('');
   const [subTema, setSubTema] = useState('');
-  const [judul, setJudul] = useState('');
+  const [judulList, setJudulList] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Fitur premium tambahan
   const [features, setFeatures] = useState({
     backgroundUrgensi: false,
     keterbaruan: false,
@@ -45,17 +45,17 @@ const KTIGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
       });
 
       if (res.status === 200 && res.data.title && !res.data.title.includes("[ERROR")) {
-        setJudul(res.data.title);
+        setJudulList((prev) => [...prev, res.data.title]);
         toast.success("🎯 Judul berhasil digenerate!");
         setTokenSisa((prev) => prev - 1);
       } else {
         toast.error("❌ Gagal generate KTI.");
-        setJudul(res.data.title);
+        setJudulList((prev) => [...prev, res.data.title]);
       }
     } catch (err) {
       console.error("❌ Error:", err);
       toast.error("❌ Gagal connect ke server.");
-      setJudul("[ERROR] Gagal connect ke server");
+      setJudulList((prev) => [...prev, "[ERROR] Gagal connect ke server"]);
     } finally {
       setLoading(false);
     }
@@ -83,40 +83,49 @@ const KTIGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
       {isPremium && (
         <div className="border p-3 rounded mb-3">
           <h5 className="mb-3">🔧 Fitur Premium KTI:</h5>
-
-          {Object.keys(features).map((featureKey, index) => (
+          {Object.entries({
+            backgroundUrgensi: 'Latar Belakang Urgensi',
+            keterbaruan: 'Keterbaruan',
+            stepKonkrit: 'Langkah Konkret',
+            efisiensi: 'Efisiensi',
+            penelitianTerdahulu: 'Penelitian Terdahulu',
+            successRate: 'Success Rate + Contoh Input/Output',
+          }).map(([key, label], index) => (
             <div className="form-check mb-2" key={index}>
               <input
                 type="checkbox"
                 className="form-check-input"
-                id={featureKey}
-                checked={features[featureKey]}
-                onChange={() => handleFeatureChange(featureKey)}
+                id={key}
+                checked={features[key]}
+                onChange={() => handleFeatureChange(key)}
               />
-              <label htmlFor={featureKey} className="form-check-label">
-                {featureKey
-                  .replace('backgroundUrgensi', 'Latar Belakang Urgensi')
-                  .replace('keterbaruan', 'Keterbaruan')
-                  .replace('stepKonkrit', 'Step Konkret')
-                  .replace('efisiensi', 'Efisiensi')
-                  .replace('penelitianTerdahulu', 'Penelitian Terdahulu')
-                  .replace('successRate', 'Success Rate + Contoh Input-Output')}
-              </label>
+              <label htmlFor={key} className="form-check-label">{label}</label>
             </div>
           ))}
         </div>
       )}
 
-      {/* Tombol */}
+      {/* Tombol Generate */}
       <button className="btn btn-success w-100" onClick={generateTitle} disabled={loading || !subTema}>
         {loading ? <ClipLoader size={20} color="#fff" /> : "🚀 Generate Judul KTI"}
       </button>
 
-      {/* Hasil */}
-      {judul && (
-        <div className="alert alert-success mt-3">
-          <strong>Judul KTI:</strong><br />
-          {judul}
+      {/* Tombol Reset */}
+      {judulList.length > 0 && (
+        <button className="btn btn-outline-danger w-100 mt-2" onClick={() => setJudulList([])}>
+          🔄 Reset Semua Judul
+        </button>
+      )}
+
+      {/* Output Judul */}
+      {judulList.length > 0 && (
+        <div className="mt-4">
+          {judulList.map((j, i) => (
+            <div key={i} className="result-box mb-3">
+              <h5 className="result-title">📌 Judul KTI {i + 1}</h5>
+              <p className="result-content">{j}</p>
+            </div>
+          ))}
         </div>
       )}
     </div>
