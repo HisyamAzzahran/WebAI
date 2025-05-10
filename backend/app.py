@@ -678,7 +678,7 @@ def generate_kti():
                 prompt += "\n- Estimasikan success rate ide tersebut dan berikan contoh input-output sederhana terkait ide."
 
         prompt += (
-            "\n\nTulis hasil dalam format berikut dengan terstruktur:\n"
+            "\n\nTulis hasil dalam format berikut dengan terstruktur (jangan gunakan simbol aneh):\n"
             "Judul: [Satu kalimat singkat untuk judul KTI yang menarik]\n"
         )
 
@@ -728,10 +728,10 @@ def generate_bp():
         prompt = (
             f"Kamu adalah AI bisnis profesional. Gunakan deskripsi berikut sebagai konteks ide bisnis:\n"
             f"\"{deskripsi_ide}\"\n\n"
-            f"Buat 3-5 ide bisnis unik dengan:\n"
+            f"Buat 1 ide bisnis unik dengan:\n"
             f"- Nama brand\n"
             f"- Tagline\n"
-            f"- Deskripsi singkat (maksimal 2 kalimat per ide).\n"
+            f"- Deskripsi singkat (pastikan jelas dan dapat dimengerti).\n"
         )
 
         if is_premium:
