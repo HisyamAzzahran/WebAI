@@ -595,19 +595,19 @@ def generate_title():
 
             prompt += (
                 "\nTulis hasil dalam format berikut (dengan setiap bagian diawali labelnya):\n"
-                "**Judul:** , berikan hanya judulnya saja, tapi jika setelah ini saya memberikan perintah lagi lakukan saja (ini hanya jika saja yahh)\n"
+                "Judul: , berikan hanya judulnya saja, tapi jika setelah ini saya memberikan perintah lagi lakukan saja (ini hanya jika saja yahh)\n"
             )
 
             if advanced_enabled:
                 if include_explanation:
                     prompt += (
-                        "**Penjelasan:** [Jelaskan secara singkat maksud dari judul tersebut, serta arah dan urgensinya serta jelaskan apasih outputnya dari essai ini.]\n"
+                        "Penjelasan: [Jelaskan secara singkat maksud dari judul tersebut, serta arah dan urgensinya serta jelaskan apasih outputnya dari essai ini.]\n"
                     )
                 if include_method_or_tech:
                     if tema == "saintek":
-                        prompt += "**Teknologi:** [Sebutkan teknologi utama atau pendekatan saintifik yang digunakan.]\n"
+                        prompt += "Teknologi: [Sebutkan teknologi utama atau pendekatan saintifik yang digunakan.]\n"
                     elif tema in ["soshum", "hukum"]:
-                        prompt += "**Metode:** [Sebutkan metode penelitian yang sesuai untuk topik tersebut.]\n"
+                        prompt += "Metode: [Sebutkan metode penelitian yang sesuai untuk topik tersebut.]\n"
         else:
             # User non-premium
             prompt += (
@@ -679,13 +679,13 @@ def generate_kti():
 
         prompt += (
             "\n\nTulis hasil dalam format berikut dengan terstruktur:\n"
-            "**Judul:** [Satu kalimat singkat untuk judul KTI yang menarik]\n"
+            "Judul: [Satu kalimat singkat untuk judul KTI yang menarik]\n"
         )
 
         if is_premium:
             prompt += (
-                "**Deskripsi:** [Ringkasan ide utama KTI, termasuk urgensi, solusi, dan novelty]\n"
-                "**Target Luaran:** [Produk akhir riset, seperti modul, prototipe, rekomendasi kebijakan, dll] Pastikan untuk deskripsi dan target luaran jangan terlalu panjang jika di promt ini akan ada Latar Belakang\n"
+                "Deskripsi: [Ringkasan ide utama KTI, termasuk urgensi, solusi, dan novelty]\n"
+                "Target Luaran: [Produk akhir riset, seperti modul, prototipe, rekomendasi kebijakan, dll] Pastikan untuk deskripsi dan target luaran jangan terlalu panjang jika di promt ini akan ada Latar Belakang\n"
             )
 
         output = generate_openai_response(prompt)
