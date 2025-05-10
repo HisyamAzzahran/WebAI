@@ -746,7 +746,7 @@ def generate_bp():
             if swot_enabled:
                 prompt += "\n\nTambahkan Analisis SWOT mencakup Strength, Weakness, Opportunity, dan Threats minimal 2 poin masing-masing."
 
-        prompt += "\n\nTulis hasilnya dengan bahasa profesional, komunikatif, padat, dan rapi."
+        prompt += "\n\nTulis hasilnya dengan bahasa profesional, komunikatif, padat, dan rapi (jangan gunakan simbol aneh)."
 
         output = generate_openai_response(prompt)
         cursor.execute("UPDATE users SET tokens = tokens - 1 WHERE email = ?", (email,))
