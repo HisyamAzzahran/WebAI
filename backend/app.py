@@ -796,7 +796,7 @@ Gunakan format:
 - Tahapan Rinci
 - Poin Kritis
 - Template surat
-Jawaban maksimal 1 halaman, terstruktur, bahasa profesional dan komunikatif.
+Jawaban maksimal 1 halaman, terstruktur, bahasa profesional dan komunikatif (jangan gunakan simbol aneh seperti * atau tagar).
 """
 
         output = generate_openai_response(prompt)
