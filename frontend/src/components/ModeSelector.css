@@ -97,3 +97,9 @@
   box-shadow: 0 6px 12px rgba(233, 30, 99, 0.3);
 }
 
+.ikigai-mode:hover {
+  border-color: #fd79a8; /* Pink vibes */
+  background-color: #ffe3f3;
+}
+
+

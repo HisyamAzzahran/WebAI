@@ -880,6 +880,134 @@ def get_all_users():
     except Exception as e:
         print("🚨 ADMIN USER FETCH ERROR:", e)
         return jsonify([])
+    
+# Tambahkan ini ke bawah semua route yang sudah ada di app.py
+
+@app.route("/analyze-ikigai-basic", methods=["POST"])
+def analyze_ikigai_basic():
+    data = request.get_json()
+    email = data.get("email")
+    nama = data.get("nama")
+    jurusan = data.get("jurusan")
+    semester = data.get("semester")
+    universitas = data.get("universitas")
+    sesuai_jurusan = data.get("sesuaiJurusan")
+    mbti = data.get("mbti")
+    via = data.get("via", [])
+    career = data.get("career", [])
+
+    if not all([email, nama, jurusan, semester, universitas, sesuai_jurusan, mbti]) or len(via) < 3 or len(career) < 3:
+        return jsonify({"error": "Data tidak lengkap."}), 400
+
+    try:
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        cursor.execute("SELECT is_premium, tokens FROM users WHERE email = ?", (email,))
+        user = cursor.fetchone()
+
+        if not user:
+            return jsonify({"error": "User tidak ditemukan."}), 404
+
+        is_premium, tokens = user
+        if not is_premium or tokens < 5:
+            return jsonify({"error": "Premium dan minimal 5 token diperlukan."}), 403
+
+        prompt = f"""
+Bertindaklah sebagai gabungan 5 peran ahli berikut:
+1. Psikolog perkembangan
+2. Career coach senior
+3. Life & growth strategist
+4. Mentor konten Gen Z
+5. Expert MBTI, VIA, Career Explorer
+
+Berikut data hasil tes seseorang:
+- Nama Kamu: {nama}
+- Jurusan Kamu: {jurusan}
+- MBTI: {mbti}
+- 3 Top VIA Character Strength: {', '.join(via)}
+- 3 Top Career Explorer Role: {', '.join(career)}
+
+Tugas kamu adalah membuat output pemetaan Ikigai versi akhir:
+1. Penjelasan singkat setiap tes (MBTI, VIA, Career Explorer)
+2. Tabel Ikigai (Elemen, Hasil Utama, Sumber Tes)
+3. Tampilkan 3 Ikigai Spot dan 3 Slice of Life Purpose (pilih terbaik)
+"""
+        result = generate_openai_response(prompt)
+
+        # Kurangi token
+        cursor.execute("UPDATE users SET tokens = tokens - 5 WHERE email = ?", (email,))
+        conn.commit()
+        conn.close()
+
+        return jsonify({"result": result}), 200
+
+    except Exception as e:
+        print("[ERROR - /analyze-ikigai-basic]", str(e))
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/analyze-ikigai-final", methods=["POST"])
+def analyze_ikigai_final():
+    data = request.get_json()
+    email = data.get("email")
+    ikigai_spot = data.get("ikigaiSpot")
+    slice_purpose = data.get("slicePurpose")
+    nama = data.get("nama")
+    jurusan = data.get("jurusan")
+    mbti = data.get("mbti")
+    via = data.get("via", [])
+    career = data.get("career", [])
+    sesuai_jurusan = data.get("sesuaiJurusan", "YA")
+
+    try:
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        cursor.execute("SELECT is_premium, tokens FROM users WHERE email = ?", (email,))
+        user = cursor.fetchone()
+
+        if not user:
+            return jsonify({"error": "User tidak ditemukan."}), 404
+
+        is_premium, tokens = user
+        if not is_premium or tokens < 5:
+            return jsonify({"error": "Premium dan minimal 5 token diperlukan."}), 403
+
+        prompt = f"""
+Bertindaklah sebagai gabungan 5 peran ahli berikut:
+1. Psikolog perkembangan
+2. Career coach senior
+3. Life & growth strategist
+4. Mentor konten Gen Z
+5. Expert MBTI, VIA, Career Explorer
+
+Tugas kamu adalah membuat output final SWEET SPOT CAREER & BUSINESS berdasarkan data berikut:
+- Nama Kamu: {nama}
+- Jurusan Kamu: {jurusan}
+- MBTI: {mbti}
+- VIA Character Strength: {', '.join(via)}
+- Career Explorer Role: {', '.join(career)}
+- Ikigai Spot: {ikigai_spot}
+- Slice of Life Purpose: {slice_purpose}
+- Include pertimbangan jurusan? {sesuai_jurusan}
+
+Struktur output:
+1. Tabel Strategi Realistis Awal per Track
+2. Penjabaran Per Track (Employee, Self-Employed, Business Owner)
+3. CTA Penutup (ajak pilih 1 fokus)
+"""
+        if sesuai_jurusan.upper() == "YA":
+            prompt += "\nTambahkan Jurusan-Based Track berdasarkan jurusan pengguna."
+
+        result = generate_openai_response(prompt)
+        cursor.execute("UPDATE users SET tokens = tokens - 5 WHERE email = ?", (email,))
+        conn.commit()
+        conn.close()
+
+        return jsonify({"result": result}), 200
+
+    except Exception as e:
+        print("[ERROR - /analyze-ikigai-final]", str(e))
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

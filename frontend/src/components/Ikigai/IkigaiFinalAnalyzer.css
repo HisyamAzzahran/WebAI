@@ -1,0 +1,68 @@
+.ikigai-final-container {
+  max-width: 700px;
+  margin: 30px auto;
+  padding: 25px;
+  background: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.ikigai-final-container h4 {
+  text-align: center;
+  color: #2c3e50;
+  font-weight: bold;
+  margin-bottom: 25px;
+}
+
+.choice-section {
+  margin-bottom: 25px;
+}
+
+.choice-section label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.choice-box {
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  background-color: #ecf0f1;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: 0.2s ease;
+}
+
+.choice-box:hover {
+  background-color: #dfe6e9;
+}
+
+.choice-box.selected {
+  border-color: #00cec9;
+  background-color: #a2ded0;
+}
+
+.ikigai-final-container button {
+  width: 100%;
+  padding: 12px;
+  background-color: #00b894;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.ikigai-final-container button:hover {
+  background-color: #019875;
+}
+
+.ikigai-hasil pre {
+  white-space: pre-wrap;
+  background: #fff;
+  padding: 20px;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+}

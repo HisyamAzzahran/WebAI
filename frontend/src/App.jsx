@@ -13,7 +13,10 @@ import InterviewPage from './components/InterviewPage';
 import ResultPage from './components/ResultPage';
 import TopBar from './components/TopBar';
 import BioAnalyzer from "./components/BioAnalyzer";
-
+import IkigaiInputForm from './components/Ikigai/IkigaiInputForm';
+import IkigaiTestLink from './components/Ikigai/IkigaiTestLink';
+import IkigaiAnalyzer from './components/Ikigai/IkigaiAnalyzer';
+import IkigaiFinalAnalyzer from './components/Ikigai/IkigaiFinalAnalyzer';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -30,6 +33,11 @@ const App = () => {
   const [selectedMode, setSelectedMode] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [resultData, setResultData] = useState(null);
+
+  // Ikigai State
+  const [ikigaiStep, setIkigaiStep] = useState(1);
+  const [userIkigaiData, setUserIkigaiData] = useState({});
+  const [ikigaiResult1, setIkigaiResult1] = useState('');
 
   return (
     <div className="container mt-4">
@@ -85,13 +93,13 @@ const App = () => {
                         onClick={() => {
                           setShowResult(false);
                           setSelectedMode(null);
+                          setIkigaiStep(1);
                         }}
                       >
                         ⬅️ Kembali ke Menu
                       </button>
                     </div>
 
-                    {/* Generator Components */}
                     {selectedMode === "essay" && (
                       <EssayGenerator
                         isPremium={isPremium}
@@ -128,8 +136,6 @@ const App = () => {
                         apiUrl={API_URL}
                       />
                     )}
-
-                    {/* Interview + Result */}
                     {selectedMode === "interview" && !showResult && (
                       <InterviewPage
                         isPremium={isPremium}
@@ -161,8 +167,54 @@ const App = () => {
                         apiUrl={API_URL}
                       />
                     )}
-                    
-                    {/* Token info */}
+                    {selectedMode === "ikigai" && (
+                      <>
+                        {ikigaiStep === 1 && (
+                          <IkigaiInputForm
+                            onNext={() => setIkigaiStep(2)}
+                            saveUserData={setUserIkigaiData}
+                          />
+                        )}
+                        {ikigaiStep === 2 && (
+                          <IkigaiTestLink
+                            onNext={() => setIkigaiStep(3)}
+                          />
+                        )}
+                        {ikigaiStep === 3 && (
+                          <IkigaiAnalyzer
+                            email={email}
+                            isPremium={isPremium}
+                            tokenSisa={tokens}
+                            setTokenSisa={setTokens}
+                            userData={userIkigaiData}
+                            onResult={(hasil) => {
+                              setIkigaiResult1(hasil);
+                              setIkigaiStep(4);
+                            }}
+                          />
+                        )}
+                        {ikigaiStep === 4 && (
+                          <IkigaiFinalAnalyzer
+                            email={email}
+                            isPremium={isPremium}
+                            tokenSisa={tokens}
+                            setTokenSisa={setTokens}
+                            userData={userIkigaiData}
+                            ikigaiSpotList={[
+                              "The Nurturer",
+                              "The Problem Solver",
+                              "The Visionary"
+                            ]}
+                            sliceList={[
+                              "Gue pengen bantu orang nemuin passion-nya.",
+                              "Gue pengen bikin solusi simpel untuk masalah ribet.",
+                              "Gue pengen bangun sesuatu yang berdampak jangka panjang."
+                            ]}
+                          />
+                        )}
+                      </>
+                    )}
+
                     <div className="alert alert-info text-center mt-4">
                       🎯 Token Tersisa: <strong>{tokens}</strong>
                     </div>
@@ -188,7 +240,6 @@ const App = () => {
           }
         />
 
-        {/* Fallback route */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

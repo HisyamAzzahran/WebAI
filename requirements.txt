@@ -6,3 +6,4 @@ bcrypt
 requests
 PyMuPDF
 python-docx
+reportlab

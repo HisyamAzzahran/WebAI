@@ -48,6 +48,14 @@ const ModeSelector = ({ onSelectMode, isPremium }) => {
           <p>Optimalkan bio IG kamu sesuai gaya dan keahlian!</p>
         </div>
       </div>
+
+      <div className="mode-card ikigai-mode" onClick={() => onSelectMode("ikigai")}>
+        <div className="d-flex justify-content-between align-items-center mb-2">
+          <h3>🧭 Ikigai Self Discovery</h3>
+          <span className="badge-premium">Premium</span>
+        </div>
+        <p>Pemetaan Ikigai dan Strategi Karier Berbasis AI!</p>
+      </div>
     </div>
   );
 };
