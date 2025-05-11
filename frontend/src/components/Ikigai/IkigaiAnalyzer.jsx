@@ -3,15 +3,23 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ClipLoader } from 'react-spinners';
 import 'react-toastify/dist/ReactToastify.css';
+import './IkigaiAnalyzer.css';
 
 const API_URL = "https://webai-production-b975.up.railway.app";
 
-const IkigaiAnalyzer = ({ email, isPremium, tokenSisa, setTokenSisa, userData, onResult }) => {
+const IkigaiAnalyzer = ({ email, tokenSisa, setTokenSisa, isPremium, userData, onResult }) => {
+  const [mbti, setMbti] = useState('');
+  const [via, setVia] = useState(['', '', '']);
+  const [career, setCareer] = useState(['', '', '']);
   const [loading, setLoading] = useState(false);
   const [hasil, setHasil] = useState('');
-  const { mbti, via = [], career = [] } = userData || {};
 
   const handleAnalyze = async () => {
+    if (!mbti || via.includes('') || career.includes('')) {
+      toast.warning("⚠️ Lengkapi semua hasil tes dulu ya!");
+      return;
+    }
+
     if (!isPremium || tokenSisa < 5) {
       toast.error("🚫 Token tidak cukup atau akun belum Premium.");
       return;
@@ -21,16 +29,26 @@ const IkigaiAnalyzer = ({ email, isPremium, tokenSisa, setTokenSisa, userData, o
     try {
       const res = await axios.post(`${API_URL}/analyze-ikigai-basic`, {
         email,
+        mbti,
+        via,
+        career,
         ...userData
       });
 
-      if (res.status === 200 && res.data.result) {
-        setHasil(res.data.result);
+      if (res.status === 200 && res.data.hasilPrompt && res.data.spotList && res.data.sliceList) {
+        setHasil(res.data.hasilPrompt);
         setTokenSisa((prev) => prev - 5);
-        toast.success("✅ Rekomendasi Ikigai berhasil dibuat!");
-        onResult(res.data.result); // simpan hasil untuk step 4
+        toast.success("✅ Berhasil generate pemetaan Ikigai!");
+        onResult({
+          hasilPrompt: res.data.hasilPrompt,
+          spotList: res.data.spotList,
+          sliceList: res.data.sliceList,
+          mbti,
+          via,
+          career
+        });
       } else {
-        toast.error("❌ Gagal generate rekomendasi Ikigai.");
+        toast.error("❌ Gagal generate Ikigai.");
       }
     } catch (err) {
       console.error(err);
@@ -40,44 +58,52 @@ const IkigaiAnalyzer = ({ email, isPremium, tokenSisa, setTokenSisa, userData, o
     }
   };
 
-  if (!isPremium) {
-    return (
-      <div className="alert alert-warning text-center mt-4">
-        🚫 Fitur ini hanya untuk <strong>Premium Users</strong>! Silakan upgrade akunmu. 🚀
-      </div>
-    );
-  }
-
-  if (tokenSisa < 5) {
-    return (
-      <div className="alert alert-danger text-center mt-4">
-        ⚠️ Token kamu tidak cukup (minimal 5 token diperlukan).
-      </div>
-    );
-  }
-
   return (
-    <div className="ikigai-analyzer-container mt-4">
-      <h4>🧠 Step 3: Analisis Ikigai Berdasarkan Hasil Tes</h4>
-      <p>Klik tombol di bawah ini untuk mulai analisis dan mendapatkan 3 Ikigai Spot & 3 Slice of Life Purpose dari AI.</p>
+    <div className="ikigai-analyzer-container">
+      <h4>🔍 Step 3: Input Hasil Tes & Pemetaan Ikigai</h4>
 
-      {/* Ringkasan data input */}
-      <div className="mb-4">
-  <h5>🧾 Ringkasan Data Tes Ikigai</h5>
-  <ul>
-    <li><strong>MBTI:</strong> {mbti || 'Belum diisi'}</li>
-    <li><strong>Top 3 VIA:</strong> {via.join(', ') || 'Belum diisi'}</li>
-    <li><strong>Top 3 Career Explorer:</strong> {career.join(', ') || 'Belum diisi'}</li>
-  </ul>
-</div>
+      <label>MBTI:</label>
+      <input
+        placeholder="Contoh: INFP"
+        value={mbti}
+        onChange={(e) => setMbti(e.target.value.toUpperCase())}
+      />
 
-      <button className="btn btn-primary" onClick={handleAnalyze} disabled={loading}>
-        {loading ? <ClipLoader size={20} color="#fff" /> : "🚀 Analyze Ikigai Spot & Slice"}
+      <label className="mt-3">Top 3 VIA Character Strength:</label>
+      {via.map((v, i) => (
+        <input
+          key={i}
+          placeholder={`VIA #${i + 1}`}
+          value={v}
+          onChange={(e) => {
+            const temp = [...via];
+            temp[i] = e.target.value;
+            setVia(temp);
+          }}
+        />
+      ))}
+
+      <label className="mt-3">Top 3 Career Explorer Role:</label>
+      {career.map((c, i) => (
+        <input
+          key={i}
+          placeholder={`Career Role #${i + 1}`}
+          value={c}
+          onChange={(e) => {
+            const temp = [...career];
+            temp[i] = e.target.value;
+            setCareer(temp);
+          }}
+        />
+      ))}
+
+      <button onClick={handleAnalyze} disabled={loading} className="btn btn-primary mt-3">
+        {loading ? <ClipLoader size={20} color="#fff" /> : "🚀 Analyze Pemetaan Ikigai"}
       </button>
 
       {hasil && (
-        <div className="mt-4">
-          <h5>📄 Hasil Rekomendasi Awal:</h5>
+        <div className="ikigai-hasil mt-4">
+          <h5>📄 Hasil Analisis AI:</h5>
           <pre className="bg-light p-3 rounded" style={{ whiteSpace: 'pre-wrap' }}>{hasil}</pre>
         </div>
       )}
