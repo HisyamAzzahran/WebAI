@@ -1046,5 +1046,32 @@ Struktur output:
         print("[ERROR - /analyze-ikigai-final]", str(e))
         return jsonify({"error": str(e)}), 500
 
+@app.route("/admin/track-ikigai", methods=["GET"])
+def track_ikigai():
+    try:
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        cursor.execute("SELECT email, nama, mbti, via, career, ikigai_spot, slice_purpose, timestamp FROM track_ikigai ORDER BY timestamp DESC")
+        rows = cursor.fetchall()
+        conn.close()
+
+        result = []
+        for row in rows:
+            result.append({
+                "email": row[0],
+                "nama": row[1],
+                "mbti": row[2],
+                "via": json.loads(row[3]),
+                "career": json.loads(row[4]),
+                "ikigai_spot": row[5],
+                "slice_purpose": row[6],
+                "timestamp": row[7]
+            })
+
+        return jsonify(result), 200
+    except Exception as e:
+        print("[ERROR - track_ikigai]", str(e))
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

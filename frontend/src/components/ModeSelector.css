@@ -111,5 +111,6 @@
   box-shadow: 0 8px 20px rgba(255, 192, 203, 0.6);
 }
 .mode-selector-container {
-  margin-bottom: 200px; /* supaya ga nempel footer atau bawah layar */
+  margin-bottom: 100px;
+  padding-bottom: 50px;
 }

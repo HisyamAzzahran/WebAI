@@ -17,6 +17,7 @@ import IkigaiInputForm from './components/Ikigai/IkigaiInputForm';
 import IkigaiTestLink from './components/Ikigai/IkigaiTestLink';
 import IkigaiAnalyzer from './components/Ikigai/IkigaiAnalyzer';
 import IkigaiFinalAnalyzer from './components/Ikigai/IkigaiFinalAnalyzer';
+import TrackIkigai from './components/TrackIkigai';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -234,6 +235,7 @@ const App = () => {
           }
         />
         <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/admin/track-ikigai" element={<TrackIkigai />} />
       </Routes>
     </div>
   );

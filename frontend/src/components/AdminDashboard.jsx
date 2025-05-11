@@ -3,6 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'animate.css';
+import { useNavigate } from 'react-router-dom';
 
 const API_URL = "https://webai-production-b975.up.railway.app";
 
@@ -10,6 +11,8 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ tokens: 0, is_premium: 0 });
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchUsers();
@@ -60,7 +63,16 @@ const AdminDashboard = () => {
     <div className="mt-5 animate__animated animate__fadeIn">
       <h2 className="text-center text-primary">📊 Admin Dashboard</h2>
 
-      <table className="table mt-4">
+      <div className="d-flex justify-content-center gap-3 mt-4 mb-4">
+        <button className="btn btn-outline-primary" onClick={() => navigate("/track-ikigai")}>
+          🧭 Track Ikigai User
+        </button>
+        <button className="btn btn-outline-success" onClick={fetchUsers}>
+          🔄 Refresh Data
+        </button>
+      </div>
+
+      <table className="table mt-2">
         <thead className="table-dark">
           <tr>
             <th>#</th>
