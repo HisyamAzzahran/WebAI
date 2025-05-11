@@ -9,6 +9,7 @@ const API_URL = "https://webai-production-b975.up.railway.app";
 const IkigaiAnalyzer = ({ email, isPremium, tokenSisa, setTokenSisa, userData, onResult }) => {
   const [loading, setLoading] = useState(false);
   const [hasil, setHasil] = useState('');
+  const { mbti, via = [], career = [] } = userData || {};
 
   const handleAnalyze = async () => {
     if (!isPremium || tokenSisa < 5) {
@@ -61,12 +62,14 @@ const IkigaiAnalyzer = ({ email, isPremium, tokenSisa, setTokenSisa, userData, o
       <p>Klik tombol di bawah ini untuk mulai analisis dan mendapatkan 3 Ikigai Spot & 3 Slice of Life Purpose dari AI.</p>
 
       {/* Ringkasan data input */}
-      <div className="mb-4 p-3 rounded border bg-light">
-        <h5>🔍 Ringkasan Data Tes:</h5>
-        <p><strong>MBTI:</strong> {userData.mbti}</p>
-        <p><strong>Top 3 VIA:</strong> {userData.via?.join(', ')}</p>
-        <p><strong>Top 3 Career Explorer:</strong> {userData.career?.join(', ')}</p>
-      </div>
+      <div className="mb-4">
+  <h5>🧾 Ringkasan Data Tes Ikigai</h5>
+  <ul>
+    <li><strong>MBTI:</strong> {mbti || 'Belum diisi'}</li>
+    <li><strong>Top 3 VIA:</strong> {via.join(', ') || 'Belum diisi'}</li>
+    <li><strong>Top 3 Career Explorer:</strong> {career.join(', ') || 'Belum diisi'}</li>
+  </ul>
+</div>
 
       <button className="btn btn-primary" onClick={handleAnalyze} disabled={loading}>
         {loading ? <ClipLoader size={20} color="#fff" /> : "🚀 Analyze Ikigai Spot & Slice"}

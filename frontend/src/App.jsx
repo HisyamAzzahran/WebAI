@@ -189,8 +189,7 @@ const App = () => {
                             setTokenSisa={setTokens}
                             userData={userIkigaiData}
                             onResult={(res) => {
-                              setIkigaiSpotList(res.spotList);
-                              setSliceList(res.sliceList);
+                              setIkigaiResult1(res);
                               setIkigaiStep(4);
                             }}
                           />
@@ -202,8 +201,8 @@ const App = () => {
                             tokenSisa={tokens}
                             setTokenSisa={setTokens}
                             userData={userIkigaiData}
-                            ikigaiSpotList={ikigaiSpotList}
-                            sliceList={sliceList}
+                            ikigaiSpotList={ikigaiResult1.spotList}
+                            sliceList={ikigaiResult1.sliceList}
                           />
                         )}
                       </>
