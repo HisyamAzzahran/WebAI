@@ -18,20 +18,16 @@ const IkigaiAnalyzer = ({ email, isPremium, tokenSisa, setTokenSisa, userData, o
 
     setLoading(true);
     try {
-      const res = await axios.post(`${API_URL}/analyze-ikigai-spot`, {
+      const res = await axios.post(`${API_URL}/analyze-ikigai-basic`, {
         email,
         ...userData
       });
 
-      if (res.status === 200 && res.data.spotList && res.data.sliceList) {
-        setHasil(res.data.hasilPrompt);
+      if (res.status === 200 && res.data.result) {
+        setHasil(res.data.result);
         setTokenSisa((prev) => prev - 5);
         toast.success("✅ Rekomendasi Ikigai berhasil dibuat!");
-        onResult({
-          spotList: res.data.spotList,
-          sliceList: res.data.sliceList,
-          hasilPrompt: res.data.hasilPrompt
-        });
+        onResult(res.data.result); // simpan hasil untuk step 4
       } else {
         toast.error("❌ Gagal generate rekomendasi Ikigai.");
       }
@@ -64,13 +60,21 @@ const IkigaiAnalyzer = ({ email, isPremium, tokenSisa, setTokenSisa, userData, o
       <h4>🧠 Step 3: Analisis Ikigai Berdasarkan Hasil Tes</h4>
       <p>Klik tombol di bawah ini untuk mulai analisis dan mendapatkan 3 Ikigai Spot & 3 Slice of Life Purpose dari AI.</p>
 
+      {/* Ringkasan data input */}
+      <div className="mb-4 p-3 rounded border bg-light">
+        <h5>🔍 Ringkasan Data Tes:</h5>
+        <p><strong>MBTI:</strong> {userData.mbti}</p>
+        <p><strong>Top 3 VIA:</strong> {userData.via?.join(', ')}</p>
+        <p><strong>Top 3 Career Explorer:</strong> {userData.career?.join(', ')}</p>
+      </div>
+
       <button className="btn btn-primary" onClick={handleAnalyze} disabled={loading}>
         {loading ? <ClipLoader size={20} color="#fff" /> : "🚀 Analyze Ikigai Spot & Slice"}
       </button>
 
       {hasil && (
         <div className="mt-4">
-          <h5>📄 Ringkasan Output Awal:</h5>
+          <h5>📄 Hasil Rekomendasi Awal:</h5>
           <pre className="bg-light p-3 rounded" style={{ whiteSpace: 'pre-wrap' }}>{hasil}</pre>
         </div>
       )}
