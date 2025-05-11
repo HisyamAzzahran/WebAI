@@ -1,12 +1,28 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ClipLoader } from 'react-spinners';
-import ReactToPdf from 'react-to-pdf';
+import { PDFDownloadLink, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import 'react-toastify/dist/ReactToastify.css';
 import './IkigaiFinalAnalyzer.css';
 
 const API_URL = "https://webai-production-b975.up.railway.app";
+
+// Styling untuk PDF
+const styles = StyleSheet.create({
+  page: { padding: 30, fontSize: 12 },
+  section: { marginBottom: 10 }
+});
+
+const IkigaiPDF = ({ hasil }) => (
+  <Document>
+    <Page size="A4" style={styles.page}>
+      <View style={styles.section}>
+        <Text>{hasil}</Text>
+      </View>
+    </Page>
+  </Document>
+);
 
 const IkigaiFinalAnalyzer = ({
   email,
@@ -21,7 +37,6 @@ const IkigaiFinalAnalyzer = ({
   const [selectedSlice, setSelectedSlice] = useState('');
   const [hasil, setHasil] = useState('');
   const [loading, setLoading] = useState(false);
-  const pdfRef = useRef();
 
   const handleAnalyze = async () => {
     if (!selectedSpot || !selectedSlice) {
@@ -104,19 +119,19 @@ const IkigaiFinalAnalyzer = ({
 
       {hasil && (
         <div>
-          <div className="ikigai-hasil mt-4" ref={pdfRef}>
+          <div className="ikigai-hasil mt-4">
             <h5>📄 Hasil Strategi Karier dari AI:</h5>
             <pre>{hasil}</pre>
           </div>
 
           <div className="text-center mt-3">
-            <ReactToPdf targetRef={pdfRef} filename={`ikigai-${userData.nama}.pdf`} options={{ orientation: 'portrait' }} scale={0.8}>
-              {({ toPdf }) => (
-                <button className="btn-outline-success" onClick={toPdf}>
-                  📥 Download PDF
-                </button>
-              )}
-            </ReactToPdf>
+            <PDFDownloadLink
+              document={<IkigaiPDF hasil={hasil} />}
+              fileName={`ikigai-${userData.nama || "hasil"}.pdf`}
+              className="btn btn-success"
+            >
+              {({ loading }) => (loading ? "⏳ Menyiapkan PDF..." : "📥 Download sebagai PDF")}
+            </PDFDownloadLink>
           </div>
         </div>
       )}
