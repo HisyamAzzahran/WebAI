@@ -956,7 +956,7 @@ Ikigai Spot:
 - ...
 - ...
 
-Slice of Life Purpose:
+Slice of Life Purpose: (yang ini ga usah pake judulnya langsung aja 3 listnya itu)
 - ...
 - ...
 - ...
@@ -987,11 +987,6 @@ Slice of Life Purpose:
                 "Gue pengen bikin solusi simpel untuk masalah ribet.",
                 "Gue pengen bangun sesuatu yang berdampak jangka panjang."
             ]
-
-        # Kurangi token
-        cursor.execute("UPDATE users SET tokens = tokens - 5 WHERE email = ?", (email,))
-        conn.commit()
-        conn.close()
 
         return jsonify({
             "hasilPrompt": result,
@@ -1056,6 +1051,21 @@ Struktur output:
             prompt += "\nTambahkan Jurusan-Based Track berdasarkan jurusan pengguna."
 
         result = generate_openai_response(prompt)
+
+        # Simpan ke track_ikigai
+        cursor.execute("""
+            INSERT INTO track_ikigai (email, nama, mbti, via, career, ikigai_spot, slice_purpose)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            email,
+            nama,
+            mbti,
+            json.dumps(via),
+            json.dumps(career),
+            ikigai_spot,
+            slice_purpose
+        ))
+
         cursor.execute("UPDATE users SET tokens = tokens - 5 WHERE email = ?", (email,))
         conn.commit()
         conn.close()
