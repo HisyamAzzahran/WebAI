@@ -15,6 +15,26 @@ import base64
 import fitz  # PyMuPDF
 from docx import Document
 
+conn = sqlite3.connect("database.db")  # ganti sesuai nama DB kamu
+cursor = conn.cursor()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS track_ikigai (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL,
+    nama TEXT NOT NULL,
+    mbti TEXT NOT NULL,
+    via TEXT NOT NULL,
+    career TEXT NOT NULL,
+    ikigai_spot TEXT NOT NULL,
+    slice_purpose TEXT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+)
+""")
+
+conn.commit()
+conn.close()
+
 if not os.path.exists("static"):
     os.makedirs("static")
 def delete_file_later(path, delay=30):
