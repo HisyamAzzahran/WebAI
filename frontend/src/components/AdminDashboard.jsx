@@ -64,7 +64,7 @@ const AdminDashboard = () => {
       <h2 className="text-center text-primary">📊 Admin Dashboard</h2>
 
       <div className="d-flex justify-content-center gap-3 mt-4 mb-4">
-        <button className="btn btn-outline-primary" onClick={() => navigate("/track-ikigai")}>
+        <button className="btn btn-outline-primary" onClick={() => navigate("/admin/track-ikigai")}>
           🧭 Track Ikigai User
         </button>
         <button className="btn btn-outline-success" onClick={fetchUsers}>
