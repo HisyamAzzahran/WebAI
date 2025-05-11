@@ -189,7 +189,8 @@ const App = () => {
                             setTokenSisa={setTokens}
                             userData={userIkigaiData}
                             onResult={(res) => {
-                              setIkigaiResult1(res);
+                              setIkigaiSpotList(res.spotList || []);
+                              setSliceList(res.sliceList || []);
                               setIkigaiStep(4);
                             }}
                           />
@@ -201,8 +202,8 @@ const App = () => {
                             tokenSisa={tokens}
                             setTokenSisa={setTokens}
                             userData={userIkigaiData}
-                            ikigaiSpotList={ikigaiResult1.spotList}
-                            sliceList={ikigaiResult1.sliceList}
+                            ikigaiSpotList={ikigaiSpotList}
+                            sliceList={sliceList}
                           />
                         )}
                       </>
@@ -232,7 +233,6 @@ const App = () => {
             )
           }
         />
-
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

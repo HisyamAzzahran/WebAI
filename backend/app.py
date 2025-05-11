@@ -915,25 +915,18 @@ def analyze_ikigai_basic():
 
         # Prompt GPT
         prompt = f"""
-Bertindaklah sebagai gabungan 5 peran ahli berikut:
-1. Psikolog perkembangan
-2. Career coach senior
-3. Life & growth strategist
-4. Mentor konten Gen Z
-5. Expert MBTI, VIA, Career Explorer
-
 Berikut data hasil tes seseorang:
-- Nama Kamu: {nama}
-- Jurusan Kamu: {jurusan}
+- Nama: {nama}
+- Jurusan: {jurusan}
 - MBTI: {mbti}
-- 3 Top VIA Character Strength: {', '.join(via)}
-- 3 Top Career Explorer Role: {', '.join(career)}
+- VIA: {', '.join(via)}
+- Career Explorer: {', '.join(career)}
 
-Tugas kamu adalah membuat output pemetaan Ikigai versi akhir:
-1. Penjelasan singkat setiap tes (MBTI, VIA, Career Explorer)
-2. Tabel Ikigai (Elemen, Hasil Utama, Sumber Tes)
-3. Tampilkan 3 Ikigai Spot dan 3 Slice of Life Purpose (pilih terbaik dan relatable untuk mahasiswa)
-Tuliskan hasilnya dalam format yang jelas dan dapat dibaca manusia.
+Buatkan:
+1. 3 Ikigai Spot yang paling cocok dan relatable
+2. 3 Slice of Life Purpose yang selaras dengan hasil tes
+
+Hanya tampilkan daftarnya saja. Jangan tambahkan strategi atau rekomendasi lainnya.
 """
 
         result = generate_openai_response(prompt)
