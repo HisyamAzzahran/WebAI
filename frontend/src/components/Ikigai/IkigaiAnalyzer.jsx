@@ -2,41 +2,70 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ClipLoader } from 'react-spinners';
+import { PDFDownloadLink, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
+
 import 'react-toastify/dist/ReactToastify.css';
-import './IkigaiAnalyzer.css';
+import './IkigaiFinalAnalyzer.css';
 
 const API_URL = "https://webai-production-b975.up.railway.app";
 
-const IkigaiAnalyzer = ({ email, tokenSisa, setTokenSisa, isPremium, userData, onResult }) => {
-  const [mbti, setMbti] = useState('');
-  const [via, setVia] = useState(['', '', '']);
-  const [career, setCareer] = useState(['', '', '']);
-  const [loading, setLoading] = useState(false);
+const styles = StyleSheet.create({
+  page: { padding: 30, fontSize: 12 },
+  section: { marginBottom: 10 }
+});
+
+const IkigaiPDF = ({ hasil }) => (
+  <Document>
+    <Page size="A4" style={styles.page}>
+      <View style={styles.section}>
+        <Text>{hasil}</Text>
+      </View>
+    </Page>
+  </Document>
+);
+
+const IkigaiFinalAnalyzer = ({
+  email,
+  tokenSisa,
+  setTokenSisa,
+  isPremium,
+  userData,
+  ikigaiSpotList,
+  sliceList
+}) => {
+  const [selectedSpot, setSelectedSpot] = useState('');
+  const [selectedSlice, setSelectedSlice] = useState('');
   const [hasil, setHasil] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleAnalyze = async () => {
-    if (!mbti || via.includes('') || career.includes('')) {
-      toast.warning("⚠️ Lengkapi semua hasil tes dulu ya!");
+    if (!selectedSpot || !selectedSlice) {
+      toast.warning("⚠️ Pilih dulu Ikigai Spot dan Slice of Life-nya ya!");
+      return;
+    }
+
+    if (!isPremium || tokenSisa < 5) {
+      toast.error("🚫 Token tidak cukup atau akun belum Premium.");
       return;
     }
 
     setLoading(true);
     try {
-      const res = await axios.post(`${API_URL}/analyze-ikigai-basic`, {
+      const res = await axios.post(`${API_URL}/analyze-ikigai-final`, {
         email,
-        mbti,
-        via,
-        career,
+        ikigaiSpot: selectedSpot,
+        slicePurpose: selectedSlice,
         ...userData
       });
 
       if (res.status === 200 && res.data.result) {
         setHasil(res.data.result);
         setTokenSisa((prev) => prev - 5);
-        onResult(res.data.result); // lempar hasil ke parent
-        toast.success("✅ Berhasil generate pemetaan Ikigai!");
+        toast.success("✅ Strategi karier berhasil dibuat!");
       } else {
-        toast.error("❌ Gagal generate Ikigai.");
+        toast.error("❌ Gagal generate strategi karier.");
       }
     } catch (err) {
       console.error(err);
@@ -46,12 +75,10 @@ const IkigaiAnalyzer = ({ email, tokenSisa, setTokenSisa, isPremium, userData, o
     }
   };
 
-  // === 🚫 Premium & Token Check ===
   if (!isPremium) {
     return (
       <div className="alert alert-warning text-center mt-4">
-        🚫 Fitur ini hanya tersedia untuk <strong>Premium Users</strong>!  
-        Silakan upgrade akunmu untuk mengakses fitur Ikigai Analyzer. 🚀
+        🚫 Fitur ini hanya untuk <strong>Premium Users</strong>! Silakan upgrade akunmu. 🚀
       </div>
     );
   }
@@ -59,62 +86,64 @@ const IkigaiAnalyzer = ({ email, tokenSisa, setTokenSisa, isPremium, userData, o
   if (tokenSisa < 5) {
     return (
       <div className="alert alert-danger text-center mt-4">
-        ⚠️ Token kamu tidak mencukupi untuk mengakses fitur ini.<br />
-        Diperlukan minimal <strong>5 token</strong> untuk melanjutkan.
+        ⚠️ Token kamu tidak cukup (minimal 5 token diperlukan).
       </div>
     );
   }
 
   return (
-    <div className="ikigai-analyzer-container">
-      <h4>🔍 Step 3: Input Hasil Tes & Pemetaan Ikigai</h4>
+    <div className="ikigai-final-container">
+      <h4>🎯 Step 4: Pilih Ikigai Spot & Slice of Life</h4>
 
-      <input
-        placeholder="MBTI (contoh: INFP)"
-        value={mbti}
-        onChange={(e) => setMbti(e.target.value)}
-      />
+      <div className="choice-section">
+        <label>💡 Pilih Ikigai Spot:</label>
+        {ikigaiSpotList.map((spot, index) => (
+          <div key={index} className={`choice-box ${selectedSpot === spot ? 'selected' : ''}`}
+            onClick={() => setSelectedSpot(spot)}>
+            {spot}
+          </div>
+        ))}
+      </div>
 
-      <label>Top 3 VIA Character:</label>
-      {via.map((v, i) => (
-        <input
-          key={i}
-          placeholder={`VIA #${i + 1}`}
-          value={v}
-          onChange={(e) => {
-            const temp = [...via];
-            temp[i] = e.target.value;
-            setVia(temp);
-          }}
-        />
-      ))}
-
-      <label>Top 3 Career Explorer Role:</label>
-      {career.map((c, i) => (
-        <input
-          key={i}
-          placeholder={`Career Role #${i + 1}`}
-          value={c}
-          onChange={(e) => {
-            const temp = [...career];
-            temp[i] = e.target.value;
-            setCareer(temp);
-          }}
-        />
-      ))}
+      <div className="choice-section">
+        <label>🌱 Pilih Slice of Life Purpose:</label>
+        {sliceList.map((slice, index) => (
+          <div key={index} className={`choice-box ${selectedSlice === slice ? 'selected' : ''}`}
+            onClick={() => setSelectedSlice(slice)}>
+            {slice}
+          </div>
+        ))}
+      </div>
 
       <button onClick={handleAnalyze} disabled={loading}>
-        {loading ? <ClipLoader size={20} color="#fff" /> : "🚀 Analyze Pemetaan Ikigai"}
+        {loading ? <ClipLoader size={20} color="#fff" /> : "🚀 Analyze Sweetspot Career & Business"}
       </button>
 
       {hasil && (
-        <div className="ikigai-hasil">
-          <h5>📄 Hasil Analisis AI:</h5>
-          <pre>{hasil}</pre>
+        <div>
+          <div className="ikigai-hasil mt-4">
+            <h5>📄 Hasil Strategi Karier dari AI:</h5>
+            <div
+              className="markdown-preview"
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(marked.parse(hasil))
+              }}
+            />
+          </div>
+
+          <div className="text-center mt-3">
+            <PDFDownloadLink
+              document={<IkigaiPDF hasil={hasil} />}
+              fileName={`ikigai-${userData.nama || "hasil"}.pdf`}
+              className="btn btn-success"
+            >
+              {({ loading }) => (loading ? "⏳ Menyiapkan PDF..." : "📥 Download sebagai PDF")}
+            </PDFDownloadLink>
+          </div>
         </div>
       )}
     </div>
   );
 };
 
-export default IkigaiAnalyzer;
+export default IkigaiFinalAnalyzer;

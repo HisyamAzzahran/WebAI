@@ -66,3 +66,26 @@
   border: 1px dashed #ccc;
   border-radius: 8px;
 }
+.markdown-preview table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.markdown-preview th, .markdown-preview td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.markdown-preview th {
+  background-color: #f3f3f3;
+  font-weight: bold;
+}
+
+.markdown-preview pre {
+  white-space: pre-wrap;
+  font-family: 'Segoe UI', sans-serif;
+}
+

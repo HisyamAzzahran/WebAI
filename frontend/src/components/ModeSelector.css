@@ -97,9 +97,19 @@
   box-shadow: 0 6px 12px rgba(233, 30, 99, 0.3);
 }
 
-.ikigai-mode:hover {
-  border-color: #fd79a8; /* Pink vibes */
-  background-color: #ffe3f3;
+.ikigai-mode {
+  background-color: #ffe5ec;
+  color: #6a1b4d;
+  border: 2px solid #ffcbd1;
+  box-shadow: 0 4px 10px rgba(255, 192, 203, 0.4);
+  transition: all 0.3s ease;
 }
 
-
+.ikigai-mode:hover {
+  transform: scale(1.03);
+  background-color: #ffd3db;
+  box-shadow: 0 8px 20px rgba(255, 192, 203, 0.6);
+}
+.mode-selector-container {
+  margin-bottom: 80px; /* supaya ga nempel footer atau bawah layar */
+}
