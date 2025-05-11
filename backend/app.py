@@ -831,34 +831,27 @@ Jawaban maksimal 1 halaman, terstruktur, bahasa profesional dan komunikatif (jan
         conn.close()
 
 @app.route("/admin/update-user", methods=["POST"])
-def admin_update_user():
-    data = request.json
-
-    email = data.get("email")
-    tokens = data.get("tokens")
-    is_premium = data.get("is_premium")
-
-    # Validasi input
-    if email is None or tokens is None or is_premium is None:
-        return jsonify({"message": "Data tidak lengkap!"}), 400
-
+def update_user():
     try:
-        tokens = int(tokens)
-        is_premium = int(is_premium)
+        data = request.get_json()
+        email = data.get("email")
+        tokens = data.get("tokens")
+        is_premium = data.get("is_premium")
 
-        with sqlite3.connect(DB_NAME) as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                "UPDATE users SET tokens = ?, is_premium = ? WHERE email = ?",
-                (tokens, is_premium, email)
-            )
-            conn.commit()
-        return jsonify({"message": "Berhasil update user!"}), 200
+        conn = sqlite3.connect(DB_NAME, timeout=10)
+        conn.execute('PRAGMA journal_mode=WAL;')
+        cursor = conn.cursor()
+
+        cursor.execute("UPDATE users SET tokens = ?, is_premium = ? WHERE email = ?", (tokens, is_premium, email))
+        conn.commit()
+        return jsonify({"message": "User updated"}), 200
 
     except Exception as e:
-        print("🚨 UPDATE USER ERROR:", e)
-        return jsonify({"message": "Gagal update user"}), 500
+        print("🚨 UPDATE USER ERROR:", str(e))
+        return jsonify({"error": str(e)}), 500
 
+    finally:
+        conn.close()
 
 @app.route("/admin/delete-user", methods=["POST"])
 def delete_user():
