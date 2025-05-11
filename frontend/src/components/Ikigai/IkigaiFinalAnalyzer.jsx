@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ClipLoader } from 'react-spinners';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import { PDFDownloadLink, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import 'react-toastify/dist/ReactToastify.css';
 import './IkigaiFinalAnalyzer.css';
 
 const API_URL = "https://webai-production-b975.up.railway.app";
 
-// Styling untuk PDF
 const styles = StyleSheet.create({
   page: { padding: 30, fontSize: 12 },
   section: { marginBottom: 10 }
@@ -37,6 +38,7 @@ const IkigaiFinalAnalyzer = ({
   const [selectedSlice, setSelectedSlice] = useState('');
   const [hasil, setHasil] = useState('');
   const [loading, setLoading] = useState(false);
+  const pdfRef = useRef();
 
   const handleAnalyze = async () => {
     if (!selectedSpot || !selectedSlice) {
@@ -113,7 +115,7 @@ const IkigaiFinalAnalyzer = ({
         ))}
       </div>
 
-      <button onClick={handleAnalyze} disabled={loading}>
+      <button onClick={handleAnalyze} disabled={loading} className="btn btn-primary mt-3">
         {loading ? <ClipLoader size={20} color="#fff" /> : "🚀 Analyze Sweetspot Career & Business"}
       </button>
 
@@ -121,7 +123,12 @@ const IkigaiFinalAnalyzer = ({
         <div>
           <div className="ikigai-hasil mt-4">
             <h5>📄 Hasil Strategi Karier dari AI:</h5>
-            <pre>{hasil}</pre>
+            <div
+              className="markdown-preview"
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(marked.parse(hasil))
+              }}
+            />
           </div>
 
           <div className="text-center mt-3">

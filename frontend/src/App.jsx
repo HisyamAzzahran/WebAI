@@ -37,7 +37,8 @@ const App = () => {
   // Ikigai State
   const [ikigaiStep, setIkigaiStep] = useState(1);
   const [userIkigaiData, setUserIkigaiData] = useState({});
-  const [ikigaiResult1, setIkigaiResult1] = useState('');
+  const [ikigaiSpotList, setIkigaiSpotList] = useState([]);
+  const [sliceList, setSliceList] = useState([]);
 
   return (
     <div className="container mt-4">
@@ -187,8 +188,9 @@ const App = () => {
                             tokenSisa={tokens}
                             setTokenSisa={setTokens}
                             userData={userIkigaiData}
-                            onResult={(hasil) => {
-                              setIkigaiResult1(hasil);
+                            onResult={(res) => {
+                              setIkigaiSpotList(res.spotList);
+                              setSliceList(res.sliceList);
                               setIkigaiStep(4);
                             }}
                           />
@@ -200,16 +202,8 @@ const App = () => {
                             tokenSisa={tokens}
                             setTokenSisa={setTokens}
                             userData={userIkigaiData}
-                            ikigaiSpotList={[
-                              "The Nurturer",
-                              "The Problem Solver",
-                              "The Visionary"
-                            ]}
-                            sliceList={[
-                              "Gue pengen bantu orang nemuin passion-nya.",
-                              "Gue pengen bikin solusi simpel untuk masalah ribet.",
-                              "Gue pengen bangun sesuatu yang berdampak jangka panjang."
-                            ]}
+                            ikigaiSpotList={ikigaiSpotList}
+                            sliceList={sliceList}
                           />
                         )}
                       </>

@@ -885,6 +885,7 @@ def get_all_users():
 
 @app.route("/analyze-ikigai-basic", methods=["POST"])
 def analyze_ikigai_basic():
+    import re
     data = request.get_json()
     email = data.get("email")
     nama = data.get("nama")
@@ -912,6 +913,7 @@ def analyze_ikigai_basic():
         if not is_premium or tokens < 5:
             return jsonify({"error": "Premium dan minimal 5 token diperlukan."}), 403
 
+        # Prompt GPT
         prompt = f"""
 Bertindaklah sebagai gabungan 5 peran ahli berikut:
 1. Psikolog perkembangan
@@ -930,21 +932,45 @@ Berikut data hasil tes seseorang:
 Tugas kamu adalah membuat output pemetaan Ikigai versi akhir:
 1. Penjelasan singkat setiap tes (MBTI, VIA, Career Explorer)
 2. Tabel Ikigai (Elemen, Hasil Utama, Sumber Tes)
-3. Tampilkan 3 Ikigai Spot dan 3 Slice of Life Purpose (pilih terbaik)
+3. Tampilkan 3 Ikigai Spot dan 3 Slice of Life Purpose (pilih terbaik dan relatable untuk mahasiswa)
+Tuliskan hasilnya dalam format yang jelas dan dapat dibaca manusia.
 """
+
         result = generate_openai_response(prompt)
+
+        # Parsing 3 Ikigai Spot dan 3 Slice of Life dari hasil GPT
+        def extract_list_from_text(keyword, text, max_items=3):
+            pattern = rf"{keyword}.*?(?:(?:\\n-?|\\n\\d\\.|\\n\\*) ?(.*?))(?=\\n|$)"
+            matches = re.findall(pattern, text, re.IGNORECASE)
+            return [m.strip() for m in matches if m.strip()][:max_items]
+
+        spot_list = extract_list_from_text("ikigai spot", result)
+        slice_list = extract_list_from_text("slice of life", result)
+
+        # Fallback manual jika regex gagal
+        if not spot_list:
+            spot_list = ["The Visionary", "The Problem Solver", "The Nurturer"]
+        if not slice_list:
+            slice_list = [
+                "Gue pengen bantu orang nemuin passion-nya.",
+                "Gue pengen bikin solusi simpel untuk masalah ribet.",
+                "Gue pengen bangun sesuatu yang berdampak jangka panjang."
+            ]
 
         # Kurangi token
         cursor.execute("UPDATE users SET tokens = tokens - 5 WHERE email = ?", (email,))
         conn.commit()
         conn.close()
 
-        return jsonify({"result": result}), 200
+        return jsonify({
+            "hasilPrompt": result,
+            "spotList": spot_list,
+            "sliceList": slice_list
+        }), 200
 
     except Exception as e:
         print("[ERROR - /analyze-ikigai-basic]", str(e))
         return jsonify({"error": str(e)}), 500
-
 
 @app.route("/analyze-ikigai-final", methods=["POST"])
 def analyze_ikigai_final():
