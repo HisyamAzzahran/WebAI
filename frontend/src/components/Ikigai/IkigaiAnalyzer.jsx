@@ -37,7 +37,6 @@ const IkigaiAnalyzer = ({ email, tokenSisa, setTokenSisa, isPremium, userData, o
 
       if (res.status === 200 && res.data.hasilPrompt && res.data.spotList && res.data.sliceList) {
         setHasil(res.data.hasilPrompt);
-        setTokenSisa((prev) => prev - 5);
         toast.success("✅ Berhasil generate pemetaan Ikigai!");
         onResult({
           hasilPrompt: res.data.hasilPrompt,

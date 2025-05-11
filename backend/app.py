@@ -915,27 +915,45 @@ def analyze_ikigai_basic():
 
         # Prompt GPT
         prompt = f"""
+Bertindaklah sebagai career coach & psikolog perkembangan.
+
 Berikut data hasil tes seseorang:
 - Nama: {nama}
 - Jurusan: {jurusan}
 - MBTI: {mbti}
-- VIA: {', '.join(via)}
-- Career Explorer: {', '.join(career)}
+- VIA Character Strength: {', '.join(via)}
+- Career Explorer Role: {', '.join(career)}
 
-Buatkan:
-1. 3 Ikigai Spot yang paling cocok dan relatable
-2. 3 Slice of Life Purpose yang selaras dengan hasil tes
+Berdasarkan data di atas, tampilkan:
+1. 3 Ikigai Spot yang paling cocok dan relevan (berikan sebagai daftar).
+2. 3 Slice of Life Purpose yang paling sesuai dengan kombinasi karakter di atas (berikan sebagai daftar).
 
-Hanya tampilkan daftarnya saja. Jangan tambahkan strategi atau rekomendasi lainnya.
+⚠️ *Catatan*: Jangan sertakan penjelasan panjang. Tampilkan hanya 2 daftar terpisah, masing-masing berisi 3 poin.
+
+Format Output:
+Ikigai Spot:
+- ...
+- ...
+- ...
+
+Slice of Life Purpose:
+- ...
+- ...
+- ...
 """
 
         result = generate_openai_response(prompt)
 
         # Parsing 3 Ikigai Spot dan 3 Slice of Life dari hasil GPT
         def extract_list_from_text(keyword, text, max_items=3):
-            pattern = rf"{keyword}.*?(?:(?:\\n-?|\\n\\d\\.|\\n\\*) ?(.*?))(?=\\n|$)"
-            matches = re.findall(pattern, text, re.IGNORECASE)
-            return [m.strip() for m in matches if m.strip()][:max_items]
+            pattern = rf"{keyword}.*?:?(.*?)(?=\n\n|$)"  # Tangkap setelah keyword
+            match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
+            if not match:
+                return []
+    
+            block = match.group(1).strip()
+            lines = [line.strip("-•*1234567890. ").strip() for line in block.split("\n") if line.strip()]
+            return lines[:max_items]
 
         spot_list = extract_list_from_text("ikigai spot", result)
         slice_list = extract_list_from_text("slice of life", result)
