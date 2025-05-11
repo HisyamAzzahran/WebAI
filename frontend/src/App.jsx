@@ -192,6 +192,12 @@ const App = () => {
                             onResult={(res) => {
                               setIkigaiSpotList(res.spotList || []);
                               setSliceList(res.sliceList || []);
+                              setUserIkigaiData((prev) => ({
+                                ...prev,
+                                mbti: res.mbti,
+                                via: res.via,
+                                career: res.career
+                              }));
                               setIkigaiStep(4);
                             }}
                           />
