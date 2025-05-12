@@ -1,10 +1,10 @@
 import sqlite3
 import bcrypt
 
-DB_NAME = "database.db"
+DB_NAME = "webai.db"
 
 def init_db():
-    conn = sqlite3.connect("database.db")
+    conn = sqlite3.connect("webai.db")
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
@@ -39,7 +39,7 @@ def register_user(username, email, password):
 
 
 def login_user(email, password):
-    conn = sqlite3.connect("database.db")
+    conn = sqlite3.connect("webai.db")
     cursor = conn.cursor()
 
     cursor.execute("SELECT username, email, password, is_premium, is_admin, tokens FROM users WHERE email = ?", (email,))

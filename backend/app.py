@@ -15,7 +15,7 @@ import base64
 import fitz  # PyMuPDF
 from docx import Document
 
-conn = sqlite3.connect("database.db")  # ganti sesuai nama DB kamu
+conn = sqlite3.connect("webai.db")  # ganti sesuai nama DB kamu
 cursor = conn.cursor()
 
 cursor.execute("""
@@ -54,7 +54,7 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-DB_NAME = "database.db"
+DB_NAME = "webai.db"
 
 # Init DB
 init_db()
