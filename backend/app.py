@@ -35,20 +35,6 @@ CREATE TABLE IF NOT EXISTS track_ikigai (
 conn.commit()
 conn.close()
 
-@app.route("/debug/user", methods=["GET"])
-def debug_user():
-    try:
-        conn = sqlite3.connect(DB_NAME)
-        cursor = conn.cursor()
-        cursor.execute("SELECT email, password FROM users")
-        users = cursor.fetchall()
-        conn.close()
-        return jsonify([
-            {"email": u[0], "password": u[1]} for u in users
-        ])
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
 
 if not os.path.exists("static"):
     os.makedirs("static")
@@ -86,6 +72,20 @@ def generate_openai_response(prompt):
 @app.route("/register", methods=["POST"])
 def register():
     return jsonify({"message": "Fitur pendaftaran sedang dinonaktifkan. Silakan gunakan akun yang sudah ada."}), 403
+
+@app.route("/debug/user", methods=["GET"])
+def debug_user():
+    try:
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        cursor.execute("SELECT email, password FROM users")
+        users = cursor.fetchall()
+        conn.close()
+        return jsonify([
+            {"email": u[0], "password": u[1]} for u in users
+        ])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/upload_cv', methods=['POST'])
 def upload_cv():
