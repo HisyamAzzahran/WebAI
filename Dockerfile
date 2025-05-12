@@ -9,11 +9,9 @@ WORKDIR /app
 # Copy backend folder ke dalam image
 COPY backend/ backend/
 
-# Copy frontend config jika ada
-COPY package.json package-lock.json ./
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
-# Install dependencies
-RUN pip install -r backend/requirements.txt
 RUN npm install
 
 # (Opsional) Build frontend
