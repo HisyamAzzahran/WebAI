@@ -3,17 +3,21 @@ FROM python:3.11-slim
 # Install NodeJS
 RUN apt-get update && apt-get install -y nodejs npm
 
-WORKDIR /app
+# LANGSUNG MASUK FOLDER BACKEND
+WORKDIR /app/backend
 
+# Install Python dependencies
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY package.json package-lock.json ./
+# Install npm dependencies
+COPY ../package.json ../package-lock.json ../
 RUN npm install
 
+# Copy semua isi folder backend
 COPY . .
 
 EXPOSE 8000
 
-# Jalankan pakai bentuk yang memanggil shell langsung
-CMD ["sh", "-c", "cd backend && python app.py"]
+# Jalankan app.py langsung, tanpa cd lagi
+CMD ["python", "app.py"]
