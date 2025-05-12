@@ -12,6 +12,10 @@ COPY backend/ backend/
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
+RUN echo "[DEBUG] Isi folder backend:" && ls -la backend
+RUN echo "[DEBUG] Isi folder root:" && ls -la
+
+
 # (Opsional) Build frontend
 # RUN npm run build
 
