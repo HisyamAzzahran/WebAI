@@ -15,4 +15,5 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["python", "backend/app.py"]
+CMD cd backend && python app.py
+
