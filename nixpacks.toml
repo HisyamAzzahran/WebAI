@@ -1,14 +1,14 @@
 [phases.setup]
-nixPkgs = ["python3", "python3Packages.pip", "nodejs"]
+nixPkgs = ["python311Full", "nodejs"]
 
 [phases.install]
 cmds = [
   "npm install",
-  "python3 -m pip install -r requirements.txt"
+  "pip3 install -r requirements.txt"
 ]
 
 [phases.build]
 cmds = ["npm run build"]
 
 [phases.start]
-cmd = "python3 backend/app.py"
+cmd = "cd backend && python3 app.py"
