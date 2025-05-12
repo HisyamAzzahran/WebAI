@@ -15,5 +15,5 @@ COPY . .
 
 EXPOSE 8000
 
-CMD cd backend && python app.py
-
+# Jalankan pakai bentuk yang memanggil shell langsung
+CMD ["sh", "-c", "cd backend && python app.py"]
