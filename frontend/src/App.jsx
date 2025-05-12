@@ -19,13 +19,6 @@ import IkigaiAnalyzer from './components/Ikigai/IkigaiAnalyzer';
 import IkigaiFinalAnalyzer from './components/Ikigai/IkigaiFinalAnalyzer';
 import TrackIkigai from './components/TrackIkigai';
 
-// Tambahan komponen untuk landing page
-import Header from './components/Header';
-import Hero from './components/Hero';
-import Tools from './components/Tools';
-import Pricing from './components/Pricing';
-import Footer from './components/Footer';
-
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -42,219 +35,215 @@ const App = () => {
   const [showResult, setShowResult] = useState(false);
   const [resultData, setResultData] = useState(null);
 
+  // Ikigai State
   const [ikigaiStep, setIkigaiStep] = useState(1);
   const [userIkigaiData, setUserIkigaiData] = useState({});
   const [ikigaiSpotList, setIkigaiSpotList] = useState([]);
   const [sliceList, setSliceList] = useState([]);
 
   return (
-    <>
+    <div className="container mt-4">
+      <TopBar email={email} isPremium={isPremium} />
       <ToastContainer position="top-right" autoClose={2500} />
 
-      {!isLoggedIn ? (
-        <>
-          {/* Landing page ala template Brainwave */}
-          <Header />
-          <Hero />
-          <Tools />
-          <Pricing />
-          <Footer />
-
-          {/* Login + Register logic muncul jika diklik */}
-          <div className="container mt-10">
-            {showRegister ? (
-              <>
-                <RegisterForm apiUrl={API_URL} />
-                <div className="text-center mt-3">
-                  <small>Sudah punya akun?</small><br />
-                  <button className="btn btn-outline-primary mt-1" onClick={() => setShowRegister(false)}>
-                    Masuk
-                  </button>
-                </div>
-              </>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            !isLoggedIn ? (
+              showRegister ? (
+                <>
+                  <RegisterForm apiUrl={API_URL} />
+                  <div className="text-center mt-3">
+                    <small>Sudah punya akun?</small><br />
+                    <button className="btn btn-outline-primary mt-1" onClick={() => setShowRegister(false)}>
+                      Masuk
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <LoginForm
+                    apiUrl={API_URL}
+                    onLogin={(premium, email, admin, tokenValue) => {
+                      setIsLoggedIn(true);
+                      setIsPremium(premium);
+                      setEmail(email);
+                      setIsAdmin(admin);
+                      setTokens(tokenValue);
+                    }}
+                  />
+                  <div className="text-center mt-2">
+                    <small>Belum punya akun?</small><br />
+                    <button className="btn btn-outline-success mt-1" onClick={() => setShowRegister(true)}>
+                      Daftar
+                    </button>
+                  </div>
+                </>
+              )
+            ) : isAdmin ? (
+              <AdminDashboard apiUrl={API_URL} />
             ) : (
               <>
-                <LoginForm
-                  apiUrl={API_URL}
-                  onLogin={(premium, email, admin, tokenValue) => {
-                    setIsLoggedIn(true);
-                    setIsPremium(premium);
-                    setEmail(email);
-                    setIsAdmin(admin);
-                    setTokens(tokenValue);
-                  }}
-                />
-                <div className="text-center mt-2">
-                  <small>Belum punya akun?</small><br />
-                  <button className="btn btn-outline-success mt-1" onClick={() => setShowRegister(true)}>
-                    Daftar
-                  </button>
-                </div>
+                {!selectedMode ? (
+                  <ModeSelector onSelectMode={setSelectedMode} isPremium={isPremium} />
+                ) : (
+                  <>
+                    <div className="text-center mb-3">
+                      <button
+                        className="btn btn-outline-secondary"
+                        onClick={() => {
+                          setShowResult(false);
+                          setSelectedMode(null);
+                          setIkigaiStep(1);
+                        }}
+                      >
+                        ⬅️ Kembali ke Menu
+                      </button>
+                    </div>
+
+                    {selectedMode === "essay" && (
+                      <EssayGenerator
+                        isPremium={isPremium}
+                        email={email}
+                        tokenSisa={tokens}
+                        setTokenSisa={setTokens}
+                        apiUrl={API_URL}
+                      />
+                    )}
+                    {selectedMode === "kti" && (
+                      <KTIGenerator
+                        isPremium={isPremium}
+                        email={email}
+                        tokenSisa={tokens}
+                        setTokenSisa={setTokens}
+                        apiUrl={API_URL}
+                      />
+                    )}
+                    {selectedMode === "bp" && (
+                      <BusinessPlanGenerator
+                        isPremium={isPremium}
+                        email={email}
+                        tokenSisa={tokens}
+                        setTokenSisa={setTokens}
+                        apiUrl={API_URL}
+                      />
+                    )}
+                    {selectedMode === "exchanges" && (
+                      <EssayExchangesGenerator
+                        isPremium={isPremium}
+                        email={email}
+                        tokenSisa={tokens}
+                        setTokenSisa={setTokens}
+                        apiUrl={API_URL}
+                      />
+                    )}
+                    {selectedMode === "interview" && !showResult && (
+                      <InterviewPage
+                        isPremium={isPremium}
+                        email={email}
+                        tokenSisa={tokens}
+                        setTokenSisa={setTokens}
+                        apiUrl={API_URL}
+                        onFinish={(result) => {
+                          setResultData(result);
+                          setShowResult(true);
+                        }}
+                      />
+                    )}
+                    {selectedMode === "interview" && showResult && (
+                      <ResultPage
+                        {...resultData}
+                        onRestart={() => {
+                          setShowResult(false);
+                          setSelectedMode(null);
+                        }}
+                      />
+                    )}
+                    {selectedMode === "bio" && (
+                      <BioAnalyzer
+                        isPremium={isPremium}
+                        email={email}
+                        tokenSisa={tokens}
+                        setTokenSisa={setTokens}
+                        apiUrl={API_URL}
+                      />
+                    )}
+                    {selectedMode === "ikigai" && (
+                      <>
+                        {ikigaiStep === 1 && (
+                          <IkigaiInputForm
+                            onNext={() => setIkigaiStep(2)}
+                            saveUserData={setUserIkigaiData}
+                          />
+                        )}
+                        {ikigaiStep === 2 && (
+                          <IkigaiTestLink
+                            onNext={() => setIkigaiStep(3)}
+                          />
+                        )}
+                        {ikigaiStep === 3 && (
+                          <IkigaiAnalyzer
+                            email={email}
+                            isPremium={isPremium}
+                            tokenSisa={tokens}
+                            setTokenSisa={setTokens}
+                            userData={userIkigaiData}
+                            onResult={(res) => {
+                              setIkigaiSpotList(res.spotList || []);
+                              setSliceList(res.sliceList || []);
+                              setUserIkigaiData((prev) => ({
+                                ...prev,
+                                mbti: res.mbti,
+                                via: res.via,
+                                career: res.career
+                              }));
+                              setIkigaiStep(4);
+                            }}
+                          />
+                        )}
+                        {ikigaiStep === 4 && (
+                          <IkigaiFinalAnalyzer
+                            email={email}
+                            isPremium={isPremium}
+                            tokenSisa={tokens}
+                            setTokenSisa={setTokens}
+                            userData={userIkigaiData}
+                            ikigaiSpotList={ikigaiSpotList}
+                            sliceList={sliceList}
+                          />
+                        )}
+                      </>
+                    )}
+
+                    <div className="alert alert-info text-center mt-4">
+                      🎯 Token Tersisa: <strong>{tokens}</strong>
+                    </div>
+
+                    {!isPremium && (
+                      <div className="alert alert-warning mt-2 text-center">
+                        🚀 Kamu user basic. Untuk akses semua fitur premium, upgrade akunmu!
+                        <br />
+                        <a
+                          href="https://wa.me/6282211929271"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-success mt-2"
+                        >
+                          Upgrade ke Premium
+                        </a>
+                      </div>
+                    )}
+                  </>
+                )}
               </>
-            )}
-          </div>
-        </>
-      ) : isAdmin ? (
-        <AdminDashboard apiUrl={API_URL} />
-      ) : (
-        <div className="container mt-4">
-          <TopBar email={email} isPremium={isPremium} />
-
-          {!selectedMode ? (
-            <ModeSelector onSelectMode={setSelectedMode} isPremium={isPremium} />
-          ) : (
-            <>
-              <div className="text-center mb-3">
-                <button
-                  className="btn btn-outline-secondary"
-                  onClick={() => {
-                    setShowResult(false);
-                    setSelectedMode(null);
-                    setIkigaiStep(1);
-                  }}
-                >
-                  ⬅️ Kembali ke Menu
-                </button>
-              </div>
-
-              {selectedMode === "essay" && (
-                <EssayGenerator
-                  isPremium={isPremium}
-                  email={email}
-                  tokenSisa={tokens}
-                  setTokenSisa={setTokens}
-                  apiUrl={API_URL}
-                />
-              )}
-              {selectedMode === "kti" && (
-                <KTIGenerator
-                  isPremium={isPremium}
-                  email={email}
-                  tokenSisa={tokens}
-                  setTokenSisa={setTokens}
-                  apiUrl={API_URL}
-                />
-              )}
-              {selectedMode === "bp" && (
-                <BusinessPlanGenerator
-                  isPremium={isPremium}
-                  email={email}
-                  tokenSisa={tokens}
-                  setTokenSisa={setTokens}
-                  apiUrl={API_URL}
-                />
-              )}
-              {selectedMode === "exchanges" && (
-                <EssayExchangesGenerator
-                  isPremium={isPremium}
-                  email={email}
-                  tokenSisa={tokens}
-                  setTokenSisa={setTokens}
-                  apiUrl={API_URL}
-                />
-              )}
-              {selectedMode === "interview" && !showResult && (
-                <InterviewPage
-                  isPremium={isPremium}
-                  email={email}
-                  tokenSisa={tokens}
-                  setTokenSisa={setTokens}
-                  apiUrl={API_URL}
-                  onFinish={(result) => {
-                    setResultData(result);
-                    setShowResult(true);
-                  }}
-                />
-              )}
-              {selectedMode === "interview" && showResult && (
-                <ResultPage
-                  {...resultData}
-                  onRestart={() => {
-                    setShowResult(false);
-                    setSelectedMode(null);
-                  }}
-                />
-              )}
-              {selectedMode === "bio" && (
-                <BioAnalyzer
-                  isPremium={isPremium}
-                  email={email}
-                  tokenSisa={tokens}
-                  setTokenSisa={setTokens}
-                  apiUrl={API_URL}
-                />
-              )}
-              {selectedMode === "ikigai" && (
-                <>
-                  {ikigaiStep === 1 && (
-                    <IkigaiInputForm
-                      onNext={() => setIkigaiStep(2)}
-                      saveUserData={setUserIkigaiData}
-                    />
-                  )}
-                  {ikigaiStep === 2 && <IkigaiTestLink onNext={() => setIkigaiStep(3)} />}
-                  {ikigaiStep === 3 && (
-                    <IkigaiAnalyzer
-                      email={email}
-                      isPremium={isPremium}
-                      tokenSisa={tokens}
-                      setTokenSisa={setTokens}
-                      userData={userIkigaiData}
-                      onResult={(res) => {
-                        setIkigaiSpotList(res.spotList || []);
-                        setSliceList(res.sliceList || []);
-                        setUserIkigaiData((prev) => ({
-                          ...prev,
-                          mbti: res.mbti,
-                          via: res.via,
-                          career: res.career,
-                        }));
-                        setIkigaiStep(4);
-                      }}
-                    />
-                  )}
-                  {ikigaiStep === 4 && (
-                    <IkigaiFinalAnalyzer
-                      email={email}
-                      isPremium={isPremium}
-                      tokenSisa={tokens}
-                      setTokenSisa={setTokens}
-                      userData={userIkigaiData}
-                      ikigaiSpotList={ikigaiSpotList}
-                      sliceList={sliceList}
-                    />
-                  )}
-                </>
-              )}
-
-              <div className="alert alert-info text-center mt-4">
-                🎯 Token Tersisa: <strong>{tokens}</strong>
-              </div>
-
-              {!isPremium && (
-                <div className="alert alert-warning mt-2 text-center">
-                  🚀 Kamu user basic. Untuk akses semua fitur premium, upgrade akunmu!
-                  <br />
-                  <a
-                    href="https://wa.me/6282211929271"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-success mt-2"
-                  >
-                    Upgrade ke Premium
-                  </a>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      )}
-
-      <Routes>
-        <Route path="/admin/track-ikigai" element={<TrackIkigai />} />
+            )
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/admin/track-ikigai" element={<TrackIkigai />} />
       </Routes>
-    </>
+    </div>
   );
 };
 
