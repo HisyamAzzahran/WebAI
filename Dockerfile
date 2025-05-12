@@ -12,8 +12,6 @@ COPY backend/ backend/
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-RUN npm install
-
 # (Opsional) Build frontend
 # RUN npm run build
 
