@@ -45,7 +45,7 @@ def login_user(email, password):
     cursor.execute("SELECT username, email, password, is_premium, is_admin, tokens FROM users WHERE email = ?", (email,))
     user = cursor.fetchone()
 
-    if user and bcrypt.checkpw(password.encode(), user[2].encode()):
+    if user and bcrypt.checkpw(password.encode(), user[2]):
         return {
             "username": user[0],
             "email": user[1],
