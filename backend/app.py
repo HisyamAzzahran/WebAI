@@ -174,7 +174,7 @@ def analyze_bio():
             "3. Showcase Skill: Soroti skill utama seperti MC, Desainer, Penulis, dan pengalaman/karya relevan.\n\n"
             "Tampilkan hasil Anda dalam format JSON seperti ini:\n\n"
             "{\n"
-            '  "review": "Penilaian dan hal yang kurang dari bio saat ini...",\n'
+            '  "review": "Penilaian dan hal yang kurang dari bio saat ini....",\n'
             '  "recommendations": [\n'
             '    { "style": "Profesional", "bio": "..." },\n'
             '    { "style": "Personal Branding", "bio": "..." },\n'
