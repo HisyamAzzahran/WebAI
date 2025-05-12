@@ -3,18 +3,21 @@ FROM python:3.11-slim
 # Install NodeJS
 RUN apt-get update && apt-get install -y nodejs npm
 
-# Tempat kerja utama tetap /app
+# Set working directory
 WORKDIR /app
 
-# Copy semua file ke /app
-COPY . .
+# Salin seluruh folder backend ke image
+COPY backend/ backend/
 
-# Install dependencies
+# Masuk ke dalam backend
+WORKDIR /app/backend
+
+# Install Python dependencies
+COPY backend/requirements.txt .
 RUN pip install -r requirements.txt
-RUN npm install
 
-# Build opsional
-# RUN npm run build
+# Expose port
+EXPOSE 8080
 
-# Jalankan langsung app.py dari folder backend
-CMD ["python", "backend/app.py"]
+# Jalankan backend
+CMD ["python", "app.py"]
