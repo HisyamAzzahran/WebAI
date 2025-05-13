@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './SasaaChat.css';
 import { toast } from 'react-toastify';
@@ -13,6 +13,23 @@ const SasaaChat = ({ email, isPremium, tokenSisa, setTokenSisa }) => {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const formatReply = (text) => {
+    if (!text) return '';
+    return text
+      .replace(/\n/g, "<br>")
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*(.*?)\*/g, "<em>$1</em>");
+  };
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -34,7 +51,8 @@ const SasaaChat = ({ email, isPremium, tokenSisa, setTokenSisa }) => {
     try {
       const res = await axios.post(CHAT_WEBHOOK, { message: input, email });
       const reply = res.data.reply || res.data.result || "Maaf, Sasaa belum bisa menjawab.";
-      setMessages([...newMessages, { sender: 'sasaa', text: reply }]);
+      const updatedMessages = [...newMessages, { sender: 'sasaa', text: reply }];
+      setMessages(updatedMessages);
 
       const resToken = await axios.post(`${API_URL}/reduce-token`, { email });
       if (resToken.status === 200 && resToken.data.success) {
@@ -58,9 +76,15 @@ const SasaaChat = ({ email, isPremium, tokenSisa, setTokenSisa }) => {
         <div className="sasaa-chat-box">
           {messages.map((msg, i) => (
             <div key={i} className={`chat-msg ${msg.sender}`}>
-              <span>{msg.text}</span>
+              <span dangerouslySetInnerHTML={{ __html: formatReply(msg.text) }} />
             </div>
           ))}
+          {loading && (
+            <div className="chat-msg sasaa loading">
+              <span className="dot-wave"><span></span><span></span><span></span></span>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
         </div>
         <div className="sasaa-chat-input">
           <input
@@ -69,7 +93,7 @@ const SasaaChat = ({ email, isPremium, tokenSisa, setTokenSisa }) => {
             placeholder="Tanya Sasaa tentang lomba..."
           />
           <button onClick={sendMessage} disabled={loading}>
-            {loading ? "..." : "Kirim"}
+            Kirim
           </button>
         </div>
       </div>

@@ -29,28 +29,32 @@
 
 .sasaa-chat-box {
   padding: 16px;
-  height: 350px;
+  height: 380px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
   background-color: #f9f9f9;
+  scrollbar-width: none; /* Firefox */
+}
+.sasaa-chat-box::-webkit-scrollbar {
+  display: none; /* Chrome */
 }
 
 .chat-msg {
-  max-width: 80%;
+  max-width: 85%;
   padding: 10px 14px;
   border-radius: 12px;
   font-size: 14px;
   animation: fadeInUp 0.3s ease;
+  white-space: pre-wrap;
+  line-height: 1.5;
 }
-
 .chat-msg.user {
   align-self: flex-end;
   background-color: #d0f0ff;
   color: #000;
 }
-
 .chat-msg.sasaa {
   align-self: flex-start;
   background-color: #e0f7fa;
@@ -61,7 +65,6 @@
   display: flex;
   border-top: 1px solid #ddd;
 }
-
 .sasaa-chat-input input {
   flex: 1;
   padding: 12px;
@@ -70,7 +73,6 @@
   outline: none;
   font-size: 14px;
 }
-
 .sasaa-chat-input button {
   background-color: #007bff;
   color: white;
@@ -80,12 +82,10 @@
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-
 .sasaa-chat-input button:hover {
   background-color: #0056b3;
 }
 
-/* Animasi custom */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -94,5 +94,33 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Dot Loading Wave */
+.dot-wave {
+  display: inline-flex;
+  gap: 5px;
+}
+.dot-wave span {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #00acc1;
+  border-radius: 50%;
+  animation: waveAnim 1s infinite ease-in-out;
+}
+.dot-wave span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.dot-wave span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+@keyframes waveAnim {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
   }
 }
