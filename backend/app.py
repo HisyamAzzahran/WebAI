@@ -911,37 +911,37 @@ def get_all_users():
 
 @app.route("/reduce-token", methods=["POST"])
 def reduce_token():
-    data = request.get_json()
-    email = data.get("email")
-
-    if not email:
-        return jsonify({"error": "Email tidak ditemukan"}), 400
-
     try:
+        data = request.get_json()
+        email = data.get("email")
+
+        if not email:
+            return jsonify({"error": "Email tidak ditemukan."}), 400
+
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
-
-        # Ambil token user
-        cursor.execute("SELECT token_sisa FROM users WHERE email = ?", (email,))
+        cursor.execute("SELECT tokens FROM users WHERE email = ?", (email,))
         row = cursor.fetchone()
 
         if not row:
-            return jsonify({"error": "User tidak ditemukan"}), 404
+            return jsonify({"error": "User tidak ditemukan."}), 404
 
         current_token = row[0]
-
         if current_token <= 0:
-            return jsonify({"error": "Token habis"}), 403
+            return jsonify({"error": "Token habis. Silakan isi ulang token kamu."}), 403
 
-        # Kurangi token
         new_token = current_token - 1
-        cursor.execute("UPDATE users SET token_sisa = ? WHERE email = ?", (new_token, email))
+        cursor.execute("UPDATE users SET tokens = ? WHERE email = ?", (new_token, email))
         conn.commit()
-        conn.close()
 
         return jsonify({"success": True, "new_token": new_token}), 200
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print("🚨 ERROR reduce-token:", e)
+        return jsonify({"error": f"Gagal mengurangi token: {str(e)}"}), 500
+
+    finally:
+        conn.close()
 
 @app.route("/analyze-ikigai-basic", methods=["POST"])
 def analyze_ikigai_basic():
