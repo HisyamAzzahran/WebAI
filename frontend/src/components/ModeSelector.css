@@ -114,3 +114,17 @@
   margin-bottom: 100px;
   padding-bottom: 50px;
 }
+.sasaa-mode {
+  background-color: #e0f7fa;
+  border: 2px solid #26c6da;
+  color: #006064;
+  box-shadow: 0 4px 10px rgba(38, 198, 218, 0.4);
+  transition: all 0.3s ease;
+}
+
+.sasaa-mode:hover {
+  transform: scale(1.05);
+  background-color: #b2ebf2;
+  border-color: #00acc1;
+  box-shadow: 0 8px 20px rgba(0, 172, 193, 0.5);
+}

@@ -18,6 +18,7 @@ import IkigaiTestLink from './components/Ikigai/IkigaiTestLink';
 import IkigaiAnalyzer from './components/Ikigai/IkigaiAnalyzer';
 import IkigaiFinalAnalyzer from './components/Ikigai/IkigaiFinalAnalyzer';
 import TrackIkigai from './components/TrackIkigai';
+import SasaaChatPage from './components/SasaaChatPage';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -215,6 +216,15 @@ const App = () => {
                         )}
                       </>
                     )}
+                    
+                    {selectedMode === "sasaa" && (
+  <SasaaChatPage
+    email={email}
+    isPremium={isPremium}
+    tokenSisa={tokens}
+    setTokenSisa={setTokens}
+  />
+)}
 
                     <div className="alert alert-info text-center mt-4">
                       🎯 Token Tersisa: <strong>{tokens}</strong>

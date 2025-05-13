@@ -55,6 +55,14 @@ const ModeSelector = ({ onSelectMode, isPremium }) => {
           </div>
           <p>Pemetaan Ikigai dan Strategi Karier Berbasis AI!</p>
         </div>
+
+        <div className="mode-card sasaa-mode" onClick={() => onSelectMode("sasaa")}>
+          <div className="d-flex justify-content-between align-items-center mb-2">
+            <h3>🤖 Chatbot Sasaa</h3>
+            <span className="badge-premium">Premium</span>
+          </div>
+          <p>Chatbot AI yang bantu cari lomba + analisis instan 🎯</p>
+        </div>
       </div>
     </div>
   );
