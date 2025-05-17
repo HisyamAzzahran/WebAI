@@ -985,10 +985,10 @@ Berikut data hasil tes seseorang:
 - Career Explorer Role: {', '.join(career)}
 
 Berdasarkan data di atas, tampilkan:
-1. 3 Ikigai Spot yang paling cocok dan relevan (berikan sebagai daftar).
-2. 3 Slice of Life Purpose yang paling sesuai dengan kombinasi karakter di atas (berikan sebagai daftar).
+1. 3 Ikigai Spot yang paling cocok dan relevan pastikan Setiap peran harus memuat 1 kalimat 'Peran utama kamu adalah…' dan 1 contoh konkret yang relate dengan kehidupan mahasiswa(berikan sebagai daftar).
+2. 3 Slice of Life Purpose yang paling sesuai dengan kombinasi karakter di atas Gunakan format ringan seperti: 'Gue pengen bantu orang yang…'(berikan sebagai daftar).
 
-⚠️ *Catatan*: Jangan sertakan penjelasan panjang. Tampilkan hanya 2 daftar terpisah, masing-masing berisi 3 poin.
+⚠️ *Catatan*: Jangan sertakan penjelasan panjang. Tampilkan hanya 2 daftar terpisah, masing-masing berisi 3 poin dan Gunakan gaya bahasa yang ringan, hangat, dan membumi untuk mahasiswa awam yang sedang mencari arah hidup. Tone-nya tetap relatable dan gak terlalu formal.
 
 Format Output:
 Ikigai Spot:
@@ -996,7 +996,7 @@ Ikigai Spot:
 - ...
 - ...
 
-Slice of Life Purpose:
+Purpose:
 - ...
 - ...
 - ...
@@ -1081,7 +1081,7 @@ Tugas kamu adalah membuat output final SWEET SPOT CAREER & BUSINESS berdasarkan 
 - Ikigai Spot: {ikigai_spot}
 - Slice of Life Purpose: {slice_purpose}
 - Include pertimbangan jurusan? {sesuai_jurusan}
-
+Catatan untuk hasil Hindari istilah teknis berlebihan, gunakan bahasa membumi dan aplikatif, gaya bahasa ringan ala Gen Z.
 Struktur output:
 1. Tabel Strategi Realistis Awal per Track
 2. Penjabaran Per Track (Employee, Self-Employed, Business Owner)
