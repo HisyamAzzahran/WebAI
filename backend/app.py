@@ -1,26 +1,41 @@
-from flask import Flask, json, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
+from datetime import datetime
+from threading import Timer
+from openai import OpenAI
 import sqlite3
 import os
 import bcrypt
-from auth import init_db, register_user, login_user
-from openai import OpenAI
-from threading import Timer
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-import time
-from flask import send_file
-import re
-import json
 import base64
+import json
+import time
 import fitz  # PyMuPDF
 from docx import Document
+import re
 
+from auth import init_db, register_user, login_user
+
+# Load environment variables
+load_dotenv()
+
+# Init Flask
+app = Flask(__name__)
+CORS(app)
+
+# Configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///webai.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+DB_NAME = "webai.db"
+
+# Init SQLAlchemy
 db = SQLAlchemy(app)
 
+# Init OpenAI Client
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# User Model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -28,18 +43,20 @@ class User(db.Model):
     tokens = db.Column(db.Integer, default=10)
     is_premium = db.Column(db.Boolean, default=False)
 
+# Feature Log Model
 class FeatureLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), nullable=False)
     feature = db.Column(db.String(100), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
+# Create all tables
 with app.app_context():
     db.create_all()
 
-conn = sqlite3.connect("webai.db")  # ganti sesuai nama DB kamu
+# Manual table for Ikigai tracking (if not using SQLAlchemy for this one)
+conn = sqlite3.connect(DB_NAME)
 cursor = conn.cursor()
-
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS track_ikigai (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -53,12 +70,14 @@ CREATE TABLE IF NOT EXISTS track_ikigai (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 )
 """)
-
 conn.commit()
 conn.close()
 
+# Create static folder if not exists
 if not os.path.exists("static"):
     os.makedirs("static")
+
+# Auto delete temp file
 def delete_file_later(path, delay=30):
     def delete():
         try:
@@ -69,19 +88,10 @@ def delete_file_later(path, delay=30):
             print(f"[Auto Delete Error] {str(e)}")
     Timer(delay, delete).start()
 
-# Load .env
-load_dotenv()
-
-# Init Flask & OpenAI Client
-app = Flask(__name__)
-CORS(app)
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-DB_NAME = "webai.db"
-
-# Init DB
+# Init custom database logic
 init_db()
 
-# Function for generating content
+# Function to generate OpenAI completion
 def generate_openai_response(prompt):
     response = client.chat.completions.create(
         model="gpt-4.1",
