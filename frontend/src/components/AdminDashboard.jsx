@@ -14,7 +14,13 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ tokens: 0, is_premium: 0 });
-  const [newUser, setNewUser] = useState({ email: '', username: '', tokens: 10, is_premium: 0 });
+  const [newUser, setNewUser] = useState({
+    email: '',
+    username: '',
+    password: '', // Tambahan
+    tokens: 10,
+    is_premium: 0
+  });
   const [featureStats, setFeatureStats] = useState([]);
 
   const navigate = useNavigate();
@@ -75,11 +81,16 @@ const AdminDashboard = () => {
   };
 
   const addUser = async () => {
+    if (!newUser.email || !newUser.username || !newUser.password) {
+      toast.warning("⚠️ Mohon lengkapi semua data user!");
+      return;
+    }
+
     try {
       const res = await axios.post(`${API_URL}/admin/add-user`, newUser);
       if (res.data.message) {
         toast.success("✅ User baru ditambahkan!");
-        setNewUser({ email: '', username: '', tokens: 10, is_premium: 0 });
+        setNewUser({ email: '', username: '', password: '', tokens: 10, is_premium: 0 });
         fetchUsers();
       }
     } catch {
@@ -194,6 +205,13 @@ const AdminDashboard = () => {
             placeholder="Username"
             value={newUser.username}
             onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+          />
+          <input
+            type="password"
+            className="form-input w-full mb-2"
+            placeholder="Password"
+            value={newUser.password}
+            onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
           />
           <input
             type="number"

@@ -1201,14 +1201,30 @@ def add_user():
     data = request.json
     email = data.get("email")
     username = data.get("username")
+    password = data.get("password")
     tokens = data.get("tokens", 0)
     is_premium = data.get("is_premium", 0)
-    
-    # Validasi: Email sudah ada atau tidak
+
+    # Validasi email sudah terdaftar
     if User.query.filter_by(email=email).first():
         return jsonify({"error": "Email sudah terdaftar"}), 400
-    
-    new_user = User(email=email, username=username, tokens=tokens, is_premium=is_premium)
+
+    # Validasi password kosong
+    if not password:
+        return jsonify({"error": "Password harus diisi"}), 400
+
+    # Enkripsi password
+    hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+    # Buat user baru
+    new_user = User(
+        email=email,
+        username=username,
+        password=hashed_pw,
+        tokens=tokens,
+        is_premium=is_premium
+    )
+
     db.session.add(new_user)
     db.session.commit()
     return jsonify({"message": "User added"}), 200
