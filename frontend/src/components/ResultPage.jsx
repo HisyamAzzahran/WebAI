@@ -53,7 +53,6 @@ function ResultPage({ onRestart }) {
           setTotalScore(data.total);
           setFeedback(data.feedback);
 
-          // Update token di backend setelah evaluasi
           await fetch(`${API_URL}/admin/update-user`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -62,6 +61,16 @@ function ResultPage({ onRestart }) {
               tokens: tokenSisa - 5,
               is_premium: isPremium ? 1 : 0,
             }),
+          });
+
+          // Log penggunaan fitur interview
+          await fetch(`${API_URL}/log-feature`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email,
+              feature: 'interview-simulator'
+            })
           });
         }
       } catch (error) {
@@ -120,9 +129,9 @@ function ResultPage({ onRestart }) {
         <button
           onClick={() => {
             if (onRestart) {
-              onRestart(); // Kembali ke ModeSelector
+              onRestart();
             } else {
-              navigate('/'); // fallback kalau tidak ada onRestart
+              navigate('/');
             }
           }}
           className="btn btn-primary"

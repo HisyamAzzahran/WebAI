@@ -3,7 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ClipLoader } from 'react-spinners';
 import 'react-toastify/dist/ReactToastify.css';
-import '../styles/EssayGenerator.css'; // Pastikan file ini ada
+import '../styles/EssayGenerator.css';
 
 const API_URL = "https://webai-production-b975.up.railway.app";
 
@@ -13,7 +13,6 @@ const EssayGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
   const [judulList, setJudulList] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // State fitur premium
   const [useBackground, setUseBackground] = useState(false);
   const [backgroundText, setBackgroundText] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -65,6 +64,11 @@ const EssayGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
         setJudulList(prev => [...prev, res.data.title]);
         toast.success("🎉 Judul berhasil digenerate!");
         setTokenSisa(prev => prev - 1);
+
+        await axios.post(`${API_URL}/log-feature`, {
+          email,
+          feature: "essay-generator"
+        });
       } else {
         toast.error("❌ Gagal generate judul.");
         setJudulList(prev => [...prev, res.data.title]);
@@ -78,15 +82,13 @@ const EssayGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
   };
 
   return (
-    <div className="mt-4">
-      {/* Pilih Tema */}
+    <div className="mt-4 animate__animated animate__fadeIn">
       <select className="form-select mb-2" value={tema} onChange={(e) => setTema(e.target.value)}>
         <option value="">Pilih Tema</option>
         <option value="soshum">Soshum</option>
         <option value="saintek">Saintek</option>
       </select>
 
-      {/* Pilih Subtema */}
       <select
         className="form-select mb-2"
         value={subTema}
@@ -99,7 +101,6 @@ const EssayGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
         ))}
       </select>
 
-      {/* Fitur Premium */}
       {isPremium && (
         <>
           <div className="form-check mt-3">
@@ -168,23 +169,20 @@ const EssayGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
         </>
       )}
 
-      {/* Tombol Generate */}
       <button className="btn btn-primary w-100 mt-3" onClick={generateTitle} disabled={loading || !subTema}>
         {loading ? <ClipLoader size={20} color="#fff" /> : "🎯 Generate Judul"}
       </button>
 
-      {/* Tombol Reset */}
       {judulList.length > 0 && (
         <button className="btn btn-outline-danger w-100 mt-2" onClick={() => setJudulList([])}>
           🔄 Reset Semua Judul
         </button>
       )}
 
-      {/* Hasil Judul */}
       {judulList.length > 0 && (
         <div className="mt-4">
           {judulList.map((j, i) => (
-            <div key={i} className="result-box mb-3">
+            <div key={i} className="result-box mb-3 animate__animated animate__fadeInUp">
               <h5 className="result-title">🎓 Judul {i + 1}</h5>
               <p className="result-content">{j}</p>
             </div>

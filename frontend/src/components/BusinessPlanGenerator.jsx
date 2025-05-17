@@ -3,7 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ClipLoader } from 'react-spinners';
 import 'react-toastify/dist/ReactToastify.css';
-import '../styles/BPGenerator.css'; // Optional styling
+import '../styles/BPGenerator.css';
 
 const API_URL = "https://webai-production-b975.up.railway.app";
 
@@ -41,6 +41,11 @@ const BusinessPlanGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) =>
         features,
       });
 
+      await axios.post(`${API_URL}/log-feature`, {
+        email,
+        feature: 'BusinessPlanGenerator',
+      });
+
       if (res.status === 200 && res.data.title && !res.data.title.includes("[ERROR")) {
         setHasilList((prev) => [...prev, res.data.title]);
         toast.success("🎯 Business Plan berhasil digenerate!");
@@ -59,8 +64,7 @@ const BusinessPlanGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) =>
   };
 
   return (
-    <div className="mt-4">
-      {/* Input Ide */}
+    <div className="mt-4 animate__animated animate__fadeIn">
       <textarea
         className="form-control mb-3"
         rows="4"
@@ -69,7 +73,6 @@ const BusinessPlanGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) =>
         onChange={(e) => setDeskripsiIde(e.target.value)}
       />
 
-      {/* Premium Features */}
       {isPremium && (
         <div className="border p-3 rounded mb-3">
           <h5 className="mb-3">🔧 Fitur Premium Tambahan:</h5>
@@ -94,7 +97,6 @@ const BusinessPlanGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) =>
         </div>
       )}
 
-      {/* Tombol Generate */}
       <button
         className="btn btn-success w-100"
         onClick={generateBusinessPlan}
@@ -103,18 +105,16 @@ const BusinessPlanGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) =>
         {loading ? <ClipLoader size={20} color="#fff" /> : "🚀 Generate Business Plan"}
       </button>
 
-      {/* Tombol Reset */}
       {hasilList.length > 0 && (
         <button className="btn btn-outline-danger w-100 mt-2" onClick={() => setHasilList([])}>
           🔄 Reset Semua Output
         </button>
       )}
 
-      {/* Output */}
       {hasilList.length > 0 && (
         <div className="mt-4">
           {hasilList.map((item, index) => (
-            <div key={index} className="result-box mb-3">
+            <div key={index} className="result-box mb-3 animate__animated animate__fadeInUp">
               <h5 className="result-title">📌 Business Plan {index + 1}</h5>
               <p className="result-content">{item}</p>
             </div>

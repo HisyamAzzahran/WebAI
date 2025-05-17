@@ -3,7 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ClipLoader } from 'react-spinners';
 import 'react-toastify/dist/ReactToastify.css';
-import '../styles/KTIGenerator.css'; // optional CSS jika kamu pakai
+import '../styles/KTIGenerator.css';
 
 const API_URL = "https://webai-production-b975.up.railway.app";
 
@@ -48,6 +48,12 @@ const KTIGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
         setJudulList((prev) => [...prev, res.data.title]);
         toast.success("🎯 Judul berhasil digenerate!");
         setTokenSisa((prev) => prev - 1);
+
+        // 🔍 Log penggunaan fitur
+        await axios.post(`${API_URL}/log-feature`, {
+          email,
+          feature: "KTIGenerator"
+        });
       } else {
         toast.error("❌ Gagal generate KTI.");
         setJudulList((prev) => [...prev, res.data.title]);
@@ -63,14 +69,12 @@ const KTIGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
 
   return (
     <div className="mt-4">
-      {/* Pilih Tema */}
       <select className="form-select mb-2" value={tema} onChange={(e) => setTema(e.target.value)}>
         <option value="">Pilih Tema</option>
         <option value="soshum">Soshum</option>
         <option value="saintek">Saintek</option>
       </select>
 
-      {/* Sub-Tema Manual */}
       <input
         className="form-control mb-3"
         type="text"
@@ -79,7 +83,6 @@ const KTIGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
         onChange={(e) => setSubTema(e.target.value)}
       />
 
-      {/* Fitur Premium */}
       {isPremium && (
         <div className="border p-3 rounded mb-3">
           <h5 className="mb-3">🔧 Fitur Premium KTI:</h5>
@@ -105,19 +108,16 @@ const KTIGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
         </div>
       )}
 
-      {/* Tombol Generate */}
       <button className="btn btn-success w-100" onClick={generateTitle} disabled={loading || !subTema}>
         {loading ? <ClipLoader size={20} color="#fff" /> : "🚀 Generate Judul KTI"}
       </button>
 
-      {/* Tombol Reset */}
       {judulList.length > 0 && (
         <button className="btn btn-outline-danger w-100 mt-2" onClick={() => setJudulList([])}>
           🔄 Reset Semua Judul
         </button>
       )}
 
-      {/* Output Judul */}
       {judulList.length > 0 && (
         <div className="mt-4">
           {judulList.map((j, i) => (

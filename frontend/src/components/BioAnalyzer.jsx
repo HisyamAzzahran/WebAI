@@ -39,6 +39,10 @@ function BioAnalyzer({ email, tokenSisa, setTokenSisa, isPremium }) {
         setRecommendations(res.data.recommendations);
         setTokenSisa(prev => prev - 3);
         toast.success("✅ Bio berhasil dianalisis!");
+        await axios.post(`${API_URL}/log-feature`, {
+          email,
+          feature: "analyze-bio"
+        });
       } else {
         toast.error("❌ Gagal menganalisis bio.");
       }
@@ -100,6 +104,10 @@ Buat bio Instagram yang menarik, maksimal 150 karakter, mencerminkan gaya ini da
       if (res.data.bio) {
         setFinalBio(res.data.bio);
         toast.success("🎯 Bio akhir berhasil dibuat!");
+        await axios.post(`${API_URL}/log-feature`, {
+          email,
+          feature: "generate-final-bio"
+        });
       } else {
         toast.error("⚠️ Gagal membuat bio akhir.");
       }
@@ -115,11 +123,7 @@ Buat bio Instagram yang menarik, maksimal 150 karakter, mencerminkan gaya ini da
 
       <input type="file" accept="image/*" onChange={handleImageUpload} className="form-control mb-3" />
 
-      <button
-        className="btn-analyze"
-        onClick={handleAnalyze}
-        disabled={!image}
-      >
+      <button className="btn-analyze" onClick={handleAnalyze} disabled={!image}>
         🔍 Analyze Bio
       </button>
 

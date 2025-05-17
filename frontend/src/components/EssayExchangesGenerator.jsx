@@ -3,6 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ClipLoader } from 'react-spinners';
 import 'react-toastify/dist/ReactToastify.css';
+import 'animate.css';
 import '../styles/EssayExchangesGenerator.css'; // jika pakai styling terpisah
 
 const API_URL = "https://webai-production-b975.up.railway.app";
@@ -20,6 +21,7 @@ const EssayExchangesGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) 
 
     setLoading(true);
     try {
+      await axios.post(`${API_URL}/log-feature`, { email, feature: "essay_exchange" });
       const res = await axios.post(`${API_URL}/generate-essay-exchange`, {
         email,
         motivasi_input: motivasi,
@@ -44,7 +46,7 @@ const EssayExchangesGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) 
 
   if (!isPremium) {
     return (
-      <div className="alert alert-warning text-center">
+      <div className="alert alert-warning text-center animate__animated animate__fadeIn">
         🚫 Fitur ini hanya untuk <strong>Premium Users</strong>!  
         Silakan upgrade akunmu untuk mengaksesnya. 🚀
       </div>
@@ -52,7 +54,7 @@ const EssayExchangesGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) 
   }
 
   return (
-    <div className="mt-4">
+    <div className="mt-4 animate__animated animate__fadeIn">
       {/* Input Motivasi */}
       <textarea
         className="form-control mb-3"
@@ -82,7 +84,7 @@ const EssayExchangesGenerator = ({ email, tokenSisa, setTokenSisa, isPremium }) 
       {hasilList.length > 0 && (
         <div className="mt-4">
           {hasilList.map((item, index) => (
-            <div key={index} className="result-box mb-3">
+            <div key={index} className="result-box mb-3 animate__animated animate__fadeInUp">
               <h5 className="result-title">📄 Motivation Letter {index + 1}</h5>
               <p className="result-content">{item}</p>
             </div>

@@ -1,0 +1,52 @@
+.dashboard-container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+  animation: fadeIn 1s;
+}
+
+.card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: white;
+}
+
+.btn {
+  transition: all 0.3s ease-in-out;
+  font-weight: 500;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+}
+
+.table {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.table th {
+  background-color: #0d6efd;
+  color: white;
+  text-align: center;
+}
+
+.table td, .table th {
+  vertical-align: middle;
+  text-align: center;
+}
+
+input, select {
+  border-radius: 8px !important;
+}
+
+.badge {
+  font-size: 0.9rem;
+  padding: 5px 10px;
+}
+
+h5 {
+  font-weight: 600;
+  color: #333;
+}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../styles/InterviewPage.css';
 import 'animate.css';
 import AudioRecorder from './AudioRecorder';
+import axios from 'axios';
 
 function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl, onFinish }) {
   const [question, setQuestion] = useState('Klik "Mulai Interview" untuk memulai.');
@@ -15,7 +16,6 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl, onFi
   const [tempName, setTempName] = useState('');
   const [showTokenModal, setShowTokenModal] = useState(false);
 
-  // Extra states
   const [cvFile, setCvFile] = useState(null);
   const [cvSummary, setCvSummary] = useState('');
   const [interviewType, setInterviewType] = useState('');
@@ -27,7 +27,6 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl, onFi
   const API_BASE = apiUrl || import.meta.env.VITE_API_URL || 'https://webai-production-b975.up.railway.app';
 
   useEffect(() => {
-    // Reset semua saat refresh
     setUsername('');
     setTempName('');
     setCvFile(null);
@@ -38,10 +37,19 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl, onFi
     setCvSummary('');
     setShowModal(true);
     localStorage.removeItem('username');
-
-    // Hapus file CV di backend (opsional)
     fetch(`${API_BASE}/delete_cv`, { method: 'POST' }).catch(err => console.log("CV tidak ditemukan."));
   }, []);
+
+  const logFeature = async () => {
+    try {
+      await axios.post(`${API_BASE}/log-feature`, {
+        email,
+        feature: "Interview Simulator"
+      });
+    } catch (error) {
+      console.error("Gagal log fitur:", error);
+    }
+  };
 
   const handleNameSubmit = () => {
     if (tempName.trim()) {
@@ -96,7 +104,6 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl, onFi
     if (!username) return alert("Nama belum dimasukkan.");
     if (isPremium && tokenSisa < 5) return setShowTokenModal(true);
 
-    // Upload CV jika ada
     if (cvFile) {
       const formData = new FormData();
       formData.append('cv', cvFile);
@@ -112,23 +119,19 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl, onFi
       }
     }
 
+    logFeature();
     setShowTyping(true);
 
-    let pembukaPrompt = "";
+    let pembukaPrompt = "Ajukan satu pertanyaan pembuka kepada pelamar bernama Saudara " + username + ".";
     if (interviewType === "beasiswa") {
-      if (language === "en") {
-        pembukaPrompt = `As a prestigious scholarship interviewer, ask ONE formal opening question to the applicant Mr./Ms. ${username}, focusing specifically on their motivation for applying to the ${scholarshipName} scholarship. Do not provide commentary or explanations.`;
-      } else {
-        pembukaPrompt = `Sebagai pewawancara seleksi beasiswa ${scholarshipName}, ajukan SATU pertanyaan pembuka secara formal kepada pelamar bernama Saudara ${username}. Fokuskan pada motivasi mendaftar beasiswa ini tanpa memberi opini atau penjelasan tambahan.`;
-      }
+      pembukaPrompt = language === "en"
+        ? `As a prestigious scholarship interviewer, ask ONE formal opening question to the applicant Mr./Ms. ${username}, focusing specifically on their motivation for applying to the ${scholarshipName} scholarship.`
+        : `Sebagai pewawancara seleksi beasiswa ${scholarshipName}, ajukan SATU pertanyaan pembuka secara formal kepada pelamar bernama Saudara ${username}. Fokuskan pada motivasi mendaftar beasiswa ini.`;
     } else if (interviewType === "magang") {
-      pembukaPrompt = `Sebagai pewawancara dari perusahaan profesional, ajukan SATU pertanyaan pembuka secara sopan kepada Saudara ${username} yang melamar posisi magang sebagai "${internshipPosition}". Fokuskan pada alasan memilih posisi tersebut dan kesiapan mereka menghadapi dunia kerja.`;
-    } else {
-      pembukaPrompt = `Ajukan satu pertanyaan pembuka kepada pelamar bernama Saudara ${username}.`;
+      pembukaPrompt = `Sebagai pewawancara dari perusahaan profesional, ajukan SATU pertanyaan pembuka kepada Saudara ${username} yang melamar posisi magang sebagai \"${internshipPosition}\".`;
     }
 
     const firstQuestion = await askQuestion(pembukaPrompt);
-
     setTimeout(() => {
       setShowTyping(false);
       setQuestion(firstQuestion);
@@ -143,23 +146,11 @@ function InterviewPage({ isPremium, email, tokenSisa, setTokenSisa, apiUrl, onFi
     setAnswer(transcript);
     const updatedAnswers = [...answersHistory, transcript];
     const updatedQuestions = [...questionsHistory];
-
     const combinedHistory = updatedQuestions.map((q, i) => ({ q, a: updatedAnswers[i] || "" }));
 
     if (questionCount >= 4) {
-      if (setTokenSisa && typeof tokenSisa === 'number') setTokenSisa(tokenSisa - 5);
-      if (onFinish) onFinish({
-        username,
-        answers: updatedAnswers,
-        email,
-        tokenSisa: tokenSisa - 5,
-        isPremium,
-        interviewType,
-        language,
-        scholarshipName,
-        internshipPosition,
-        cv_summary: cvSummary
-      });      
+      if (setTokenSisa) setTokenSisa(tokenSisa - 5);
+      if (onFinish) onFinish({ username, answers: updatedAnswers, email, tokenSisa: tokenSisa - 5, isPremium, interviewType, language, scholarshipName, internshipPosition, cv_summary: cvSummary });
       return;
     }
 

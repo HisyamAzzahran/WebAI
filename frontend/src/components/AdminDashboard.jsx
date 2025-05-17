@@ -11,11 +11,14 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ tokens: 0, is_premium: 0 });
+  const [newUser, setNewUser] = useState({ email: '', username: '', tokens: 10, is_premium: 0 });
+  const [featureStats, setFeatureStats] = useState([]);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchUsers();
+    fetchFeatureUsage();
   }, []);
 
   const fetchUsers = async () => {
@@ -24,6 +27,15 @@ const AdminDashboard = () => {
       setUsers(res.data);
     } catch {
       toast.error("❌ Gagal mengambil data user!");
+    }
+  };
+
+  const fetchFeatureUsage = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/admin/feature-usage`);
+      setFeatureStats(res.data);
+    } catch {
+      toast.error("❌ Gagal mengambil data penggunaan fitur!");
     }
   };
 
@@ -59,6 +71,19 @@ const AdminDashboard = () => {
     }
   };
 
+  const addUser = async () => {
+    try {
+      const res = await axios.post(`${API_URL}/admin/add-user`, newUser);
+      if (res.data.message) {
+        toast.success("✅ User baru ditambahkan!");
+        setNewUser({ email: '', username: '', tokens: 10, is_premium: 0 });
+        fetchUsers();
+      }
+    } catch {
+      toast.error("❌ Gagal menambahkan user!");
+    }
+  };
+
   return (
     <div className="mt-5 animate__animated animate__fadeIn">
       <h2 className="text-center text-primary">📊 Admin Dashboard</h2>
@@ -72,6 +97,17 @@ const AdminDashboard = () => {
         </button>
       </div>
 
+      <h5 className="mt-4">📈 Statistik Penggunaan Fitur</h5>
+      <ul className="list-group mb-4">
+        {featureStats.map((f, i) => (
+          <li key={i} className="list-group-item d-flex justify-content-between">
+            <span>{f.feature}</span>
+            <span className="badge bg-info">{f.count}</span>
+          </li>
+        ))}
+      </ul>
+
+      <h5>👥 Data Pengguna</h5>
       <table className="table mt-2">
         <thead className="table-dark">
           <tr>
@@ -107,7 +143,6 @@ const AdminDashboard = () => {
       {editing && (
         <div className="card p-4 shadow mt-4 animate__animated animate__fadeInUp">
           <h5>Edit User: <span className="text-info">{editing}</span></h5>
-
           <input
             type="number"
             className="form-control mb-2"
@@ -115,7 +150,6 @@ const AdminDashboard = () => {
             onChange={(e) => setForm({ ...form, tokens: Number(e.target.value) })}
             placeholder="Jumlah Token"
           />
-
           <select
             className="form-select mb-3"
             value={form.is_premium}
@@ -124,13 +158,48 @@ const AdminDashboard = () => {
             <option value="0">Basic</option>
             <option value="1">Premium</option>
           </select>
-
           <div className="d-flex justify-content-end">
             <button className="btn btn-success me-2" onClick={updateUser}>💾 Simpan</button>
             <button className="btn btn-secondary" onClick={() => setEditing(null)}>❌ Batal</button>
           </div>
         </div>
       )}
+
+      <div className="card p-4 shadow mt-4 animate__animated animate__fadeInUp">
+        <h5>➕ Tambah User Baru</h5>
+        <input
+          type="text"
+          className="form-control mb-2"
+          placeholder="Email"
+          value={newUser.email}
+          onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+        />
+        <input
+          type="text"
+          className="form-control mb-2"
+          placeholder="Username"
+          value={newUser.username}
+          onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+        />
+        <input
+          type="number"
+          className="form-control mb-2"
+          placeholder="Token"
+          value={newUser.tokens}
+          onChange={(e) => setNewUser({ ...newUser, tokens: Number(e.target.value) })}
+        />
+        <select
+          className="form-select mb-3"
+          value={newUser.is_premium}
+          onChange={(e) => setNewUser({ ...newUser, is_premium: parseInt(e.target.value) })}
+        >
+          <option value="0">Basic</option>
+          <option value="1">Premium</option>
+        </select>
+        <div className="d-flex justify-content-end">
+          <button className="btn btn-primary" onClick={addUser}>➕ Tambah User</button>
+        </div>
+      </div>
     </div>
   );
 };

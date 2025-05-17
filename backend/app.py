@@ -7,6 +7,8 @@ import bcrypt
 from auth import init_db, register_user, login_user
 from openai import OpenAI
 from threading import Timer
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 import time
 from flask import send_file
 import re
@@ -14,6 +16,26 @@ import json
 import base64
 import fitz  # PyMuPDF
 from docx import Document
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///webai.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    username = db.Column(db.String(120), nullable=False)
+    tokens = db.Column(db.Integer, default=10)
+    is_premium = db.Column(db.Boolean, default=False)
+
+class FeatureLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), nullable=False)
+    feature = db.Column(db.String(100), nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+with app.app_context():
+    db.create_all()
 
 conn = sqlite3.connect("webai.db")  # ganti sesuai nama DB kamu
 cursor = conn.cursor()
@@ -71,6 +93,27 @@ def generate_openai_response(prompt):
 @app.route("/register", methods=["POST"])
 def register():
     return jsonify({"message": "Fitur pendaftaran sedang dinonaktifkan. Silakan gunakan akun yang sudah ada."}), 403
+
+@app.route("/log-feature", methods=["POST"])
+def log_feature():
+    data = request.json
+    email = data.get("email")
+    feature = data.get("feature")
+    if not email or not feature:
+        return jsonify({"error": "Email dan nama fitur wajib disertakan"}), 400
+    new_log = FeatureLog(email=email, feature=feature)
+    db.session.add(new_log)
+    db.session.commit()
+    return jsonify({"message": "Log ditambahkan"}), 200
+
+@app.route("/admin/feature-usage", methods=["GET"])
+def get_feature_usage():
+    logs = db.session.query(
+        FeatureLog.feature,
+        db.func.count(FeatureLog.id)
+    ).group_by(FeatureLog.feature).all()
+
+    return jsonify([{"feature": f, "count": c} for f, c in logs])
 
 @app.route('/upload_cv', methods=['POST'])
 def upload_cv():
@@ -1142,6 +1185,23 @@ def track_ikigai():
     except Exception as e:
         print("[ERROR - track_ikigai]", str(e))
         return jsonify({"error": str(e)}), 500
+
+@app.route("/admin/add-user", methods=["POST"])
+def add_user():
+    data = request.json
+    email = data.get("email")
+    username = data.get("username")
+    tokens = data.get("tokens", 0)
+    is_premium = data.get("is_premium", 0)
+    
+    # Validasi: Email sudah ada atau tidak
+    if User.query.filter_by(email=email).first():
+        return jsonify({"error": "Email sudah terdaftar"}), 400
+    
+    new_user = User(email=email, username=username, tokens=tokens, is_premium=is_premium)
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"message": "User added"}), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

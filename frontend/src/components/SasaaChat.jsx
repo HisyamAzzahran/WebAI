@@ -9,7 +9,7 @@ const API_URL = "https://webai-production-b975.up.railway.app";
 
 const SasaaChat = ({ email, isPremium, tokenSisa, setTokenSisa }) => {
   const [messages, setMessages] = useState([
-    { sender: 'sasaa', text: 'Halooo, Kenalin Aku Sasaa 👋✨ kamu lagi cari info lomba apa nih?' }
+    { sender: 'sasaa', text: 'Halooo, Kenalin Aku Sasaa \uD83D\uDC4B\u2728 kamu lagi cari info lomba apa nih?' }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,12 +35,12 @@ const SasaaChat = ({ email, isPremium, tokenSisa, setTokenSisa }) => {
     if (!input.trim()) return;
 
     if (!isPremium) {
-      toast.warning("🚫 Fitur ini hanya untuk pengguna Premium!");
+      toast.warning("\uD83D\uDEAB Fitur ini hanya untuk pengguna Premium!");
       return;
     }
 
     if (tokenSisa <= 0) {
-      toast.error("😢 Token kamu habis. Silakan isi ulang token.");
+      toast.error("\uD83D\uDE25 Token kamu habis. Silakan isi ulang token.");
       return;
     }
 
@@ -49,6 +49,12 @@ const SasaaChat = ({ email, isPremium, tokenSisa, setTokenSisa }) => {
     setLoading(true);
 
     try {
+      // Logging pemakaian fitur Sasaa
+      await axios.post(`${API_URL}/log-feature`, {
+        email,
+        feature: 'sasaa-chat'
+      });
+
       const res = await axios.post(CHAT_WEBHOOK, { message: input, email });
       const reply = res.data.reply || res.data.result || "Maaf, Sasaa belum bisa menjawab.";
       const updatedMessages = [...newMessages, { sender: 'sasaa', text: reply }];
@@ -58,7 +64,7 @@ const SasaaChat = ({ email, isPremium, tokenSisa, setTokenSisa }) => {
       if (resToken.status === 200 && resToken.data.success) {
         setTokenSisa(resToken.data.new_token);
       } else {
-        toast.warning("⚠️ Token tidak berhasil dikurangi di server.");
+        toast.warning("\u26A0\uFE0F Token tidak berhasil dikurangi di server.");
       }
     } catch (error) {
       setMessages([...newMessages, { sender: 'sasaa', text: '❌ Gagal menghubungi Sasaa.' }]);
