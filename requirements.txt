@@ -1,5 +1,6 @@
 flask
 flask-cors
+flask_sqlalchemy
 python-dotenv
 openai
 bcrypt
@@ -7,4 +8,3 @@ requests
 PyMuPDF
 python-docx
 reportlab
-flask_sqlalchemy

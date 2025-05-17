@@ -1,52 +1,103 @@
 .dashboard-container {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: auto;
-  padding: 20px;
-  animation: fadeIn 1s;
+  padding: 30px 20px;
+  animation: fadeIn 0.8s ease-in-out;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .card {
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  padding: 24px;
+  margin-bottom: 20px;
+  transition: all 0.3s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-2px);
 }
 
 .btn {
-  transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease;
   font-weight: 500;
+  border-radius: 10px;
+  padding: 10px 16px;
 }
 
 .btn:hover {
-  transform: scale(1.05);
+  transform: scale(1.03);
+  opacity: 0.9;
 }
 
 .table {
   background: #ffffff;
   border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
 }
 
 .table th {
-  background-color: #0d6efd;
+  background-color: #007bff;
   color: white;
   text-align: center;
+  padding: 12px;
 }
 
 .table td, .table th {
   vertical-align: middle;
   text-align: center;
+  padding: 12px;
+  font-size: 14px;
 }
 
 input, select {
-  border-radius: 8px !important;
+  border-radius: 10px !important;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+}
+
+input:focus, select:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
 }
 
 .badge {
-  font-size: 0.9rem;
-  padding: 5px 10px;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: 20px;
 }
 
-h5 {
+.badge.bg-success {
+  background-color: #28a745 !important;
+}
+
+.badge.bg-secondary {
+  background-color: #6c757d !important;
+}
+
+h2, h5 {
   font-weight: 600;
-  color: #333;
+  color: #212529;
+}
+
+.section-title {
+  border-left: 4px solid #007bff;
+  padding-left: 10px;
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: #007bff;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
