@@ -11,19 +11,56 @@ import './IkigaiFinalAnalyzer.css';
 const API_URL = "https://webai-production-b975.up.railway.app";
 
 const styles = StyleSheet.create({
-  page: { padding: 30, fontSize: 12 },
-  section: { marginBottom: 10 }
+  page: { padding: 30, fontSize: 11, lineHeight: 1.5, fontFamily: 'Helvetica' },
+  heading: { fontSize: 14, fontWeight: 'bold', marginBottom: 6 },
+  paragraph: { marginBottom: 6 },
+  listItem: { marginLeft: 10, marginBottom: 4, flexDirection: 'row' },
+  bullet: { width: 10 },
+  listText: { flex: 1 }
 });
 
-const IkigaiPDF = ({ hasil }) => (
-  <Document>
-    <Page size="A4" style={styles.page}>
-      <View style={styles.section}>
-        <Text>{hasil}</Text>
-      </View>
-    </Page>
-  </Document>
-);
+const parseMarkdownToPDF = (text) => {
+  const lines = text.split('\n');
+  const blocks = [];
+
+  lines.forEach((line) => {
+    if (line.startsWith('# ')) {
+      blocks.push({ type: 'heading', content: line.replace('# ', '') });
+    } else if (line.startsWith('- ') || line.startsWith('* ')) {
+      blocks.push({ type: 'list', content: line.replace(/^[-*] /, '') });
+    } else if (line.trim() !== '') {
+      blocks.push({ type: 'paragraph', content: line });
+    }
+  });
+
+  return blocks;
+};
+
+const IkigaiPDF = ({ hasil }) => {
+  const blocks = parseMarkdownToPDF(hasil);
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        {blocks.map((block, index) => {
+          switch (block.type) {
+            case 'heading':
+              return <Text key={index} style={styles.heading}>{block.content}</Text>;
+            case 'list':
+              return (
+                <View key={index} style={styles.listItem}>
+                  <Text style={styles.bullet}>\u2022</Text>
+                  <Text style={styles.listText}>{block.content}</Text>
+                </View>
+              );
+            default:
+              return <Text key={index} style={styles.paragraph}>{block.content}</Text>;
+          }
+        })}
+      </Page>
+    </Document>
+  );
+};
 
 const IkigaiFinalAnalyzer = ({
   email,
