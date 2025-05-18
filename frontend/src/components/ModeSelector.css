@@ -1,9 +1,12 @@
+/* === Layout Container === */
 .mode-selector-container {
   padding: 40px 20px;
   text-align: center;
   z-index: 1;
   position: relative;
   margin-top: 40px;
+  margin-bottom: 100px;
+  padding-bottom: 50px;
 }
 
 .welcome-text {
@@ -13,6 +16,19 @@
   margin-bottom: 40px;
 }
 
+.mode-section {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  text-align: left;
+  color: #333;
+  font-weight: bold;
+}
+
+/* === Card Grid === */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -20,6 +36,7 @@
   justify-content: center;
 }
 
+/* === Mode Card === */
 .mode-card {
   padding: 25px;
   border-radius: 18px;
@@ -41,7 +58,7 @@
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
 }
 
-/* Gradients */
+/* === Individual Mode Styles === */
 .essay-mode {
   background: linear-gradient(135deg, #007bff, #00c6ff);
 }
@@ -59,36 +76,16 @@
   background: linear-gradient(135deg, #17a2b8, #7de2fc);
 }
 
-/* Premium badge */
-.badge-premium {
-  background-color: #dc3545;
-  color: white;
-  font-size: 0.7rem;
-  padding: 4px 8px;
-  border-radius: 8px;
-  font-weight: 600;
-}
-
-/* Responsive */
-@media (max-width: 576px) {
-  .welcome-text {
-    font-size: 1.5rem;
-  }
-
-  .mode-card {
-    padding: 20px;
-    min-height: 160px;
-  }
-}
-.interview-mode:hover {
-  border-color: #6f42c1; /* ungu */
-}
 .interview-mode {
   background: linear-gradient(to right, #d3bfff, #f3e8ff);
 }
 
+.interview-mode:hover {
+  border-color: #6f42c1;
+}
+
 .bio-mode {
-  background-color: #e91e63; /* Warna pink muda seperti tema IG */
+  background-color: #e91e63;
 }
 
 .bio-mode:hover {
@@ -110,10 +107,7 @@
   background-color: #ffd3db;
   box-shadow: 0 8px 20px rgba(255, 192, 203, 0.6);
 }
-.mode-selector-container {
-  margin-bottom: 100px;
-  padding-bottom: 50px;
-}
+
 .sasaa-mode {
   background-color: #e0f7fa;
   border: 2px solid #26c6da;
@@ -128,15 +122,73 @@
   border-color: #00acc1;
   box-shadow: 0 8px 20px rgba(0, 172, 193, 0.5);
 }
-.mode-section {
-  margin-bottom: 2rem;
+
+/* === Premium Badge === */
+.badge-premium {
+  background-color: #dc3545;
+  color: white;
+  font-size: 0.7rem;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-weight: 600;
 }
 
-.section-title {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-  text-align: left;
-  color: #333;
-  font-weight: bold;
+/* === Rocket Animation === */
+.rocket-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: rocket-launch 1.5s ease forwards;
+  z-index: 9999;
+  text-align: center;
 }
 
+.rocket {
+  width: 80px;
+  animation: float-up 1.5s ease-in-out forwards;
+}
+
+.smoke {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+  background: radial-gradient(circle, #bbb 0%, transparent 70%);
+  border-radius: 50%;
+  animation: smoke-rise 1.5s ease-out forwards;
+  opacity: 0.7;
+}
+
+@keyframes float-up {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-200px);
+    opacity: 0;
+  }
+}
+
+@keyframes smoke-rise {
+  0% {
+    transform: translateY(10px) scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-100px) scale(2);
+    opacity: 0;
+  }
+}
+
+/* === Responsive === */
+@media (max-width: 576px) {
+  .welcome-text {
+    font-size: 1.5rem;
+  }
+
+  .mode-card {
+    padding: 20px;
+    min-height: 160px;
+  }
+}
