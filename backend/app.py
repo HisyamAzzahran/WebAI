@@ -1202,33 +1202,43 @@ def add_user():
     data = request.json
     email = data.get("email")
     username = data.get("username")
-    password = data.get("password")
+    password = data.get("password")  # Harus disimpan
     tokens = data.get("tokens", 0)
     is_premium = data.get("is_premium", 0)
 
-    # Validasi email sudah terdaftar
-    if User.query.filter_by(email=email).first():
-        return jsonify({"error": "Email sudah terdaftar"}), 400
+    if not email or not username or not password:
+        return jsonify({"error": "Data tidak lengkap"}), 400
 
-    # Validasi password kosong
-    if not password:
-        return jsonify({"error": "Password harus diisi"}), 400
-
-    # Enkripsi password
     hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-    # Buat user baru
-    new_user = User(
-        email=email,
-        username=username,
-        password=hashed_pw,
-        tokens=tokens,
-        is_premium=is_premium
-    )
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+    existing = cursor.fetchone()
 
-    db.session.add(new_user)
-    db.session.commit()
-    return jsonify({"message": "User added"}), 200
+    if existing:
+        return jsonify({"error": "Email sudah terdaftar"}), 400
+
+    cursor.execute("""
+        INSERT INTO users (email, username, password, tokens, is_premium)
+        VALUES (?, ?, ?, ?, ?)
+    """, (email, username, hashed_pw, tokens, is_premium))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "User berhasil ditambahkan."}), 200
+
+@app.route('/admin/download-db', methods=['GET'])
+def download_db():
+    try:
+        db_path = "webai.db"
+        if os.path.exists(db_path):
+            return send_file(db_path, as_attachment=True)
+        else:
+            return jsonify({"error": "File database tidak ditemukan."}), 404
+    except Exception as e:
+        print("❌ ERROR download DB:", e)
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
