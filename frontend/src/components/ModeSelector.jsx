@@ -4,14 +4,14 @@ import './ModeSelector.css';
 
 const ModeSelector = ({ onSelectMode, isPremium }) => {
   const [selectedField, setSelectedField] = useState(null);
-  const [showRocket, setShowRocket] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
 
   const handleFieldClick = (field) => {
-    setShowRocket(true);
+    setShowLoading(true);
     setTimeout(() => {
       setSelectedField(field);
-      setShowRocket(false);
-    }, 1800); // waktu tunggu untuk animasi roket
+      setShowLoading(false);
+    }, 1500);
   };
 
   const renderFieldSelection = () => (
@@ -19,20 +19,20 @@ const ModeSelector = ({ onSelectMode, isPremium }) => {
       <h2 className="welcome-text animate__animated animate__fadeInDown">
         Halooo, Selamat Datang 👋👋
       </h2>
-<div className="card-grid">
-  <div className="mode-card field-card" onClick={() => handleFieldClick("student")}>
-    <h3>📘 Student Development</h3>
-    <p>Pengembangan diri, karier, dan persiapan masa depan 🎓</p>
-  </div>
-  <div className="mode-card field-card" onClick={() => handleFieldClick("competition")}>
-    <h3>🏆 Asisten Lomba</h3>
-    <p>AI Generator untuk essay, KTI, dan business plan lomba!</p>
-  </div>
-  <div className="mode-card field-card" onClick={() => handleFieldClick("branding")}>
-    <h3>🌟 Personal Branding</h3>
-    <p>Tingkatkan citra dirimu dengan AI Instagram Bio Analyzer!</p>
-  </div>
-</div>
+      <div className="card-grid">
+        <div className="mode-card field-card" onClick={() => handleFieldClick("student")}>
+          <h3>📘 Student Development</h3>
+          <p>Pengembangan diri, karier, dan persiapan masa depan 🎓</p>
+        </div>
+        <div className="mode-card field-card" onClick={() => handleFieldClick("competition")}>
+          <h3>🏆 Asisten Lomba</h3>
+          <p>AI Generator untuk essay, KTI, dan business plan lomba!</p>
+        </div>
+        <div className="mode-card field-card" onClick={() => handleFieldClick("branding")}>
+          <h3>🌟 Personal Branding</h3>
+          <p>Tingkatkan citra dirimu dengan AI Instagram Bio Analyzer!</p>
+        </div>
+      </div>
     </>
   );
 
@@ -94,20 +94,15 @@ const ModeSelector = ({ onSelectMode, isPremium }) => {
 
   return (
     <div className="mode-selector-container animate__animated animate__fadeIn">
-      {showRocket && (
-        <div className="rocket-container">
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/3214/3214422.png"
-            alt="Rocket"
-            className="rocket"
-          />
-          <div className="smoke"></div>
+      {showLoading && (
+        <div className="loading-spinner-container">
+          <div className="spinner"></div>
         </div>
       )}
 
-      {!selectedField && !showRocket && renderFieldSelection()}
+      {!selectedField && !showLoading && renderFieldSelection()}
 
-      {selectedField && !showRocket && (
+      {selectedField && !showLoading && (
         <>
           <button className="btn btn-outline-secondary mb-3" onClick={() => setSelectedField(null)}>
             ⬅️ Kembali ke Kategori
