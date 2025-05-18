@@ -128,3 +128,15 @@
   border-color: #00acc1;
   box-shadow: 0 8px 20px rgba(0, 172, 193, 0.5);
 }
+.mode-section {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  text-align: left;
+  color: #333;
+  font-weight: bold;
+}
+
