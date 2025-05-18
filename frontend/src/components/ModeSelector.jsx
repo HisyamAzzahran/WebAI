@@ -19,20 +19,20 @@ const ModeSelector = ({ onSelectMode, isPremium }) => {
       <h2 className="welcome-text animate__animated animate__fadeInDown">
         Halooo, Selamat Datang 👋👋
       </h2>
-      <div className="card-grid">
-        <div className="mode-card" onClick={() => handleFieldClick("student")}>
-          <h3>📘 Student Development</h3>
-          <p>Pengembangan diri, karier, dan persiapan masa depan 🎓</p>
-        </div>
-        <div className="mode-card" onClick={() => handleFieldClick("competition")}>
-          <h3>🏆 Asisten Lomba</h3>
-          <p>AI Generator untuk essay, KTI, dan business plan lomba!</p>
-        </div>
-        <div className="mode-card" onClick={() => handleFieldClick("branding")}>
-          <h3>🌟 Personal Branding</h3>
-          <p>Tingkatkan citra dirimu dengan AI Instagram Bio Analyzer!</p>
-        </div>
-      </div>
+<div className="card-grid">
+  <div className="mode-card field-card" onClick={() => handleFieldClick("student")}>
+    <h3>📘 Student Development</h3>
+    <p>Pengembangan diri, karier, dan persiapan masa depan 🎓</p>
+  </div>
+  <div className="mode-card field-card" onClick={() => handleFieldClick("competition")}>
+    <h3>🏆 Asisten Lomba</h3>
+    <p>AI Generator untuk essay, KTI, dan business plan lomba!</p>
+  </div>
+  <div className="mode-card field-card" onClick={() => handleFieldClick("branding")}>
+    <h3>🌟 Personal Branding</h3>
+    <p>Tingkatkan citra dirimu dengan AI Instagram Bio Analyzer!</p>
+  </div>
+</div>
     </>
   );
 
