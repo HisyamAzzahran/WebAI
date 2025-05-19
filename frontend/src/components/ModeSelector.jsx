@@ -48,10 +48,6 @@ const ModeSelector = ({ onSelectMode, isPremium }) => {
           <h3>🎤 Interview Simulasi <span className="badge-premium">Premium</span></h3>
           <p>Simulasi interview beasiswa berbasis AI!</p>
         </div>
-        <div className="mode-card sasaa-mode" onClick={() => onSelectMode("sasaa")}>
-          <h3>🤖 Chatbot Sasaa <span className="badge-premium">Premium</span></h3>
-          <p>Chatbot AI yang bantu cari lomba + analisis instan 🎯</p>
-        </div>
         <div className="mode-card exchange-mode" onClick={() => onSelectMode("exchanges")}>
           <h3>✈️ Essay Exchanges <span className="badge-premium">Premium</span></h3>
           <p>Asisten AI untuk Motivation Letter Exchange!</p>
@@ -75,6 +71,10 @@ const ModeSelector = ({ onSelectMode, isPremium }) => {
         <div className="mode-card bp-mode" onClick={() => onSelectMode("bp")}>
           <h3>💼 Business Plan Generator</h3>
           <p>Buat rencana bisnis baru yang impactful!</p>
+        </div>
+        <div className="mode-card sasaa-mode" onClick={() => onSelectMode("sasaa")}>
+          <h3>🤖 Chatbot Sasaa <span className="badge-premium">Premium</span></h3>
+          <p>Chatbot AI yang bantu cari lomba + analisis instan 🎯</p>
         </div>
       </div>
     </>
