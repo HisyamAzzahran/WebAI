@@ -4,7 +4,7 @@ import './SasaaChat.css';
 import { toast } from 'react-toastify';
 import 'animate.css';
 
-const CHAT_WEBHOOK = "https://elevaai.app.n8n.cloud/webhook/13e55a07-d144-403b-b465-2a539501b207/chat";
+const CHAT_WEBHOOK = "https://n8n-production-d505.up.railway.app/webhook/13e55a07-d144-403b-b465-2a539501b207/chat";
 const API_URL = "https://webai-production-b975.up.railway.app";
 
 const SasaaChat = ({ email, isPremium, tokenSisa, setTokenSisa }) => {
