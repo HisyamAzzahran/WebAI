@@ -17,23 +17,6 @@ import re
 
 from auth import init_db, register_user, login_user
 
-conn = sqlite3.connect(DB_NAME)
-cursor = conn.cursor()
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS track_swot (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  email TEXT NOT NULL,
-  nama TEXT NOT NULL,
-  mbti TEXT NOT NULL,
-  via1 TEXT NOT NULL,
-  via2 TEXT NOT NULL,
-  via3 TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
-""")
-conn.commit()
-conn.close()
-
 # Load environment variables
 load_dotenv()
 
@@ -86,6 +69,23 @@ CREATE TABLE IF NOT EXISTS track_ikigai (
     ikigai_spot TEXT NOT NULL,
     slice_purpose TEXT NOT NULL,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+)
+""")
+conn.commit()
+conn.close()
+
+conn = sqlite3.connect(DB_NAME)
+cursor = conn.cursor()
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS track_swot (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL,
+  nama TEXT NOT NULL,
+  mbti TEXT NOT NULL,
+  via1 TEXT NOT NULL,
+  via2 TEXT NOT NULL,
+  via3 TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 """)
 conn.commit()
