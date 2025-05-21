@@ -17,6 +17,23 @@ import re
 
 from auth import init_db, register_user, login_user
 
+conn = sqlite3.connect(DB_NAME)
+cursor = conn.cursor()
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS track_swot (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL,
+  nama TEXT NOT NULL,
+  mbti TEXT NOT NULL,
+  via1 TEXT NOT NULL,
+  via2 TEXT NOT NULL,
+  via3 TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+""")
+conn.commit()
+conn.close()
+
 # Load environment variables
 load_dotenv()
 
@@ -104,6 +121,85 @@ def generate_openai_response(prompt):
 @app.route("/register", methods=["POST"])
 def register():
     return jsonify({"message": "Fitur pendaftaran sedang dinonaktifkan. Silakan gunakan akun yang sudah ada."}), 403
+
+@app.route("/analyze-swot", methods=["POST"])
+def analyze_swot():
+    data = request.get_json()
+    email = data.get("email")
+    nama = data.get("nama")
+    mbti = data.get("mbti")
+    via1 = data.get("via1")
+    via2 = data.get("via2")
+    via3 = data.get("via3")
+
+    try:
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+
+        # Ambil status premium dan token
+        cursor.execute("SELECT is_premium, tokens FROM users WHERE email = ?", (email,))
+        user = cursor.fetchone()
+
+        if not user:
+            return jsonify({"error": "User tidak ditemukan."}), 404
+
+        is_premium, tokens = user
+        if not is_premium or tokens < 1:
+            return jsonify({"error": "Premium dan minimal 1 token diperlukan."}), 403
+
+        # Prompt GPT
+        prompt = f"""
+Bertindaklah sebagai gabungan 5 peran expert berikut:
+1. Psikolog perkembangan yang ngerti cara manusia kenal dirinya secara utuh.
+2. Career coach senior yang biasa bantu mahasiswa nemuin arah hidup dan kontribusi nyata.
+3. Life & growth strategist yang bisa bimbing dari refleksi ke aksi.
+4. Mentor konten Gen Z yang bisa ngejelasin insight dengan gaya ringan, relevan, dan relatable.
+5. Expert dalam tes kepribadian MBTI dan VIA Character Strength.
+
+Gunakan keahlianmu buat menganalisis hasil kepribadian dari seseorang berdasarkan data berikut:
+- Nama: {nama}
+- MBTI: {mbti}
+- VIA Character Strength: {via1}, {via2}, {via3}
+
+Buat analisis SWOT diri dari hasil MBTI dan VIA tersebut, khusus untuk mahasiswa.
+Format output HARUS sama persis dengan struktur di bawah ini:
+
+1. Buka dengan narasi ringan tentang kombinasi kepribadian MBTI + VIA, bahas vibe-nya user secara umum.
+2. Lanjutkan dengan kalimat transisi yang ngenalin SWOT sebagai tools refleksi.
+3. Tampilkan 4 bagian SWOT berikut secara berurutan dan konsisten yang masing-masing minimal 3:
+🟩 S – Strength (Kekuatan Alami)
+🟨 W – Weakness (Hambatan Pribadi)
+🟦 O – Opportunity (Peluang Potensial)
+🟥 T – Threat (Tantangan yang Perlu Diwaspadai)
+
+Untuk setiap point SWOT, wajib pakai format ini:
+⭐/⚠️/🚀/🔥 [Judul Point]: Penjelasan singkat 1 baris.
+**Contoh:** ...
+**Strategi:** ...
+
+✨ Gunakan emoji, heading, dan tone Gen Z yang ringan, santai, dan relatable.
+✨ Sorot poin penting dengan format bold.
+✨ Tutup dengan CTA ringan: "Relate nggak sama SWOT ini?..."
+"""
+
+        result = generate_openai_response(prompt)
+
+        # Simpan ke tabel track_swot (pastikan tabel ini sudah ada)
+        cursor.execute("""
+            INSERT INTO track_swot (email, nama, mbti, via1, via2, via3)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (email, nama, mbti, via1, via2, via3))
+
+        # Kurangi token
+        cursor.execute("UPDATE users SET tokens = tokens - 1 WHERE email = ?", (email,))
+        conn.commit()
+        conn.close()
+
+        return jsonify({"result": result}), 200
+
+    except Exception as e:
+        print("[ERROR - /analyze-swot]", str(e))
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/log-feature", methods=["POST"])
 def log_feature():

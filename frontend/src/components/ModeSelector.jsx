@@ -4,14 +4,9 @@ import './ModeSelector.css';
 
 const ModeSelector = ({ onSelectMode, isPremium }) => {
   const [selectedField, setSelectedField] = useState(null);
-  const [showLoading, setShowLoading] = useState(false);
 
   const handleFieldClick = (field) => {
-    setShowLoading(true);
-    setTimeout(() => {
-      setSelectedField(field);
-      setShowLoading(false);
-    }, 1500);
+    setSelectedField(field);
   };
 
   const renderFieldSelection = () => (
@@ -73,7 +68,7 @@ const ModeSelector = ({ onSelectMode, isPremium }) => {
           <p>Buat rencana bisnis baru yang impactful!</p>
         </div>
         <div className="mode-card sasaa-mode" onClick={() => onSelectMode("sasaa")}>
-          <h3>🤖 Chatbot Sasaa <span className="badge-premium">Premium</span></h3>
+          <h3>🤖 Chatbot Elmo <span className="badge-premium">Premium</span></h3>
           <p>Chatbot AI yang bantu cari lomba + analisis instan 🎯</p>
         </div>
       </div>
@@ -94,15 +89,8 @@ const ModeSelector = ({ onSelectMode, isPremium }) => {
 
   return (
     <div className="mode-selector-container animate__animated animate__fadeIn">
-      {showLoading && (
-        <div className="loading-spinner-container">
-          <div className="spinner"></div>
-        </div>
-      )}
-
-      {!selectedField && !showLoading && renderFieldSelection()}
-
-      {selectedField && !showLoading && (
+      {!selectedField && renderFieldSelection()}
+      {selectedField && (
         <>
           <button className="btn btn-outline-secondary mb-3" onClick={() => setSelectedField(null)}>
             ⬅️ Kembali ke Kategori

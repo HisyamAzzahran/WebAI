@@ -7,9 +7,9 @@ import 'animate.css';
 const CHAT_WEBHOOK = "https://n8n-production-d505.up.railway.app/webhook/13e55a07-d144-403b-b465-2a539501b207/chat";
 const API_URL = "https://webai-production-b975.up.railway.app";
 
-const SasaaChat = ({ email, isPremium, tokenSisa, setTokenSisa }) => {
+const ElmoChat = ({ email, isPremium }) => {
   const [messages, setMessages] = useState([
-    { sender: 'sasaa', text: 'Halooo, Kenalin Aku Sasaa \uD83D\uDC4B\u2728 kamu lagi cari info lomba apa nih?' }
+    { sender: 'elmo', text: 'Halooo, Aku Elmo 👋✨ kamu lagi cari info lomba apa nih?' }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,12 +35,7 @@ const SasaaChat = ({ email, isPremium, tokenSisa, setTokenSisa }) => {
     if (!input.trim()) return;
 
     if (!isPremium) {
-      toast.warning("\uD83D\uDEAB Fitur ini hanya untuk pengguna Premium!");
-      return;
-    }
-
-    if (tokenSisa <= 0) {
-      toast.error("\uD83D\uDE25 Token kamu habis. Silakan isi ulang token.");
+      toast.warning("🚫 Fitur ini hanya untuk pengguna Premium!");
       return;
     }
 
@@ -49,25 +44,18 @@ const SasaaChat = ({ email, isPremium, tokenSisa, setTokenSisa }) => {
     setLoading(true);
 
     try {
-      // Logging pemakaian fitur Sasaa
+      // Logging penggunaan Elmo
       await axios.post(`${API_URL}/log-feature`, {
         email,
-        feature: 'sasaa-chat'
+        feature: 'elmo-chat'
       });
 
       const res = await axios.post(CHAT_WEBHOOK, { message: input, email });
-      const reply = res.data.reply || res.data.result || "Maaf, Sasaa belum bisa menjawab.";
-      const updatedMessages = [...newMessages, { sender: 'sasaa', text: reply }];
+      const reply = res.data.reply || res.data.result || "Maaf, Elmo belum bisa menjawab.";
+      const updatedMessages = [...newMessages, { sender: 'elmo', text: reply }];
       setMessages(updatedMessages);
-
-      const resToken = await axios.post(`${API_URL}/reduce-token`, { email });
-      if (resToken.status === 200 && resToken.data.success) {
-        setTokenSisa(resToken.data.new_token);
-      } else {
-        toast.warning("\u26A0\uFE0F Token tidak berhasil dikurangi di server.");
-      }
     } catch (error) {
-      setMessages([...newMessages, { sender: 'sasaa', text: '❌ Gagal menghubungi Sasaa.' }]);
+      setMessages([...newMessages, { sender: 'elmo', text: '❌ Gagal menghubungi Elmo.' }]);
       toast.error("❌ Terjadi kesalahan.");
     }
 
@@ -78,7 +66,7 @@ const SasaaChat = ({ email, isPremium, tokenSisa, setTokenSisa }) => {
   return (
     <div className="sasaa-chat-wrapper animate__animated animate__fadeIn">
       <div className="sasaa-chat-card">
-        <div className="sasaa-chat-header">🤖 Sasaa AI Assistant</div>
+        <div className="sasaa-chat-header">🤖 Elmo AI Assistant</div>
         <div className="sasaa-chat-box">
           {messages.map((msg, i) => (
             <div key={i} className={`chat-msg ${msg.sender}`}>
@@ -86,7 +74,7 @@ const SasaaChat = ({ email, isPremium, tokenSisa, setTokenSisa }) => {
             </div>
           ))}
           {loading && (
-            <div className="chat-msg sasaa loading">
+            <div className="chat-msg elmo loading">
               <span className="dot-wave"><span></span><span></span><span></span></span>
             </div>
           )}
@@ -96,7 +84,7 @@ const SasaaChat = ({ email, isPremium, tokenSisa, setTokenSisa }) => {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Tanya Sasaa tentang lomba..."
+            placeholder="Tanya Elmo tentang lomba..."
           />
           <button onClick={sendMessage} disabled={loading}>
             Kirim
@@ -107,4 +95,4 @@ const SasaaChat = ({ email, isPremium, tokenSisa, setTokenSisa }) => {
   );
 };
 
-export default SasaaChat;
+export default ElmoChat;
