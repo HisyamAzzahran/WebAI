@@ -45,19 +45,21 @@ const styles = StyleSheet.create({
 const parseMarkdownToPDF = (text) => {
   const lines = text.split('\n');
   const blocks = [];
+  let currentSection = null;
 
   lines.forEach((line) => {
+    if (line.startsWith('🟩')) currentSection = 'Strength';
+    else if (line.startsWith('🟨')) currentSection = 'Weakness';
+    else if (line.startsWith('🟦')) currentSection = 'Opportunity';
+    else if (line.startsWith('🟥')) currentSection = 'Threat';
+
     if (line.startsWith('🟩') || line.startsWith('🟨') || line.startsWith('🟦') || line.startsWith('🟥')) {
-      blocks.push({ type: 'section', content: line.trim() });
-    } else if (line.startsWith('⭐') || line.startsWith('⚠️') || line.startsWith('🚀') || line.startsWith('🔥')) {
-      const [title, ...descParts] = line.split(':');
-      blocks.push({ type: 'pointTitle', content: title.trim() });
-      if (descParts.length > 0) {
-        blocks.push({ type: 'paragraph', content: descParts.join(':').trim() });
-      }
-    } else if (line.startsWith('**Strategi:**') || line.startsWith('*Strategi:*') || line.toLowerCase().startsWith('strategi:')) {
-      blocks.push({ type: 'strategy', content: line.replace(/\*?\*?Strategi:\*?\*?/gi, 'Strategi:').trim() });
-    } else if (line.trim() !== '' && !line.startsWith('---') && !line.startsWith('#')) {
+      blocks.push({ type: 'sectionHeader', content: line.trim() });
+    } else if (/^[⭐⚠️🚀🔥]/.test(line)) {
+      blocks.push({ type: 'pointTitle', content: line.trim() });
+    } else if (line.toLowerCase().startsWith('strategi')) {
+      blocks.push({ type: 'strategy', content: line.replace(/\*\*?Strategi:\*\*?/i, 'Strategi:').trim() });
+    } else if (line.trim() !== '') {
       blocks.push({ type: 'paragraph', content: line.trim() });
     }
   });
@@ -65,7 +67,6 @@ const parseMarkdownToPDF = (text) => {
   return blocks;
 };
 
-// ✅ Komponen PDF
 const SwotPDF = ({ result }) => {
   const blocks = parseMarkdownToPDF(result);
 
@@ -74,14 +75,16 @@ const SwotPDF = ({ result }) => {
       <Page size="A4" style={styles.page}>
         {blocks.map((block, i) => {
           switch (block.type) {
-            case 'section':
+            case 'sectionHeader':
               return <Text key={i} style={styles.sectionHeader}>{block.content}</Text>;
             case 'pointTitle':
               return <Text key={i} style={styles.pointTitle}>{block.content}</Text>;
             case 'strategy':
-              return <Text key={i} style={{ ...styles.paragraph, fontStyle: 'italic' }}>{block.content}</Text>;
-            default:
+              return <Text key={i} style={styles.strategy}>{block.content}</Text>;
+            case 'paragraph':
               return <Text key={i} style={styles.paragraph}>{block.content}</Text>;
+            default:
+              return null;
           }
         })}
       </Page>
