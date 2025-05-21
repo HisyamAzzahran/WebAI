@@ -69,9 +69,9 @@ const ElmoChat = ({ email, isPremium }) => {
         <div className="sasaa-chat-header">🤖 Elmo AI Assistant</div>
         <div className="sasaa-chat-box">
           {messages.map((msg, i) => (
-            <div key={i} className={`chat-msg ${msg.sender}`}>
-              <span dangerouslySetInnerHTML={{ __html: formatReply(msg.text) }} />
-            </div>
+            <div className={`elmo-reply-box ${msg.sender}`}>
+  <span dangerouslySetInnerHTML={{ __html: formatReply(msg.text) }} />
+</div>
           ))}
           {loading && (
             <div className="chat-msg elmo loading">
