@@ -32,24 +32,28 @@ const ModeSelector = ({ onSelectMode, isPremium }) => {
   );
 
   const renderStudentDevelopment = () => (
-    <>
-      <h3 className="section-title">📘 Student Development</h3>
-      <div className="card-grid">
-        <div className="mode-card ikigai-mode" onClick={() => onSelectMode("ikigai")}>
-          <h3>🧭 Ikigai Self Discovery <span className="badge-premium">Premium</span></h3>
-          <p>Pemetaan Ikigai dan Strategi Karier Berbasis AI!</p>
-        </div>
-        <div className="mode-card interview-mode" onClick={() => onSelectMode("interview")}>
-          <h3>🎤 Interview Simulasi <span className="badge-premium">Premium</span></h3>
-          <p>Simulasi interview beasiswa berbasis AI!</p>
-        </div>
-        <div className="mode-card exchange-mode" onClick={() => onSelectMode("exchanges")}>
-          <h3>✈️ Essay Exchanges <span className="badge-premium">Premium</span></h3>
-          <p>Asisten AI untuk Motivation Letter Exchange!</p>
-        </div>
+  <>
+    <h3 className="section-title">📘 Student Development</h3>
+    <div className="card-grid">
+      <div className="mode-card ikigai-mode" onClick={() => onSelectMode("ikigai")}>
+        <h3>🧭 Ikigai Self Discovery <span className="badge-premium">Premium</span></h3>
+        <p>Pemetaan Ikigai dan Strategi Karier Berbasis AI!</p>
       </div>
-    </>
-  );
+      <div className="mode-card swot-mode" onClick={() => onSelectMode("swot")}>
+        <h3>🧠 SWOT Self Analysis <span className="badge-premium">Premium</span></h3>
+        <p>Kenali kekuatan & tantangan dirimu lewat MBTI & VIA!</p>
+      </div>
+      <div className="mode-card interview-mode" onClick={() => onSelectMode("interview")}>
+        <h3>🎤 Interview Simulasi <span className="badge-premium">Premium</span></h3>
+        <p>Simulasi interview beasiswa berbasis AI!</p>
+      </div>
+      <div className="mode-card exchange-mode" onClick={() => onSelectMode("exchanges")}>
+        <h3>✈️ Essay Exchanges <span className="badge-premium">Premium</span></h3>
+        <p>Asisten AI untuk Motivation Letter Exchange!</p>
+      </div>
+    </div>
+  </>
+);
 
   const renderCompetitionAssistant = () => (
     <>
