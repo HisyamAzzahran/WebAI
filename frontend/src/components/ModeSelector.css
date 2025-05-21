@@ -182,3 +182,8 @@
     min-height: 160px;
   }
 }
+
+.swot-mode {
+  background: linear-gradient(135deg, #ffb347, #ffcc33);
+  color: #2b2b2b;
+}

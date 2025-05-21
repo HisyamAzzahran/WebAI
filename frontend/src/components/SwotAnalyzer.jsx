@@ -4,23 +4,73 @@ import { toast } from 'react-toastify';
 import { ClipLoader } from 'react-spinners';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import { PDFDownloadLink, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { PDFDownloadLink, Document, Page, Text, StyleSheet } from '@react-pdf/renderer';
 import './SwotAnalyzer.css';
 
 const API_URL = "https://webai-production-b975.up.railway.app";
 
+// 📝 PDF styling
 const styles = StyleSheet.create({
-  page: { padding: 30, fontSize: 11, lineHeight: 1.5, fontFamily: 'Helvetica' },
-  heading: { fontSize: 14, fontWeight: 'bold', marginBottom: 6 },
-  paragraph: { marginBottom: 6 }
+  page: {
+    padding: 30,
+    fontSize: 11,
+    lineHeight: 1.5,
+    fontFamily: 'Helvetica',
+    backgroundColor: '#fff'
+  },
+  heading: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333'
+  },
+  sectionHeader: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginTop: 10,
+    marginBottom: 6,
+    color: '#444',
+    textDecoration: 'underline'
+  },
+  bullet: {
+    marginBottom: 6
+  }
 });
 
+// 🔍 Markdown parser for PDF blocks
+const parseMarkdownToPDF = (text) => {
+  const lines = text.split('\n');
+  const blocks = [];
+
+  lines.forEach((line) => {
+    if (line.startsWith('# ')) {
+      blocks.push({ type: 'heading', content: line.slice(2) });
+    } else if (line.startsWith('🟩') || line.startsWith('🟨') || line.startsWith('🟦') || line.startsWith('🟥')) {
+      blocks.push({ type: 'section', content: line });
+    } else if (line.trim() !== '') {
+      blocks.push({ type: 'paragraph', content: line });
+    }
+  });
+
+  return blocks;
+};
+
+// 📄 PDF Component
 const SwotPDF = ({ result }) => {
-  const blocks = result.split('\n').map((line, index) => <Text key={index} style={styles.paragraph}>{line}</Text>);
+  const blocks = parseMarkdownToPDF(result);
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {blocks}
+        {blocks.map((block, i) => {
+          if (block.type === 'heading') {
+            return <Text key={i} style={styles.heading}>{block.content}</Text>;
+          }
+          if (block.type === 'section') {
+            return <Text key={i} style={styles.sectionHeader}>{block.content}</Text>;
+          }
+          return <Text key={i} style={styles.bullet}>• {block.content}</Text>;
+        })}
       </Page>
     </Document>
   );
@@ -62,10 +112,10 @@ const SwotAnalyzer = ({ email, isPremium, tokenSisa, setTokenSisa, userData }) =
         setTokenSisa((prev) => prev - 1);
 
         await axios.post(`${API_URL}/log-feature`, {
-            email,
-            feature: 'SwotAnalyzer',
+          email,
+          feature: 'SwotAnalyzer',
         });
-        
+
         toast.success("✅ Analisis SWOT berhasil dibuat!");
       } else {
         toast.error("❌ Gagal generate analisis SWOT.");
@@ -123,8 +173,10 @@ const SwotAnalyzer = ({ email, isPremium, tokenSisa, setTokenSisa, userData }) =
       {result && (
         <div className="swot-result mt-4">
           <h5>📊 Hasil Analisis SWOT:</h5>
-          <div className="markdown-preview" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(result)) }} />
-
+          <div
+            className="markdown-preview"
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(result)) }}
+          />
           <div className="text-center mt-3">
             <PDFDownloadLink
               document={<SwotPDF result={result} />}

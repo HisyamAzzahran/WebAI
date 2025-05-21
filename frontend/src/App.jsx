@@ -19,6 +19,7 @@ import IkigaiAnalyzer from './components/Ikigai/IkigaiAnalyzer';
 import IkigaiFinalAnalyzer from './components/Ikigai/IkigaiFinalAnalyzer';
 import TrackIkigai from './components/TrackIkigai';
 import ElmoChatPage from './components/ElmoChatPage';
+import SwotAnalyzer from './components/SwotAnalyzer'; // tambahkan ini
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -216,6 +217,16 @@ const App = () => {
                         )}
                       </>
                     )}
+                    {selectedMode === "swot" && (
+   <SwotAnalyzer
+    isPremium={isPremium}
+    email={email}
+    tokenSisa={tokens}
+    setTokenSisa={setTokens}
+    userData={{ nama: email.split("@")[0] }}
+  />
+)}
+
                     {selectedMode === "sasaa" && (
                       <ElmoChatPage
                         email={email}

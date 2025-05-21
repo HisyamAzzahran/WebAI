@@ -1,0 +1,51 @@
+.swot-analyzer-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: auto;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.form-group label {
+  font-weight: 600;
+}
+
+.form-control {
+  border-radius: 8px;
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+}
+
+.swot-result {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.markdown-preview {
+  text-align: left;
+  white-space: pre-line;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 15px;
+}
+
+.badge-premium {
+  background-color: gold;
+  color: black;
+  padding: 2px 8px;
+  font-size: 12px;
+  border-radius: 6px;
+  margin-left: 6px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
