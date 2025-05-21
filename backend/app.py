@@ -58,6 +58,8 @@ with app.app_context():
 # Manual table for Ikigai tracking (if not using SQLAlchemy for this one)
 conn = sqlite3.connect(DB_NAME)
 cursor = conn.cursor()
+
+# Buat tabel track_ikigai jika belum ada
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS track_ikigai (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -71,11 +73,8 @@ CREATE TABLE IF NOT EXISTS track_ikigai (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 )
 """)
-conn.commit()
-conn.close()
 
-conn = sqlite3.connect(DB_NAME)
-cursor = conn.cursor()
+# Buat tabel track_swot jika belum ada
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS track_swot (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -88,6 +87,7 @@ CREATE TABLE IF NOT EXISTS track_swot (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 """)
+
 conn.commit()
 conn.close()
 
