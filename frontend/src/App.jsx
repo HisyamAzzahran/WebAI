@@ -18,7 +18,7 @@ import IkigaiTestLink from './components/Ikigai/IkigaiTestLink';
 import IkigaiAnalyzer from './components/Ikigai/IkigaiAnalyzer';
 import IkigaiFinalAnalyzer from './components/Ikigai/IkigaiFinalAnalyzer';
 import TrackIkigai from './components/TrackIkigai';
-import SasaaChatPage from './components/SasaaChatPage';
+import ElmoChatPage from './components/ElmoChatPage';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -217,7 +217,7 @@ const App = () => {
                       </>
                     )}
                     {selectedMode === "sasaa" && (
-                      <SasaaChatPage
+                      <ElmoChatPage
                         email={email}
                         isPremium={isPremium}
                         tokenSisa={tokens}
