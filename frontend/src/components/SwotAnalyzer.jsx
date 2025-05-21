@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { ClipLoader } from 'react-spinners';
@@ -9,7 +9,7 @@ import './SwotAnalyzer.css';
 
 const API_URL = "https://webai-production-b975.up.railway.app";
 
-// 📝 PDF styling
+// ✅ Styling untuk PDF
 const styles = StyleSheet.create({
   page: {
     padding: 30,
@@ -27,35 +27,45 @@ const styles = StyleSheet.create({
   sectionHeader: {
     fontSize: 14,
     fontWeight: 'bold',
-    marginTop: 10,
+    marginTop: 12,
     marginBottom: 6,
-    color: '#444',
-    textDecoration: 'underline'
+    textDecoration: 'underline',
+    color: '#000'
   },
-  bullet: {
-    marginBottom: 6
+  pointTitle: {
+    fontWeight: 'bold',
+    marginTop: 6
+  },
+  paragraph: {
+    marginBottom: 4
   }
 });
 
-// 🔍 Markdown parser for PDF blocks
+// ✅ Parser markdown ke struktur PDF
 const parseMarkdownToPDF = (text) => {
   const lines = text.split('\n');
   const blocks = [];
 
   lines.forEach((line) => {
-    if (line.startsWith('# ')) {
-      blocks.push({ type: 'heading', content: line.slice(2) });
-    } else if (line.startsWith('🟩') || line.startsWith('🟨') || line.startsWith('🟦') || line.startsWith('🟥')) {
-      blocks.push({ type: 'section', content: line });
-    } else if (line.trim() !== '') {
-      blocks.push({ type: 'paragraph', content: line });
+    if (line.startsWith('🟩') || line.startsWith('🟨') || line.startsWith('🟦') || line.startsWith('🟥')) {
+      blocks.push({ type: 'section', content: line.trim() });
+    } else if (line.startsWith('⭐') || line.startsWith('⚠️') || line.startsWith('🚀') || line.startsWith('🔥')) {
+      const [title, ...descParts] = line.split(':');
+      blocks.push({ type: 'pointTitle', content: title.trim() });
+      if (descParts.length > 0) {
+        blocks.push({ type: 'paragraph', content: descParts.join(':').trim() });
+      }
+    } else if (line.startsWith('**Strategi:**') || line.startsWith('*Strategi:*') || line.toLowerCase().startsWith('strategi:')) {
+      blocks.push({ type: 'strategy', content: line.replace(/\*?\*?Strategi:\*?\*?/gi, 'Strategi:').trim() });
+    } else if (line.trim() !== '' && !line.startsWith('---') && !line.startsWith('#')) {
+      blocks.push({ type: 'paragraph', content: line.trim() });
     }
   });
 
   return blocks;
 };
 
-// 📄 PDF Component
+// ✅ Komponen PDF
 const SwotPDF = ({ result }) => {
   const blocks = parseMarkdownToPDF(result);
 
@@ -63,19 +73,23 @@ const SwotPDF = ({ result }) => {
     <Document>
       <Page size="A4" style={styles.page}>
         {blocks.map((block, i) => {
-          if (block.type === 'heading') {
-            return <Text key={i} style={styles.heading}>{block.content}</Text>;
+          switch (block.type) {
+            case 'section':
+              return <Text key={i} style={styles.sectionHeader}>{block.content}</Text>;
+            case 'pointTitle':
+              return <Text key={i} style={styles.pointTitle}>{block.content}</Text>;
+            case 'strategy':
+              return <Text key={i} style={{ ...styles.paragraph, fontStyle: 'italic' }}>{block.content}</Text>;
+            default:
+              return <Text key={i} style={styles.paragraph}>{block.content}</Text>;
           }
-          if (block.type === 'section') {
-            return <Text key={i} style={styles.sectionHeader}>{block.content}</Text>;
-          }
-          return <Text key={i} style={styles.bullet}>• {block.content}</Text>;
         })}
       </Page>
     </Document>
   );
 };
 
+// ✅ Komponen Utama
 const SwotAnalyzer = ({ email, isPremium, tokenSisa, setTokenSisa, userData }) => {
   const [hasTakenIkigai, setHasTakenIkigai] = useState(false);
   const [mbti, setMbti] = useState('');
