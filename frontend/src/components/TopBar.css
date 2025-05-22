@@ -1,162 +1,271 @@
+/* src/components/TopBar.css */
+
 .topbar-container {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    padding: 12px 24px;
-    background-color: #ffffff;
-    border-bottom: 1px solid #e0e0e0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e9ecef; /* Garis batas bawah yang lebih halus */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06); /* Bayangan yang lebih lembut */
+  position: sticky;
+  top: 0;
+  z-index: 1020; /* Pastikan di atas konten lain (Bootstrap navbar z-index biasanya 1030) */
+  margin-bottom: 1.5rem; /* Jarak dari konten di bawahnya */
+}
+
+.logo-text {
+  font-size: 1.5rem; /* Ukuran logo disesuaikan */
+  font-weight: 700;
+  color: #0d6efd; /* Biru primer Bootstrap */
+  cursor: default; /* Bisa jadi link ke halaman utama jika perlu */
+}
+
+.topbar-nav-items {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Jarak antar item navigasi */
+  /* Item ini diposisikan di tengah jika ada ruang, atau sebelum topbar-right */
+  margin-right: auto; /* Mendorong item ke kiri, sebelum topbar-right */
+  margin-left: 20px; /* Jarak dari logo */
+}
+
+.topbar-action-btn {
+  background-color: transparent;
+  border: 1px solid transparent;
+  padding: 7px 14px; /* Padding disesuaikan */
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.875rem; /* Ukuran font sedikit lebih kecil */
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.topbar-action-btn:hover {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.topbar-action-btn.token-btn {
+  color: #198754; /* Hijau sukses Bootstrap */
+  /* border: 1px solid #198754; (opsional) */
+}
+.topbar-action-btn.token-btn:hover {
+  background-color: #e9f5e9; /* Hijau sangat muda */
+}
+
+.topbar-action-btn.premium-btn {
+  color: #0d6efd; /* Biru primer Bootstrap */
+  background-color: #e7f3ff; /* Latar biru muda untuk menonjolkan */
+}
+.topbar-action-btn.premium-btn:hover {
+  background-color: #cfe2ff; /* Biru muda lebih gelap saat hover */
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Jarak antara info pengguna dan tombol logout */
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  font-size: 0.8rem;
+  color: #495057;
+}
+
+.user-email {
+  font-weight: 500;
+  margin-bottom: 2px;
+  color: #212529; /* Warna teks Bootstrap standar */
+}
+
+.user-status-badge {
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-size: 0.65rem; /* Badge lebih kecil */
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1; /* Pastikan tinggi badge konsisten */
+}
+
+.user-status-badge.premium {
+  background-color: #198754; /* Hijau sukses Bootstrap */
+  color: white;
+}
+
+.user-status-badge.basic {
+  background-color: #6c757d; /* Abu-abu sekunder Bootstrap */
+  color: white;
+}
+
+.logout-btn {
+  background-color: #dc3545; /* Merah bahaya Bootstrap */
+  color: white;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: background-color 0.2s ease;
+}
+
+.logout-btn:hover {
+  background-color: #bb2d3b; /* Merah lebih gelap saat hover */
+}
+
+/* Gaya untuk Konten Modal (di dalam komponen Modal Anda) */
+.modal-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+}
+.modal-header h5 {
+  margin-bottom: 0;
+  font-size: 1.15rem; /* Ukuran judul modal */
+  font-weight: 600;
+  color: #343a40;
+}
+
+.modal-body {
+  padding: 1.25rem;
+  font-size: 0.9rem; /* Ukuran font isi modal */
+  line-height: 1.6;
+  color: #495057;
+}
+.modal-body p {
+  margin-bottom: 0.8rem;
+}
+.modal-body p:last-child {
+  margin-bottom: 0;
+}
+
+.feature-list {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0.8rem;
+  margin-bottom: 1.25rem;
+}
+
+.feature-list li {
+  padding: 6px 0;
+  font-size: 0.875rem;
+  color: #333;
+  border-bottom: 1px dashed #f1f1f1; /* Pemisah yang sangat halus */
+}
+.feature-list li:first-child {
+  padding-top: 0;
+}
+.feature-list li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.feature-list li::before {
+  content: "✅"; /* Emoji centang standar */
+  color: #198754;
+  margin-right: 8px;
+  font-weight: normal; /* Emoji biasanya sudah bold */
+}
+
+.modal-footer {
+  padding: 0.9rem 1.25rem;
+  border-top: 1px solid #dee2e6;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  background-color: #f8f9fa;
+}
+
+.btn-modal {
+  padding: 8px 18px; /* Padding tombol modal disesuaikan */
+  border-radius: 5px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+  display: inline-block;
+}
+.btn-modal:hover {
+  opacity: 0.9;
+  transform: translateY(-1px); /* Efek angkat sedikit */
+}
+
+.btn-modal-green {
+  background-color: #198754;
+  color: white;
+}
+
+.btn-modal-blue {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.btn-modal-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+.btn-modal-secondary:hover {
+  background-color: #5a6268;
+  opacity: 1;
+}
+
+/* Penyesuaian Responsif (opsional, sesuaikan dengan kebutuhan aplikasi Anda) */
+@media (max-width: 768px) {
+  .topbar-container {
+    padding: 10px 15px; /* Padding lebih kecil di mobile */
   }
-  
   .logo-text {
-    font-size: 1.5rem;
-    color: #007bff;
-    font-weight: bold;
-    margin: 0;
+    font-size: 1.3rem;
   }
-  
-  .topbar-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    position: relative;
+  .topbar-nav-items {
+    margin-left: 10px;
+    gap: 5px;
   }
-  
-  .user-info {
-    text-align: right;
-  }
-  
-  .user-email {
-    font-size: 0.9rem;
-    color: #333;
-  }
-  
-  .user-badge {
-    font-size: 0.75rem;
-    padding: 3px 8px;
-    border-radius: 10px;
-    display: inline-block;
-    margin-top: 3px;
-  }
-  
-  .premium {
-    background-color: #28a745;
-    color: white;
-  }
-  
-  .basic {
-    background-color: #6c757d;
-    color: white;
-  }
-  
-  .cart-wrapper {
-    position: relative;
-  }
-  
-  .cart-icon {
-    font-size: 20px;
-    background: none;
-    border: 1px solid #ccc;
-    border-radius: 8px;
+  .topbar-action-btn, .logout-btn {
     padding: 6px 10px;
-    cursor: pointer;
-    transition: background 0.2s ease;
+    font-size: 0.8rem;
   }
-  
-  .cart-icon:hover {
-    background-color: #f0f0f0;
+  .user-email {
+    max-width: 100px; /* Batasi lebar email agar tidak terlalu panjang */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Tampilkan ... jika email panjang */
   }
-  
-  .cart-dropdown {
-    position: absolute;
-    right: 0;
-    top: 40px;
-    background: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    padding: 16px;
-    width: 260px;
-    font-size: 0.85rem;
-    z-index: 9999;
-    animation: fadeIn 0.25s ease-in-out;
-  }
-  
-  .dropdown-link {
-    display: block;
-    color: #007bff;
-    text-decoration: none;
-    margin-bottom: 12px;
-    font-weight: 500;
-  }
-  
-  .dropdown-link:hover {
-    text-decoration: underline;
-  }
-  
-  .cart-dropdown ul {
-    padding-left: 18px;
-    margin: 10px 0;
-  }
-  
-  .divider {
-    border-bottom: 1px solid #ddd;
-    margin: 10px 0;
-  }
-  
-  /* Fade-in animation */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(-5px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  /* Responsive */
-  @media (max-width: 768px) {
-    .topbar-container {
-      flex-direction: column;
-      align-items: flex-start;
-      padding: 12px 16px;
-    }
-  
-    .topbar-right {
-      width: 100%;
-      justify-content: space-between;
-    }
-  
-    .cart-dropdown {
-      right: 0;
-      top: 42px;
-    }
-  }
-  .cart-dropdown-box {
-    display: flex;
+}
+
+@media (max-width: 576px) {
+  .topbar-container {
+    flex-wrap: wrap; /* Izinkan item untuk wrap ke baris baru */
+    justify-content: center; /* Pusatkan item saat wrap */
     gap: 10px;
-    margin-left: 20px;
   }
-  
-  .card-option {
-    background: #f8f9fa;
-    padding: 10px 16px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.2s;
+  .logo-text {
+    width: 100%; /* Logo mengambil lebar penuh dan terpusat */
+    text-align: center;
+    margin-bottom: 5px; /* Jarak jika wrap */
   }
-  
-  .card-option:hover {
-    background: #e2e6ea;
-    transform: translateY(-2px);
+  .topbar-nav-items {
+    order: 2; /* Urutan item navigasi setelah info pengguna */
+    width: 100%;
+    justify-content: center;
+    margin-left: 0;
   }
-  
-  
+  .topbar-right {
+    order: 1; /* Info pengguna muncul lebih dulu */
+    width: 100%;
+    justify-content: space-around; /* Sebar info pengguna dan logout */
+  }
+  .user-info {
+    align-items: center;
+    text-align: center;
+  }
+}

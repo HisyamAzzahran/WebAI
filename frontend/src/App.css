@@ -1,0 +1,187 @@
+body {
+  background-color: #f8f9fa; /* Warna latar belakang yang sedikit berbeda */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Font yang lebih modern */
+}
+
+.app-container {
+  min-height: 100vh;
+  padding-bottom: 50px; /* Beri ruang di bawah */
+}
+
+/* Styling untuk Form Login dan Register */
+.auth-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh; /* Pusatkan di tengah halaman */
+}
+
+.auth-card {
+  background-color: #ffffff;
+  padding: 2rem 2.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 450px; /* Batasi lebar form */
+  margin-top: 20px;
+}
+
+.auth-card h3 {
+  color: #343a40;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.auth-card .form-control {
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.auth-card .btn {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+}
+
+.auth-toggle-link {
+  font-size: 0.9rem;
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: none;
+}
+.auth-toggle-link:hover {
+  text-decoration: underline;
+}
+
+/* Styling untuk Mode Selector */
+.mode-selector-container {
+  padding: 20px;
+}
+
+.mode-selector-title {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.mode-card {
+  background-color: #ffffff;
+  border: none;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.mode-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.mode-card-icon {
+  font-size: 2.5rem; /* Ukuran ikon bisa disesuaikan */
+  margin-bottom: 1rem;
+  color: #007bff; /* Warna ikon utama */
+}
+
+/* Beri warna berbeda untuk beberapa ikon jika diinginkan */
+.mode-card[data-mode="essay"] .mode-card-icon { color: #28a745; }
+.mode-card[data-mode="kti"] .mode-card-icon { color: #17a2b8; }
+.mode-card[data-mode="bp"] .mode-card-icon { color: #ffc107; }
+.mode-card[data-mode="exchanges"] .mode-card-icon { color: #fd7e14; }
+.mode-card[data-mode="interview"] .mode-card-icon { color: #6f42c1; }
+.mode-card[data-mode="bio"] .mode-card-icon { color: #e83e8c; }
+.mode-card[data-mode="ikigai"] .mode-card-icon { color: #6610f2; }
+.mode-card[data-mode="swot"] .mode-card-icon { color: #20c997; }
+.mode-card[data-mode="sasaa"] .mode-card-icon { color: #dc3545; }
+
+
+.mode-card .card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #343a40;
+}
+
+.mode-card .card-text {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+/* Styling untuk Konten Utama Setelah Mode Dipilih */
+.main-content-wrapper {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  margin-top: 1.5rem;
+}
+
+.back-to-menu-btn {
+  margin-bottom: 1.5rem !important; /* Tambahkan !important jika perlu */
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+.back-to-menu-btn svg { /* Jika menggunakan ikon SVG */
+  margin-right: 8px;
+}
+
+.token-info-alert {
+  background-color: #e9f5ff;
+  border-color: #b8dfff;
+  color: #0056b3;
+  font-weight: 500;
+}
+.token-info-alert strong {
+  color: #004085;
+}
+
+.premium-alert {
+  background-color: #fff3cd;
+  border-color: #ffeeba;
+  color: #856404;
+}
+.premium-alert strong {
+  color: #664d03;
+}
+.premium-alert .btn-success {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+/* TopBar Enhancements */
+.top-bar {
+  background-color: #ffffff;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  margin-bottom: 1.5rem; /* Beri jarak dari konten di bawahnya */
+  border-radius: 0.5rem;
+}
+
+.top-bar .navbar-brand {
+  font-weight: 600;
+  color: #007bff !important;
+}
+
+.top-bar .user-info {
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.top-bar .premium-badge {
+  font-size: 0.75rem;
+  padding: 0.3em 0.6em;
+  margin-left: 8px;
+}

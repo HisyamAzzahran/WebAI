@@ -1,189 +1,158 @@
-/* === Layout Container === */
+/* src/components/ModeSelector.css */
+
+/* Wadah utama untuk mode selector */
 .mode-selector-container {
-  padding: 40px 20px;
-  text-align: center;
-  z-index: 1;
-  position: relative;
-  margin-top: 40px;
-  margin-bottom: 100px;
-  padding-bottom: 50px;
+  padding: 25px 20px;
+  animation-duration: 0.5s; /* Durasi animasi dari animate.css */
+  max-width: 900px; /* Batasi lebar maksimum untuk tampilan yang lebih baik di layar besar */
+  margin: 0 auto; /* Pusatkan container */
 }
 
+/* Teks selamat datang */
 .welcome-text {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #007bff;
-  margin-bottom: 40px;
+  text-align: center;
+  font-size: 2.2rem; /* Ukuran font sedikit lebih besar */
+  font-weight: 600; /* Lebih tebal */
+  color: #343a40; /* Warna teks gelap standar */
+  margin-bottom: 2.5rem; /* Jarak bawah lebih besar */
+  animation-duration: 0.7s; /* Durasi animasi untuk teks ini */
 }
 
-.mode-section {
-  margin-bottom: 2rem;
-}
-
-.section-title {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-  text-align: left;
-  color: #333;
-  font-weight: bold;
-}
-
-/* === Grid & Card === */
+/* Grid untuk kartu-kartu */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 30px;
-  justify-content: center;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); /* Grid responsif */
+  gap: 1.75rem; /* Jarak antar kartu */
+  margin-bottom: 2.5rem; /* Jarak bawah setelah grid */
 }
 
+/* Gaya dasar untuk semua kartu (mode-card dan field-card) */
 .mode-card {
-  padding: 25px;
-  border-radius: 18px;
+  background-color: #ffffff;
+  border: 1px solid #dee2e6; /* Garis tepi standar */
+  border-radius: 10px; /* Sudut lebih membulat */
+  padding: 1.75rem 1.5rem;
+  text-align: left; /* Teks rata kiri untuk deskripsi yang lebih panjang */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.07); /* Bayangan halus */
+  transition: transform 0.25s ease-out, box-shadow 0.25s ease-out;
   cursor: pointer;
-  transition: all 0.3s ease;
-  color: white;
-  min-height: 180px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
-  position: relative;
-  z-index: 2;
+  height: 100%; /* Membuat kartu dalam satu baris memiliki tinggi yang sama */
 }
 
 .mode-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  transform: translateY(-6px); /* Efek angkat saat hover */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Bayangan lebih jelas saat hover */
 }
 
-/* === Mode Styles === */
-.essay-mode {
-  background: linear-gradient(135deg, #007bff, #00c6ff);
+.mode-card h3 {
+  font-size: 1.25rem; /* Ukuran judul kartu */
+  font-weight: 600;
+  color: #2c3e50; /* Warna judul yang elegan */
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.kti-mode {
-  background: linear-gradient(135deg, #28a745, #85e085);
+.mode-card p {
+  font-size: 0.9rem; /* Ukuran teks deskripsi */
+  color: #5a6773; /* Warna teks deskripsi */
+  line-height: 1.6;
+  flex-grow: 1; /* Membuat paragraf mengisi ruang tersedia */
+  margin-bottom: 0;
 }
 
-.bp-mode {
-  background: linear-gradient(135deg, #ffc107, #ffdd57);
-  color: #333;
-}
-
-.exchange-mode {
-  background: linear-gradient(135deg, #17a2b8, #7de2fc);
-}
-
-.interview-mode {
-  background: linear-gradient(to right, #d3bfff, #f3e8ff);
-}
-
-.interview-mode:hover {
-  border-color: #6f42c1;
-}
-
-.bio-mode {
-  background-color: #e91e63;
-}
-
-.bio-mode:hover {
-  border-color: #c2185b;
-  transform: scale(1.05);
-  box-shadow: 0 6px 12px rgba(233, 30, 99, 0.3);
-}
-
-.ikigai-mode {
-  background-color: #ffe5ec;
-  color: #6a1b4d;
-  border: 2px solid #ffcbd1;
-  box-shadow: 0 4px 10px rgba(255, 192, 203, 0.4);
-}
-
-.ikigai-mode:hover {
-  transform: scale(1.03);
-  background-color: #ffd3db;
-  box-shadow: 0 8px 20px rgba(255, 192, 203, 0.6);
-}
-
-.sasaa-mode {
-  background-color: #e0f7fa;
-  border: 2px solid #26c6da;
-  color: #006064;
-  box-shadow: 0 4px 10px rgba(38, 198, 218, 0.4);
-}
-
-.sasaa-mode:hover {
-  transform: scale(1.05);
-  background-color: #b2ebf2;
-  border-color: #00acc1;
-  box-shadow: 0 8px 20px rgba(0, 172, 193, 0.5);
-}
-
+/* Gaya khusus untuk kartu kategori (field-card) */
 .field-card {
-  background: linear-gradient(135deg, #ffffff, #f2f2f2);
-  color: #333;
-  border: 2px solid #ddd;
+  border-left: 5px solid #007bff; /* Aksen biru di sisi kiri */
+}
+.field-card h3 {
+  color: #0056b3; /* Warna judul lebih gelap untuk kategori */
+}
+
+/* Gaya untuk judul bagian (misal: "Student Development") */
+.section-title {
+  font-size: 1.6rem;
   font-weight: 600;
-  font-size: 1.2rem;
+  color: #495057;
+  margin-top: 1rem; /* Sedikit jarak atas jika ada tombol kembali */
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 2px solid #e9ecef; /* Garis pemisah halus */
+  text-align: left;
 }
 
-.field-card:hover {
-  background: linear-gradient(135deg, #f0f8ff, #e0e0e0);
-  transform: scale(1.03);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-}
-
-/* === Badge === */
-.badge-premium {
-  background-color: #dc3545;
-  color: white;
-  font-size: 0.7rem;
-  padding: 4px 8px;
+/* Gaya untuk tombol "Kembali ke Kategori" */
+.btn-outline-secondary.mb-3 {
+  font-weight: 500;
   border-radius: 8px;
-  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+  display: inline-flex; /* Agar bisa align-items center dengan ikon */
+  align-items: center;
+  gap: 0.4rem; /* Jarak antara ikon dan teks */
+  margin-bottom: 1.5rem !important; /* Pastikan margin diterapkan */
 }
 
-/* === Spinner Loading === */
-.loading-spinner-container {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 9999;
+/* Gaya untuk badge premium */
+.badge-premium {
+  background-color: #e67e22; /* Oranye sebagai warna premium */
+  color: #ffffff;
+  font-size: 0.65rem; /* Lebih kecil agar tidak mendominasi */
+  font-weight: bold;
+  padding: 0.3em 0.7em;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 0.5rem;
+  display: inline-block;
+  vertical-align: middle;
 }
 
-.spinner {
-  border: 6px solid #f3f3f3;
-  border-top: 6px solid #007bff;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  animation: spin 1s linear infinite;
+/* Variasi warna atau aksen untuk kartu mode spesifik (opsional) */
+.ikigai-mode { border-left-color: #9b59b6; /* Ungu lembut */ }
+.ikigai-mode h3 { color: #8e44ad; }
+
+.swot-mode { border-left-color: #e67e22; /* Oranye (sama dengan badge premium) */ }
+.swot-mode h3 { color: #d35400; }
+
+.interview-mode { border-left-color: #1abc9c; /* Toska */ }
+.interview-mode h3 { color: #16a085; }
+
+.exchange-mode { border-left-color: #3498db; /* Biru muda */ }
+.exchange-mode h3 { color: #2980b9; }
+
+.essay-mode { border-left-color: #2ecc71; /* Hijau */ }
+.essay-mode h3 { color: #27ae60; }
+
+.kti-mode { border-left-color: #f1c40f; /* Kuning */ }
+.kti-mode h3 { color: #f39c12; }
+
+.bp-mode { border-left-color: #e74c3c; /* Merah */ }
+.bp-mode h3 { color: #c0392b; }
+
+.sasaa-mode { border-left-color: #7f8c8d; /* Abu-abu */ }
+.sasaa-mode h3 { color: #34495e; /* Biru dongker */ }
+
+.bio-mode { border-left-color: #c0392b; /* Merah bata (contoh) */ }
+.bio-mode h3 { color: #a5281b; }
+
+
+/* Gaya untuk kartu yang dinonaktifkan (jika Anda menambahkan logika ini di JS) */
+.mode-card.disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  background-color: #f8f9fa; /* Latar belakang sedikit berbeda */
+  border-left-color: #adb5bd; /* Warna border netral */
 }
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+.mode-card.disabled:hover {
+  transform: none; /* Tidak ada efek angkat */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.07); /* Bayangan standar */
 }
 
-/* === Responsive === */
-@media (max-width: 576px) {
-  .welcome-text {
-    font-size: 1.5rem;
-  }
-
-  .mode-card {
-    padding: 20px;
-    min-height: 160px;
-  }
-}
-
-.swot-mode {
-  background: linear-gradient(135deg, #ffb347, #ffcc33);
-  color: #2b2b2b;
+.mode-card.disabled h3 {
+    color: #6c757d; /* Warna judul lebih redup */
 }

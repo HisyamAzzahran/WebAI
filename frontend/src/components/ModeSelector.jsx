@@ -1,12 +1,53 @@
+// src/components/ModeSelector.js
 import { useState } from 'react';
 import 'animate.css';
-import './ModeSelector.css';
+import './ModeSelector.css'; // Pastikan file CSS ini ada dan berisi gaya yang sudah dibuat
+
+// Konfigurasi untuk kategori (fields) dan mode-mode di dalamnya
+// Tambahkan properti 'premium: true/false' untuk setiap mode
+const fieldsConfig = {
+  student: {
+    name: "📘 Student Development",
+    description: "Pengembangan diri, karier, dan persiapan masa depan 🎓",
+    modes: [
+      { id: "ikigai", title: "🧭 Ikigai Self Discovery", description: "Pemetaan Ikigai dan Strategi Karier Berbasis AI!", premium: true, className: "ikigai-mode" },
+      { id: "swot", title: "🧠 SWOT Self Analysis", description: "Kenali kekuatan & tantangan dirimu lewat MBTI & VIA!", premium: true, className: "swot-mode" },
+      { id: "interview", title: "🎤 Interview Simulasi", description: "Simulasi interview beasiswa berbasis AI!", premium: true, className: "interview-mode" },
+      { id: "exchanges", title: "✈️ Essay Exchanges", description: "Asisten AI untuk Motivation Letter Exchange!", premium: true, className: "exchange-mode" },
+    ],
+  },
+  competition: {
+    name: "🏆 Asisten Lomba",
+    description: "AI Generator untuk essay, KTI, dan business plan lomba!",
+    modes: [
+      { id: "essay", title: "📝 Essay Generator", description: "Buat ide judul essay inovatif dan kreatif!", premium: false, className: "essay-mode" },
+      { id: "kti", title: "📚 KTI Generator", description: "Kembangkan ide Karya Tulis Ilmiah kompetitif!", premium: false, className: "kti-mode" },
+      { id: "bp", title: "💼 Business Plan Generator", description: "Buat rencana bisnis baru yang impactful!", premium: false, className: "bp-mode" }, // Sesuaikan jika BP adalah premium
+      { id: "sasaa", title: "🤖 Chatbot Elmo", description: "Chatbot AI yang bantu cari lomba + analisis instan 🎯", premium: true, className: "sasaa-mode" },
+    ],
+  },
+  branding: {
+    name: "🌟 Personal Branding",
+    description: "Tingkatkan citra dirimu dengan AI Instagram Bio Analyzer!",
+    modes: [
+      { id: "bio", title: "📸 Instagram Bio Analyzer", description: "Optimalkan bio IG kamu sesuai gaya dan keahlian!", premium: true, className: "bio-mode" },
+    ],
+  },
+};
+
 
 const ModeSelector = ({ onSelectMode, isPremium }) => {
-  const [selectedField, setSelectedField] = useState(null);
+  const [selectedFieldKey, setSelectedFieldKey] = useState(null);
 
-  const handleFieldClick = (field) => {
-    setSelectedField(field);
+  const handleFieldClick = (fieldKey) => {
+    setSelectedFieldKey(fieldKey);
+  };
+
+  const handleModeClick = (mode) => {
+    const isDisabled = mode.premium && !isPremium;
+    if (!isDisabled) {
+      onSelectMode(mode.id);
+    }
   };
 
   const renderFieldSelection = () => (
@@ -15,94 +56,83 @@ const ModeSelector = ({ onSelectMode, isPremium }) => {
         Halooo, Selamat Datang 👋👋
       </h2>
       <div className="card-grid">
-        <div className="mode-card field-card" onClick={() => handleFieldClick("student")}>
-          <h3>📘 Student Development</h3>
-          <p>Pengembangan diri, karier, dan persiapan masa depan 🎓</p>
-        </div>
-        <div className="mode-card field-card" onClick={() => handleFieldClick("competition")}>
-          <h3>🏆 Asisten Lomba</h3>
-          <p>AI Generator untuk essay, KTI, dan business plan lomba!</p>
-        </div>
-        <div className="mode-card field-card" onClick={() => handleFieldClick("branding")}>
-          <h3>🌟 Personal Branding</h3>
-          <p>Tingkatkan citra dirimu dengan AI Instagram Bio Analyzer!</p>
-        </div>
+        {Object.entries(fieldsConfig).map(([key, field]) => (
+          <div
+            key={key}
+            className="mode-card field-card"
+            onClick={() => handleFieldClick(key)}
+          >
+            <h3>{field.name}</h3>
+            <p>{field.description}</p>
+          </div>
+        ))}
       </div>
     </>
   );
 
-  const renderStudentDevelopment = () => (
-  <>
-    <h3 className="section-title">📘 Student Development</h3>
-    <div className="card-grid">
-      <div className="mode-card ikigai-mode" onClick={() => onSelectMode("ikigai")}>
-        <h3>🧭 Ikigai Self Discovery <span className="badge-premium">Premium</span></h3>
-        <p>Pemetaan Ikigai dan Strategi Karier Berbasis AI!</p>
-      </div>
-      <div className="mode-card swot-mode" onClick={() => onSelectMode("swot")}>
-        <h3>🧠 SWOT Self Analysis <span className="badge-premium">Premium</span></h3>
-        <p>Kenali kekuatan & tantangan dirimu lewat MBTI & VIA!</p>
-      </div>
-      <div className="mode-card interview-mode" onClick={() => onSelectMode("interview")}>
-        <h3>🎤 Interview Simulasi <span className="badge-premium">Premium</span></h3>
-        <p>Simulasi interview beasiswa berbasis AI!</p>
-      </div>
-      <div className="mode-card exchange-mode" onClick={() => onSelectMode("exchanges")}>
-        <h3>✈️ Essay Exchanges <span className="badge-premium">Premium</span></h3>
-        <p>Asisten AI untuk Motivation Letter Exchange!</p>
-      </div>
-    </div>
-  </>
-);
+  const renderModesForSelectedField = () => {
+    if (!selectedFieldKey || !fieldsConfig[selectedFieldKey]) {
+      return null; // Atau tampilkan pesan error/fallback
+    }
 
-  const renderCompetitionAssistant = () => (
-    <>
-      <h3 className="section-title">🏆 Asisten Lomba</h3>
-      <div className="card-grid">
-        <div className="mode-card essay-mode" onClick={() => onSelectMode("essay")}>
-          <h3>📝 Essay Generator</h3>
-          <p>Buat ide judul essay inovatif dan kreatif!</p>
-        </div>
-        <div className="mode-card kti-mode" onClick={() => onSelectMode("kti")}>
-          <h3>📚 KTI Generator</h3>
-          <p>Kembangkan ide Karya Tulis Ilmiah kompetitif!</p>
-        </div>
-        <div className="mode-card bp-mode" onClick={() => onSelectMode("bp")}>
-          <h3>💼 Business Plan Generator</h3>
-          <p>Buat rencana bisnis baru yang impactful!</p>
-        </div>
-        <div className="mode-card sasaa-mode" onClick={() => onSelectMode("sasaa")}>
-          <h3>🤖 Chatbot Elmo <span className="badge-premium">Premium</span></h3>
-          <p>Chatbot AI yang bantu cari lomba + analisis instan 🎯</p>
-        </div>
-      </div>
-    </>
-  );
+    const field = fieldsConfig[selectedFieldKey];
 
-  const renderPersonalBranding = () => (
-    <>
-      <h3 className="section-title">🌟 Personal Branding</h3>
-      <div className="card-grid">
-        <div className="mode-card bio-mode" onClick={() => onSelectMode("bio")}>
-          <h3>📸 Instagram Bio Analyzer <span className="badge-premium">Premium</span></h3>
-          <p>Optimalkan bio IG kamu sesuai gaya dan keahlian!</p>
+    return (
+      <>
+        <h3 className="section-title">{field.name}</h3>
+        <div className="card-grid">
+          {field.modes.map((mode) => {
+            const isDisabled = mode.premium && !isPremium;
+            return (
+              <div
+                key={mode.id}
+                className={`mode-card ${mode.className || ''} ${isDisabled ? 'disabled' : ''}`}
+                onClick={() => handleModeClick(mode)}
+                title={isDisabled ? 'Fitur ini khusus untuk pengguna Premium' : mode.description}
+              >
+                <h3>
+                  {mode.title}
+                  {mode.premium && <span className="badge-premium">Premium</span>}
+                </h3>
+                <p>{mode.description}</p>
+                {/* Anda bisa menambahkan pesan tambahan jika disabled */}
+                {isDisabled && <small className="text-muted d-block mt-2">Upgrade ke Premium untuk mengakses.</small>}
+              </div>
+            );
+          })}
         </div>
-      </div>
-    </>
-  );
+      </>
+    );
+  };
 
   return (
     <div className="mode-selector-container animate__animated animate__fadeIn">
-      {!selectedField && renderFieldSelection()}
-      {selectedField && (
+      {!selectedFieldKey ? (
+        renderFieldSelection()
+      ) : (
         <>
-          <button className="btn btn-outline-secondary mb-3" onClick={() => setSelectedField(null)}>
+          <button 
+            className="btn btn-outline-secondary mb-3" 
+            onClick={() => setSelectedFieldKey(null)}
+          >
             ⬅️ Kembali ke Kategori
           </button>
-          {selectedField === "student" && renderStudentDevelopment()}
-          {selectedField === "competition" && renderCompetitionAssistant()}
-          {selectedField === "branding" && renderPersonalBranding()}
+          {renderModesForSelectedField()}
         </>
+      )}
+       {!isPremium && (
+        <div className="alert alert-warning mt-4 text-center">
+          💡 Beberapa fitur ditandai dengan <span className="badge-premium">Premium</span> memerlukan akun Premium untuk akses penuh.
+          <br/>
+           <a
+            href="https://wa.me/6282211929271" // Ganti dengan link upgrade Anda
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-success btn-sm mt-2"
+          >
+            Upgrade ke Premium Sekarang
+          </a>
+        </div>
       )}
     </div>
   );
