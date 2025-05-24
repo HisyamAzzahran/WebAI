@@ -418,10 +418,22 @@ const StudentGoalsPlanner = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
 
 
   if (!isPremium) {
-    return ( /* ... (renderan untuk non-premium tetap sama) ... */ );
+    return (
+      // KEMBALIKAN JSX INI
+      <div className="alert alert-warning text-center mt-4 student-goals-container">
+        🚫 Fitur "Student Goals Planning" hanya untuk <strong>Pengguna Premium</strong>! Silakan upgrade akunmu. 🚀
+      </div>
+    );
   }
+
   if (isFetchingHistory) {
-    return ( /* ... (renderan untuk loading history tetap sama) ... */ );
+    return (
+      // KEMBALIKAN JSX INI
+      <div className="student-goals-container text-center my-5">
+        <ClipLoader size={50} color="#0d6efd" />
+        <p className="mt-2">Memuat riwayat rencana...</p>
+      </div>
+    );
   }
 
   const isInitialFormDisabled = !!initialDataForSession;
