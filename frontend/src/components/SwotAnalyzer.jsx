@@ -308,7 +308,7 @@ const SwotAnalyzer = ({ email, isPremium, tokenSisa, setTokenSisa, userData }) =
         ) : (
           <>
             <h5 className="mt-2 mb-3">🧠 Masukkan MBTI & Top 3 VIA Character Strengths</h5>
-            <div className="form-group mb-3"> {/* Gunakan mb-3 untuk spacing */}
+            <div className="form-group mb-3"> 
               <label className="form-label">MBTI Type:</label>
               <input type="text" className="form-control" value={mbti} onChange={(e) => setMbti(e.target.value.toUpperCase())} placeholder="Contoh: INFP (4 Huruf Kapital)" maxLength="4" />
             </div>
@@ -320,7 +320,7 @@ const SwotAnalyzer = ({ email, isPremium, tokenSisa, setTokenSisa, userData }) =
               <label className="form-label">VIA Character Strength #2:</label>
               <input type="text" className="form-control" value={via2} onChange={(e) => setVia2(e.target.value)} placeholder="Misal: Honesty" />
             </div>
-            <div className="form-group mb-3"> {/* Beri margin bawah lebih */}
+            <div className="form-group mb-3">
               <label className="form-label">VIA Character Strength #3:</label>
               <input type="text" className="form-control" value={via3} onChange={(e) => setVia3(e.target.value)} placeholder="Misal: Kindness" />
             </div>
@@ -331,7 +331,7 @@ const SwotAnalyzer = ({ email, isPremium, tokenSisa, setTokenSisa, userData }) =
         )}
 
         {result && (
-          <div className="swot-result mt-4 card shadow-sm"> {/* Hasil dalam card */}
+          <div className="swot-result mt-4 card shadow-sm"> ]
             <div className="card-header">
               <h5 className="mb-0">📊 Hasil Analisis SWOT Anda:</h5>
             </div>
