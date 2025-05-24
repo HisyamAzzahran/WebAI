@@ -1,10 +1,10 @@
 // src/components/ModeSelector.js
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { toast } from 'react-toastify'; // Pastikan ini sudah di-import jika Anda menggunakan toast
 import 'animate.css';
 import './ModeSelector.css'; // Pastikan file CSS ini ada dan berisi gaya yang sudah dibuat
 
 // Konfigurasi untuk kategori (fields) dan mode-mode di dalamnya
-// Tambahkan properti 'premium: true/false' untuk setiap mode
 const fieldsConfig = {
   student: {
     name: "📘 Student Development",
@@ -12,8 +12,18 @@ const fieldsConfig = {
     modes: [
       { id: "ikigai", title: "🧭 Ikigai Self Discovery", description: "Pemetaan Ikigai dan Strategi Karier Berbasis AI!", premium: true, className: "ikigai-mode" },
       { id: "swot", title: "🧠 SWOT Self Analysis", description: "Kenali kekuatan & tantangan dirimu lewat MBTI & VIA!", premium: true, className: "swot-mode" },
+      // --- Student Goals Planning DIPINDAHKAN KE SINI ---
+      {
+        id: "studentgoals",
+        title: "🎯 Student Goals Planning",
+        description: "Rencanakan tujuan studimu per semester dengan panduan AI (Membutuhkan 3 token).",
+        premium: true,
+        className: "studentgoals-mode"
+      },
+      // ----------------------------------------------------
       { id: "interview", title: "🎤 Interview Simulasi", description: "Simulasi interview beasiswa berbasis AI!", premium: true, className: "interview-mode" },
       { id: "exchanges", title: "✈️ Essay Exchanges", description: "Asisten AI untuk Motivation Letter Exchange!", premium: true, className: "exchange-mode" },
+      // Object Student Goals Planning yang lama sudah dihapus dari akhir array ini
     ],
   },
   competition: {
@@ -22,7 +32,7 @@ const fieldsConfig = {
     modes: [
       { id: "essay", title: "📝 Essay Generator", description: "Buat ide judul essay inovatif dan kreatif!", premium: false, className: "essay-mode" },
       { id: "kti", title: "📚 KTI Generator", description: "Kembangkan ide Karya Tulis Ilmiah kompetitif!", premium: false, className: "kti-mode" },
-      { id: "bp", title: "💼 Business Plan Generator", description: "Buat rencana bisnis baru yang impactful!", premium: false, className: "bp-mode" }, // Sesuaikan jika BP adalah premium
+      { id: "bp", title: "💼 Business Plan Generator", description: "Buat rencana bisnis baru yang impactful!", premium: false, className: "bp-mode" },
       { id: "sasaa", title: "🤖 Chatbot Elmo", description: "Chatbot AI yang bantu cari lomba + analisis instan 🎯", premium: true, className: "sasaa-mode" },
     ],
   },
@@ -47,6 +57,11 @@ const ModeSelector = ({ onSelectMode, isPremium }) => {
     const isDisabled = mode.premium && !isPremium;
     if (!isDisabled) {
       onSelectMode(mode.id);
+    } else {
+        toast.info("💡 Fitur ini khusus untuk pengguna Premium. Silakan upgrade akun Anda untuk mendapatkan akses penuh!", {
+            position: "top-center",
+            autoClose: 3000,
+        });
     }
   };
 
@@ -72,7 +87,7 @@ const ModeSelector = ({ onSelectMode, isPremium }) => {
 
   const renderModesForSelectedField = () => {
     if (!selectedFieldKey || !fieldsConfig[selectedFieldKey]) {
-      return null; // Atau tampilkan pesan error/fallback
+      return null;
     }
 
     const field = fieldsConfig[selectedFieldKey];
@@ -88,15 +103,18 @@ const ModeSelector = ({ onSelectMode, isPremium }) => {
                 key={mode.id}
                 className={`mode-card ${mode.className || ''} ${isDisabled ? 'disabled' : ''}`}
                 onClick={() => handleModeClick(mode)}
-                title={isDisabled ? 'Fitur ini khusus untuk pengguna Premium' : mode.description}
+                title={isDisabled ? 'Fitur ini khusus untuk pengguna Premium. Upgrade untuk akses!' : mode.description}
               >
                 <h3>
                   {mode.title}
                   {mode.premium && <span className="badge-premium">Premium</span>}
                 </h3>
                 <p>{mode.description}</p>
-                {/* Anda bisa menambahkan pesan tambahan jika disabled */}
-                {isDisabled && <small className="text-muted d-block mt-2">Upgrade ke Premium untuk mengakses.</small>}
+                {isDisabled && (
+                    <small className="text-warning d-block mt-2 premium-access-notice">
+                        🌟 Upgrade ke Premium untuk akses!
+                    </small>
+                )}
               </div>
             );
           })}
@@ -111,21 +129,21 @@ const ModeSelector = ({ onSelectMode, isPremium }) => {
         renderFieldSelection()
       ) : (
         <>
-          <button 
-            className="btn btn-outline-secondary mb-3" 
+          <button
+            className="btn btn-outline-secondary mb-3 back-to-category-btn"
             onClick={() => setSelectedFieldKey(null)}
           >
-            ⬅️ Kembali ke Kategori
+            ⬅️ Kembali ke Pilihan Kategori
           </button>
           {renderModesForSelectedField()}
         </>
       )}
        {!isPremium && (
-        <div className="alert alert-warning mt-4 text-center">
+        <div className="alert alert-info mt-4 text-center global-premium-notice">
           💡 Beberapa fitur ditandai dengan <span className="badge-premium">Premium</span> memerlukan akun Premium untuk akses penuh.
           <br/>
            <a
-            href="https://wa.me/6282211929271" // Ganti dengan link upgrade Anda
+            href="https://wa.me/6282211929271"
             target="_blank"
             rel="noopener noreferrer"
             className="btn btn-success btn-sm mt-2"

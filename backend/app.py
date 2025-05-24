@@ -14,6 +14,9 @@ import time
 import fitz  # PyMuPDF
 from docx import Document
 import re
+import uuid
+from werkzeug.utils import secure_filename
+from datetime import timezone
 
 from auth import init_db, register_user, login_user
 
@@ -29,6 +32,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///webai.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 DB_NAME = "webai.db"
 
+TOKEN_COST_STUDENT_GOALS = 3
+
+UPLOADS_FOLDER_GOALS = os.path.join(app.root_path, 'uploads', 'student_goals_files')
+if not os.path.exists(UPLOADS_FOLDER_GOALS):
+    os.makedirs(UPLOADS_FOLDER_GOALS, exist_ok=True)
 # Init SQLAlchemy
 db = SQLAlchemy(app)
 
@@ -88,6 +96,24 @@ CREATE TABLE IF NOT EXISTS track_swot (
 )
 """)
 
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS student_goals_plans (
+    id TEXT PRIMARY KEY,
+    user_email TEXT NOT NULL,
+    nama_input TEXT NOT NULL,
+    jurusan_input TEXT NOT NULL,
+    semester_input_awal INTEGER NOT NULL,
+    mode_action_input TEXT NOT NULL,
+    swot_file_ref TEXT,
+    ikigai_file_ref TEXT,
+    target_semester_plan INTEGER NOT NULL,
+    plan_content TEXT NOT NULL,
+    is_initial_data_source BOOLEAN DEFAULT FALSE,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_email) REFERENCES users(email)
+)
+""")
+
 conn.commit()
 conn.close()
 
@@ -121,6 +147,265 @@ def generate_openai_response(prompt):
 @app.route("/register", methods=["POST"])
 def register():
     return jsonify({"message": "Fitur pendaftaran sedang dinonaktifkan. Silakan gunakan akun yang sudah ada."}), 403
+
+@app.route("/student-goals/generate", methods=["POST"])
+def student_goals_generate():
+    # Menggunakan konstanta yang sudah didefinisikan di atas
+    # global TOKEN_COST_STUDENT_GOALS, UPLOADS_FOLDER_GOALS, DB_NAME, client
+
+    try:
+        email = request.form.get("email")
+        nama = request.form.get("nama")
+        jurusan = request.form.get("jurusan")
+        semester_input_awal_str = request.form.get("semester_input_awal") # Untuk generasi awal
+        target_semester_str = request.form.get("target_semester")
+        mode_action = request.form.get("mode_action")
+
+        is_regeneration_str = request.form.get("is_regeneration", "false")
+        is_adding_super_plan_str = request.form.get("is_adding_super_plan", "false")
+        plan_id_to_regenerate = request.form.get("plan_id_to_regenerate")
+
+        swot_file_ref_from_req = request.form.get("swot_file_ref")
+        ikigai_file_ref_from_req = request.form.get("ikigai_file_ref")
+
+        is_regeneration = is_regeneration_str.lower() == 'true'
+        is_adding_super_plan = is_adding_super_plan_str.lower() == 'true'
+        is_initial_generation = not is_regeneration and not is_adding_super_plan
+
+        if not email:
+            return jsonify({"error": "Email wajib diisi."}), 400
+        if not target_semester_str or not target_semester_str.isdigit():
+            return jsonify({"error": "Target semester tidak valid."}), 400
+        target_semester = int(target_semester_str)
+
+        # Validasi input berdasarkan jenis aksi
+        if is_initial_generation:
+            if not all([nama, jurusan, semester_input_awal_str, mode_action]):
+                return jsonify({"error": "Data awal (nama, jurusan, semester input, mode action) tidak lengkap."}), 400
+            if not semester_input_awal_str.isdigit() or not (1 <= int(semester_input_awal_str) <= 14):
+                 return jsonify({"error": "Semester input awal tidak valid (1-14)."}), 400
+            if 'swot_pdf' not in request.files or 'ikigai_pdf' not in request.files:
+                return jsonify({"error": "File SWOT dan Ikigai PDF wajib diunggah untuk rencana awal."}), 400
+        elif (is_adding_super_plan or is_regeneration) and not all([nama, jurusan, mode_action]):
+             return jsonify({"error": "Konteks data awal (nama, jurusan, mode action) diperlukan untuk menambah/regenerasi."}), 400
+
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        cursor.execute("SELECT is_premium, tokens FROM users WHERE email = ?", (email,))
+        user_data = cursor.fetchone()
+
+        if not user_data:
+            conn.close()
+            return jsonify({"error": "User tidak ditemukan."}), 404
+
+        is_premium_user, current_tokens = user_data
+        if not is_premium_user:
+            conn.close()
+            return jsonify({"error": "Fitur ini hanya untuk pengguna Premium."}), 403
+        if current_tokens < TOKEN_COST_STUDENT_GOALS:
+            conn.close()
+            return jsonify({"error": f"Token tidak cukup. Anda memerlukan {TOKEN_COST_STUDENT_GOALS} token."}), 403
+
+        # Penanganan File
+        final_swot_file_ref = swot_file_ref_from_req
+        final_ikigai_file_ref = ikigai_file_ref_from_req
+        initial_data_refs_for_response = {} # Untuk dikirim kembali ke frontend saat generasi awal
+
+        if is_initial_generation:
+            swot_pdf_file = request.files['swot_pdf']
+            ikigai_pdf_file = request.files['ikigai_pdf']
+
+            # Amankan nama file & simpan
+            # Tambahkan user_email atau ID unik ke nama file untuk menghindari konflik jika diperlukan
+            swot_filename = secure_filename(f"{uuid.uuid4().hex}_{swot_pdf_file.filename}")
+            ikigai_filename = secure_filename(f"{uuid.uuid4().hex}_{ikigai_pdf_file.filename}")
+            
+            final_swot_file_ref = os.path.join(UPLOADS_FOLDER_GOALS, swot_filename)
+            final_ikigai_file_ref = os.path.join(UPLOADS_FOLDER_GOALS, ikigai_filename)
+            
+            try:
+                swot_pdf_file.save(final_swot_file_ref)
+                ikigai_pdf_file.save(final_ikigai_file_ref)
+                initial_data_refs_for_response = {
+                    "swot_file_ref": final_swot_file_ref, # Frontend bisa simpan ini untuk request selanjutnya
+                    "ikigai_file_ref": final_ikigai_file_ref
+                }
+            except Exception as e:
+                conn.close()
+                print(f"[File Save Error] {str(e)}")
+                return jsonify({"error": f"Gagal menyimpan file: {str(e)}"}), 500
+        
+        # Buat Prompt untuk OpenAI
+        prompt = f"""
+Data Pengguna:
+- Nama: {nama}
+- Jurusan: {jurusan}
+- Semester yang Direncanakan: {target_semester}
+- Mode Action: {'Fast track (Cepat & Intensif)' if mode_action == 'fast' else 'Slow track (Bertahap & Fleksibel)'}
+
+Tugas Anda:
+Buatlah "Student Goals Planning" yang komprehensif untuk semester yang disebutkan.
+Pastikan output terstruktur dengan baik dan mudah dibaca.
+
+Format output yang diinginkan adalah sebagai berikut (gunakan Markdown):
+
+# 📚 Misi Kuliah Semester {target_semester} Ini
+(Berikan deskripsi singkat, 1-2 kalimat, mengenai fokus utama atau tema besar untuk semester ini berdasarkan data pengguna. Kaitkan dengan mode action jika memungkinkan.)
+
+## 🎯 Mission Pack
+(Detailkan minimal 2 Main Mission dan untuk setiap Main Mission, berikan minimal 2 Side Mission. Buatlah se-actionable mungkin!)
+
+### Main Mission 1: [Judul Main Mission 1 yang Menarik dan Relevan]
+   - **Deskripsi Singkat:** (1 kalimat penjelasan Main Mission ini)
+   - **Target Utama:** (Indikator keberhasilan yang jelas dan terukur untuk Main Mission ini)
+   - **Side Mission 1.1:** [Deskripsi Side Mission yang mendukung Main Mission 1]
+     - *Action Steps:* (minimal 2 langkah konkret, spesifik, dan terukur)
+       1. Langkah A...
+       2. Langkah B...
+   - **Side Mission 1.2:** [Deskripsi Side Mission lain yang mendukung Main Mission 1]
+     - *Action Steps:*
+       1. Langkah C...
+       2. Langkah D...
+
+### Main Mission 2: [Judul Main Mission 2 yang Menarik dan Relevan]
+   - **Deskripsi Singkat:** (1 kalimat penjelasan Main Mission ini)
+   - **Target Utama:** (Indikator keberhasilan yang jelas dan terukur untuk Main Mission ini)
+   - **Side Mission 2.1:** [Deskripsi Side Mission yang mendukung Main Mission 2]
+     - *Action Steps:*
+       1. Langkah E...
+       2. Langkah F...
+   - **Side Mission 2.2:** [Deskripsi Side Mission lain yang mendukung Main Mission 2]
+     - *Action Steps:*
+       1. Langkah G...
+       2. Langkah H...
+
+*(Jika relevan dan menambah nilai, Anda bisa menambahkan Main Mission ke-3)*
+
+## 💬 Quotes Penutup
+(Satu kutipan motivasi yang singkat, relevan dengan tema semester atau tantangan mahasiswa, dan membangkitkan semangat.)
+
+---
+**PENTING:** Gunakan tone bahasa yang santai, Gen Z-friendly, reflektif, namun tetap actionable. Hindari bahasa yang terlalu kaku atau formal. Buat perencanaan ini terasa personal, memotivasi, dan memberikan panduan yang jelas!
+"""
+        # Asumsi fungsi generate_openai_response sudah ada di kode Anda
+        plan_content = generate_openai_response(prompt, model="gpt-4o") # Atau model spesifik Anda
+
+        current_timestamp_iso = datetime.now(timezone.utc).isoformat()
+        plan_record_id = str(uuid.uuid4()) # ID untuk record plan baru
+
+        if is_regeneration and plan_id_to_regenerate:
+            cursor.execute("""
+                UPDATE student_goals_plans 
+                SET plan_content = ?, timestamp = ?
+                WHERE id = ? AND user_email = ?
+            """, (plan_content, current_timestamp_iso, plan_id_to_regenerate, email))
+            plan_record_id = plan_id_to_regenerate # Gunakan ID lama untuk konsistensi di frontend
+        else:
+            # Data yang disimpan untuk referensi di masa depan jika ini adalah sumber data awal
+            db_nama_input = nama if is_initial_generation else (cursor.execute("SELECT nama_input FROM student_goals_plans WHERE user_email = ? AND is_initial_data_source = TRUE ORDER BY timestamp DESC LIMIT 1", (email,)).fetchone() or [nama])[0]
+            db_jurusan_input = jurusan if is_initial_generation else (cursor.execute("SELECT jurusan_input FROM student_goals_plans WHERE user_email = ? AND is_initial_data_source = TRUE ORDER BY timestamp DESC LIMIT 1", (email,)).fetchone() or [jurusan])[0]
+            db_semester_input_awal = int(semester_input_awal_str) if is_initial_generation else (cursor.execute("SELECT semester_input_awal FROM student_goals_plans WHERE user_email = ? AND is_initial_data_source = TRUE ORDER BY timestamp DESC LIMIT 1", (email,)).fetchone() or [int(semester_input_awal_str) if semester_input_awal_str else target_semester])[0]
+            db_mode_action_input = mode_action if is_initial_generation else (cursor.execute("SELECT mode_action_input FROM student_goals_plans WHERE user_email = ? AND is_initial_data_source = TRUE ORDER BY timestamp DESC LIMIT 1", (email,)).fetchone() or [mode_action])[0]
+            
+            # Referensi file dari generasi awal, atau gunakan yang terbaru jika ada
+            db_swot_file_ref = final_swot_file_ref if is_initial_generation else (cursor.execute("SELECT swot_file_ref FROM student_goals_plans WHERE user_email = ? AND is_initial_data_source = TRUE ORDER BY timestamp DESC LIMIT 1", (email,)).fetchone() or [final_swot_file_ref])[0]
+            db_ikigai_file_ref = final_ikigai_file_ref if is_initial_generation else (cursor.execute("SELECT ikigai_file_ref FROM student_goals_plans WHERE user_email = ? AND is_initial_data_source = TRUE ORDER BY timestamp DESC LIMIT 1", (email,)).fetchone() or [final_ikigai_file_ref])[0]
+
+            cursor.execute("""
+                INSERT INTO student_goals_plans 
+                (id, user_email, nama_input, jurusan_input, semester_input_awal, mode_action_input, 
+                 swot_file_ref, ikigai_file_ref, target_semester_plan, plan_content, is_initial_data_source, timestamp)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (plan_record_id, email, db_nama_input, db_jurusan_input, db_semester_input_awal, db_mode_action_input,
+                  db_swot_file_ref, db_ikigai_file_ref, target_semester, plan_content, is_initial_generation, current_timestamp_iso))
+
+        # Kurangi token pengguna
+        new_token_balance = current_tokens - TOKEN_COST_STUDENT_GOALS
+        cursor.execute("UPDATE users SET tokens = ? WHERE email = ?", (new_token_balance, email))
+        conn.commit()
+
+        response_payload = {
+            "message": "Rencana berhasil diproses!",
+            "plan": {
+                "id": plan_record_id,
+                "semester": target_semester,
+                "content": plan_content,
+                "timestamp": current_timestamp_iso,
+                "is_initial_data_source": is_initial_generation # Kirim status ini ke frontend
+            },
+            "new_token_balance": new_token_balance
+        }
+        if is_initial_generation:
+            response_payload["initial_data_refs"] = initial_data_refs_for_response
+        
+        return jsonify(response_payload), 200
+
+    except sqlite3.Error as e:
+        if conn:
+            conn.rollback() # Rollback jika ada error database
+        print(f"[DB Error - /student-goals/generate] {str(e)}")
+        return jsonify({"error": f"Kesalahan database: {str(e)}"}), 500
+    except Exception as e:
+        print(f"[Server Error - /student-goals/generate] {str(e)}")
+        return jsonify({"error": f"Kesalahan server internal: {str(e)}"}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
+@app.route("/student-goals/history", methods=["GET"])
+def student_goals_history():
+    # global DB_NAME
+    email = request.args.get("email")
+    if not email:
+        return jsonify({"error": "Parameter email wajib diisi."}), 400
+
+    conn = None # Initialize conn to None
+    try:
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        # Ambil semua kolom yang relevan, urutkan agar yang terbaru per semester muncul (jika ada duplikat semester)
+        # atau frontend bisa mengelola versi jika diperlukan.
+        # Untuk simple history, urutkan berdasarkan semester lalu timestamp
+        cursor.execute("""
+            SELECT id, user_email, nama_input, jurusan_input, semester_input_awal, 
+                   mode_action_input, swot_file_ref, ikigai_file_ref, 
+                   target_semester_plan, plan_content, is_initial_data_source, timestamp 
+            FROM student_goals_plans 
+            WHERE user_email = ? 
+            ORDER BY target_semester_plan ASC, timestamp DESC
+        """, (email,))
+        
+        plans_data = []
+        # Menggunakan fetchall dan kemudian memprosesnya
+        rows = cursor.fetchall()
+        for row in rows:
+            plans_data.append({
+                "id": row[0],
+                "user_email": row[1],
+                "nama_input": row[2],
+                "jurusan_input": row[3],
+                "semester_input_awal": row[4],
+                "mode_action_input": row[5],
+                "swot_file_ref": row[6],
+                "ikigai_file_ref": row[7],
+                "semester": row[8], # Menggunakan 'semester' agar konsisten dengan frontend
+                "content": row[9],
+                "is_initial_data_source": bool(row[10]), # Konversi ke boolean
+                "timestamp": row[11]
+            })
+        
+        return jsonify({"plans": plans_data}), 200
+
+    except sqlite3.Error as e:
+        print(f"[DB Error - /student-goals/history] {str(e)}")
+        return jsonify({"error": f"Kesalahan database: {str(e)}", "plans": []}), 500 # Kembalikan array kosong
+    except Exception as e:
+        print(f"[Server Error - /student-goals/history] {str(e)}")
+        return jsonify({"error": f"Kesalahan server internal: {str(e)}", "plans": []}), 500
+    finally:
+        if conn:
+            conn.close()
 
 @app.route("/analyze-swot", methods=["POST"])
 def analyze_swot():

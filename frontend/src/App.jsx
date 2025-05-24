@@ -7,11 +7,11 @@ import EssayGenerator from "./components/EssayGenerator";
 import KTIGenerator from "./components/KTIGenerator";
 import BusinessPlanGenerator from "./components/BusinessPlanGenerator";
 import AdminDashboard from "./components/AdminDashboard";
-import ModeSelector from "./components/ModeSelector"; // Akan kita modifikasi sedikit
+import ModeSelector from "./components/ModeSelector";
 import EssayExchangesGenerator from "./components/EssayExchangesGenerator";
 import InterviewPage from './components/InterviewPage';
 import ResultPage from './components/ResultPage';
-import TopBar from './components/TopBar'; // Akan kita modifikasi sedikit
+import TopBar from './components/TopBar';
 import BioAnalyzer from "./components/BioAnalyzer";
 import IkigaiInputForm from './components/Ikigai/IkigaiInputForm';
 import IkigaiTestLink from './components/Ikigai/IkigaiTestLink';
@@ -20,14 +20,16 @@ import IkigaiFinalAnalyzer from './components/Ikigai/IkigaiFinalAnalyzer';
 import TrackIkigai from './components/TrackIkigai';
 import ElmoChatPage from './components/ElmoChatPage';
 import SwotAnalyzer from './components/SwotAnalyzer';
+import StudentGoalsPlanner from './components/StudentGoalsPlanner'; // PASTIKAN IMPORT INI ADA
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import './App.css'; // IMPORT CSS KUSTOM ANDA
+import './App.css';
 
 const API_URL = "https://webai-production-b975.up.railway.app";
 
 const App = () => {
+  // ... state Anda (isLoggedIn, isPremium, dll.) ...
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -44,34 +46,33 @@ const App = () => {
   const [ikigaiSpotList, setIkigaiSpotList] = useState([]);
   const [sliceList, setSliceList] = useState([]);
 
+  // ... fungsi handleLogin, handleLogout, resetToMenu ...
   const handleLogin = (premium, userEmail, admin, tokenValue) => {
     setIsLoggedIn(true);
     setIsPremium(premium);
     setEmail(userEmail);
     setIsAdmin(admin);
     setTokens(tokenValue);
-    setSelectedMode(null); // Reset mode on login
+    setSelectedMode(null);
     setShowRegister(false);
   };
 
-  const handleLogout = () => { // Fungsi Logout sederhana
+  const handleLogout = () => {
     setIsLoggedIn(false);
     setIsPremium(false);
     setIsAdmin(false);
     setEmail('');
     setTokens(0);
     setSelectedMode(null);
-    // Anda mungkin ingin membersihkan localStorage/sessionStorage jika ada
   };
 
   const resetToMenu = () => {
     setShowResult(false);
     setSelectedMode(null);
     setIkigaiStep(1);
-    // Reset state lain yang relevan dengan mode jika ada
   };
 
-
+  // ... fungsi renderAuthForms ...
   const renderAuthForms = () => (
     <div className="auth-wrapper">
       <div className="auth-card">
@@ -105,13 +106,13 @@ const App = () => {
     </div>
   );
 
+  // ... fungsi renderSelectedModeContent dengan penambahan StudentGoalsPlanner ...
   const renderSelectedModeContent = () => (
     <div className="main-content-wrapper">
       <button
         className="btn btn-outline-secondary back-to-menu-btn"
         onClick={resetToMenu}
       >
-        {/* Ganti dengan ikon jika ada, misal dari react-icons */}
         ⬅️ Kembali ke Menu Utama
       </button>
 
@@ -140,6 +141,15 @@ const App = () => {
       )}
       {selectedMode === "bio" && (
         <BioAnalyzer isPremium={isPremium} email={email} tokenSisa={tokens} setTokenSisa={setTokens} apiUrl={API_URL} />
+      )}
+      {/* PENAMBAHAN StudentGoalsPlanner */}
+      {selectedMode === "studentgoals" && (
+        <StudentGoalsPlanner
+          email={email}
+          tokenSisa={tokens}
+          setTokenSisa={setTokens}
+          isPremium={isPremium}
+        />
       )}
       {selectedMode === "ikigai" && (
         <>
@@ -179,7 +189,7 @@ const App = () => {
             href="https://wa.me/6282211929271"
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-success btn-sm"
+            className="btn btn-success btn-sm" // dibuat btn-sm agar tidak terlalu besar
           >
             Upgrade Sekarang
           </a>
@@ -188,9 +198,8 @@ const App = () => {
     </div>
   );
 
-
   return (
-    <div className="app-container container mt-3"> {/* Menggunakan app-container dan mt-3 bukan mt-4 */}
+    <div className="app-container container mt-3">
       {isLoggedIn && <TopBar email={email} isPremium={isPremium} onLogout={handleLogout} />}
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="colored"/>
 
