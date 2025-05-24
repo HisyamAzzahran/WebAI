@@ -345,6 +345,45 @@ Format output yang diinginkan adalah sebagai berikut (gunakan Markdown):
         if conn: # Sekarang 'conn' pasti sudah terdefinisi (meskipun bisa None)
             conn.close()
 
+# Di app.py Anda
+
+@app.route("/student-goals/history/all", methods=["DELETE"]) # Atau POST jika Anda tidak bisa/mau pakai DELETE
+def delete_all_student_goals_history():
+    email = request.args.get("email") # Jika dikirim sebagai query param dengan metode DELETE
+
+    if not email:
+        return jsonify({"error": "Parameter email wajib diisi."}), 400
+
+    conn = None
+    try:
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+
+        # Validasi user jika perlu (misalnya, apakah user ini ada)
+        cursor.execute("SELECT 1 FROM users WHERE email = ?", (email,))
+        if not cursor.fetchone():
+            conn.close()
+            return jsonify({"error": "User tidak ditemukan."}), 404
+
+        # Hapus semua rencana untuk user_email tersebut
+        cursor.execute("DELETE FROM student_goals_plans WHERE user_email = ?", (email,))
+        deleted_rows = cursor.rowcount # Jumlah baris yang terhapus
+        conn.commit()
+
+        return jsonify({"message": f"Berhasil menghapus {deleted_rows} riwayat rencana untuk {email}."}), 200
+
+    except sqlite3.Error as e:
+        if conn:
+            conn.rollback()
+        print(f"[DB Error - /student-goals/history/all] {str(e)}")
+        return jsonify({"error": f"Kesalahan database: {str(e)}"}), 500
+    except Exception as e:
+        print(f"[Server Error - /student-goals/history/all] {str(e)}")
+        return jsonify({"error": f"Kesalahan server internal: {str(e)}"}), 500
+    finally:
+        if conn:
+            conn.close()
+
 @app.route("/student-goals/history", methods=["GET"])
 def student_goals_history():
     # global DB_NAME

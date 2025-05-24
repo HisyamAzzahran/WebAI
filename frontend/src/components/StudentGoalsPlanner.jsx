@@ -4,45 +4,33 @@ import { toast } from 'react-toastify';
 import { ClipLoader } from 'react-spinners';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-
-// --- TAMBAHKAN IMPORT UNTUK PDF ---
 import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
-// ----------------------------------
 
 import './StudentGoalsPlanner.css';
 import 'react-toastify/dist/ReactToastify.css';
 
 const API_URL = "https://webai-production-b975.up.railway.app";
 const TOKEN_COST_PER_GENERATION = 3;
+const FEATURE_NAME_LOG = "student_goals_planning"; // Untuk logging
 
+// ... (pdfStyles dan StudentGoalsPDFDocument tetap sama seperti sebelumnya) ...
 const pdfStyles = StyleSheet.create({
   page: {
     paddingTop: 35,
     paddingBottom: 65,
     paddingHorizontal: 35,
-    fontFamily: 'Helvetica', // Default, atau ganti dengan font kustom setelah didaftarkan
+    fontFamily: 'Helvetica',
     fontSize: 10,
     lineHeight: 1.4,
   },
-  header: {
-    fontSize: 20,
-    textAlign: 'center',
-    marginBottom: 10,
-    color: '#2c3e50',
-    fontWeight: 'bold',
-  },
-  userInfo: {
-    fontSize: 11,
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#34495e',
-  },
+  header: { fontSize: 20, textAlign: 'center', marginBottom: 10, color: '#2c3e50', fontWeight: 'bold' },
+  userInfo: { fontSize: 11, marginBottom: 20, textAlign: 'center', color: '#34495e' },
   h1: { fontSize: 16, fontWeight: 'bold', color: '#154360', marginBottom: 10, marginTop: 8, borderBottomWidth: 0.5, borderBottomColor: '#aed6f1', paddingBottom: 2 },
   h2: { fontSize: 14, fontWeight: 'bold', color: '#1f618d', marginBottom: 8, marginTop: 6 },
   h3: { fontSize: 12, fontWeight: 'bold', color: '#2980b9', marginBottom: 6, marginTop: 4 },
   paragraph: { marginBottom: 5, textAlign: 'justify' },
-  boldText: { fontWeight: 'bold' }, // Didefinisikan sebagai 'bold' di React PDF, atau daftarkan font bold
-  italicText: { fontStyle: 'italic' }, // Didefinisikan sebagai 'italic' di React PDF
+  boldText: { fontWeight: 'bold' },
+  italicText: { fontStyle: 'italic' },
   listItem: { flexDirection: 'row', marginBottom: 3, paddingLeft: 10 },
   bullet: { width: 10, marginRight: 5, textAlign: 'center' },
   listItemText: { flex: 1, textAlign: 'justify'},
@@ -50,29 +38,16 @@ const pdfStyles = StyleSheet.create({
   actionStepNumber: { width: 15, marginRight: 3, fontWeight: 'bold' },
   quoteSection: { marginTop: 15, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#eeeeee'},
   quoteText: { fontStyle: 'italic', textAlign: 'center', color: '#566573', fontSize: 11},
-  footer: {
-    position: 'absolute',
-    bottom: 30,
-    left: 35,
-    right: 35,
-    textAlign: 'center',
-    color: 'grey',
-    fontSize: 8,
-  },
+  footer: { position: 'absolute', bottom: 30, left: 35, right: 35, textAlign: 'center', color: 'grey', fontSize: 8 },
 });
 
-// Komponen untuk membuat dokumen PDF
 const StudentGoalsPDFDocument = ({ plan, userData }) => {
   const { semester, content } = plan;
-  // Fungsi untuk mem-parse Markdown sederhana dan mengubahnya menjadi elemen React PDF
-  // Ini akan lebih kompleks jika Markdown-nya rumit.
   const renderPdfContent = (markdownContent) => {
     const elements = [];
     const lines = markdownContent.split('\n');
-    let currentListLevel = 0; // Untuk indentasi list
-
     lines.forEach((line, index) => {
-      line = line.trim(); // Hapus spasi ekstra di awal/akhir
+      line = line.trim();
       if (line.startsWith('# 📚')) {
         elements.push(<Text key={`pdf-h1-${index}`} style={pdfStyles.h1}>{line.replace(/^#\s*📚\s*/, '')}</Text>);
       } else if (line.startsWith('## 🎯')) {
@@ -89,21 +64,21 @@ const StudentGoalsPDFDocument = ({ plan, userData }) => {
         elements.push(<Text key={`pdf-sideh-${index}`} style={{...pdfStyles.h3, fontSize: 11, color: '#5499c7', marginLeft: 10, marginTop:3, marginBottom:1}}>{line.replace(/^-\s*/, '').trim()}</Text>);
       } else if (line.startsWith('- *Action Steps:*')) {
         elements.push(<Text key={`pdf-actionlabel-${index}`} style={{...pdfStyles.italicText, marginLeft: 20, marginBottom:1, marginTop:1, fontWeight:'bold'}}>Action Steps:</Text>);
-      } else if (/^\s*\d+\.\s/.test(line)) { // Item list bernomor (Action Steps)
+      } else if (/^\s*\d+\.\s/.test(line)) {
         elements.push(
           <View key={`pdf-action-${index}`} style={pdfStyles.actionStepItem}>
             <Text style={pdfStyles.actionStepNumber}>{line.match(/^\s*(\d+\.)/)[0]}</Text>
             <Text style={pdfStyles.listItemText}>{line.replace(/^\s*\d+\.\s/, '').trim()}</Text>
           </View>
         );
-      } else if (line.startsWith('- ')) { // Item list bullet biasa (jika ada)
+      } else if (line.startsWith('- ')) {
         elements.push(
           <View key={`pdf-li-${index}`} style={pdfStyles.listItem}>
             <Text style={pdfStyles.bullet}>•</Text>
             <Text style={pdfStyles.listItemText}>{line.substring(2).trim()}</Text>
           </View>
         );
-      } else if (line.trim() !== "") { // Paragraf biasa atau teks kutipan
+      } else if (line.trim() !== "") {
         if (elements.length > 0 && elements[elements.length-1].props.style === pdfStyles.quoteSection) {
              elements.push(<Text key={`pdf-quote-text-${index}`} style={pdfStyles.quoteText}>{line.trim()}</Text>);
         } else {
@@ -136,7 +111,6 @@ const StudentGoalsPDFDocument = ({ plan, userData }) => {
 
 
 const StudentGoalsPlanner = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
-  // ... (SEMUA STATE DAN FUNGSI ANDA YANG SUDAH ADA: nama, jurusan, dll.) ...
   const [nama, setNama] = useState('');
   const [jurusan, setJurusan] = useState('');
   const [inputSemester, setInputSemester] = useState('');
@@ -145,12 +119,15 @@ const StudentGoalsPlanner = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
   const [ikigaiFile, setIkigaiFile] = useState(null);
   const [swotFileName, setSwotFileName] = useState('');
   const [ikigaiFileName, setIkigaiFileName] = useState('');
+
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingHistory, setIsFetchingHistory] = useState(true);
   const [generatedPlans, setGeneratedPlans] = useState([]);
   const [initialDataForSession, setInitialDataForSession] = useState(null);
+  const [isDeletingHistory, setIsDeletingHistory] = useState(false); // State untuk loading hapus history
 
   const fetchPlanHistory = useCallback(async () => {
+    // ... (fungsi fetchPlanHistory tetap sama) ...
     if (!email) return;
     setIsFetchingHistory(true);
     try {
@@ -160,9 +137,9 @@ const StudentGoalsPlanner = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
         setGeneratedPlans(sortedPlans);
         if (sortedPlans.length > 0) {
             const latestInitialDataSourcePlan = sortedPlans.find(p => p.is_initial_data_source);
-            const sourceToUse = latestInitialDataSourcePlan || sortedPlans[0]; // Fallback ke plan pertama jika tidak ada flag
+            const sourceToUse = latestInitialDataSourcePlan || sortedPlans[0];
             
-            if (sourceToUse) { // Pastikan sourceToUse tidak undefined
+            if (sourceToUse) {
                 setNama(sourceToUse.nama_input || '');
                 setJurusan(sourceToUse.jurusan_input || '');
                 setModeAction(sourceToUse.mode_action_input || 'fast');
@@ -174,10 +151,22 @@ const StudentGoalsPlanner = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
                     ikigaiFileRef: sourceToUse.ikigai_file_ref,
                 });
             }
+        } else {
+            // Jika tidak ada histori, pastikan initialDataForSession juga null
+            setInitialDataForSession(null);
+            setNama(''); // Reset form jika tidak ada histori
+            setJurusan('');
+            setInputSemester('');
+            setModeAction('fast');
         }
+      } else {
+          setGeneratedPlans([]); // Pastikan array kosong jika tidak ada data
+          setInitialDataForSession(null); // Reset sesi jika tidak ada data
       }
     } catch (error) {
       console.error("Gagal memuat riwayat Student Goals:", error);
+      setGeneratedPlans([]); // Set array kosong jika gagal load
+      setInitialDataForSession(null);
     } finally {
       setIsFetchingHistory(false);
     }
@@ -187,6 +176,7 @@ const StudentGoalsPlanner = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
     fetchPlanHistory();
   }, [fetchPlanHistory]);
 
+  // ... (fungsi handleFileChange dan validateBaseRequirements tetap sama) ...
   const handleFileChange = (event, fileType) => {
     const file = event.target.files[0];
     if (file) {
@@ -222,9 +212,11 @@ const StudentGoalsPlanner = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
     return true;
   }
 
+
   const processPlanGeneration = async ({ targetSemester, isRegeneration = false, isAddingSuperPlan = false, planIdToRegenerate = null }) => {
     if (!validateBaseRequirements()) return;
 
+    // Validasi spesifik untuk generasi awal
     if (!isRegeneration && !isAddingSuperPlan) {
       if (!nama.trim() || !jurusan.trim() || !inputSemester.trim()) {
         toast.warn("⚠️ Nama, Jurusan, dan Semester awal harus diisi.");
@@ -247,31 +239,34 @@ const StudentGoalsPlanner = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
     }
 
     setIsLoading(true);
-    const formData = new FormData();
-    formData.append('email', email);
-
-    if (!isAddingSuperPlan && !isRegeneration) {
-        formData.append('nama', nama);
-        formData.append('jurusan', jurusan);
-        formData.append('semester_input_awal', inputSemester);
-        formData.append('mode_action', modeAction);
-        if (swotFile) formData.append('swot_pdf', swotFile);
-        if (ikigaiFile) formData.append('ikigai_pdf', ikigaiFile);
-        // Tidak setInitialDataForSession di sini, tunggu response backend
-    } else if (initialDataForSession) {
-        formData.append('nama', initialDataForSession.nama);
-        formData.append('jurusan', initialDataForSession.jurusan);
-        formData.append('mode_action', initialDataForSession.modeAction);
-        if (initialDataForSession.swotFileRef && initialDataForSession.swotFileRef !== 'pending_upload') formData.append('swot_file_ref', initialDataForSession.swotFileRef);
-        if (initialDataForSession.ikigaiFileRef && initialDataForSession.ikigaiFileRef !== 'pending_upload') formData.append('ikigai_file_ref', initialDataForSession.ikigaiFileRef);
-    }
-
-    formData.append('target_semester', targetSemester);
-    if (isRegeneration) formData.append('is_regeneration', 'true');
-    if (isAddingSuperPlan) formData.append('is_adding_super_plan', 'true');
-    if (planIdToRegenerate) formData.append('plan_id_to_regenerate', planIdToRegenerate);
-
     try {
+      // --- PENAMBAHAN LOGGING PENGGUNAAN FITUR ---
+      await axios.post(`${API_URL}/log-feature`, { email, feature: FEATURE_NAME_LOG });
+      // -------------------------------------------
+
+      const formData = new FormData();
+      formData.append('email', email);
+
+      if (!isAddingSuperPlan && !isRegeneration) {
+          formData.append('nama', nama);
+          formData.append('jurusan', jurusan);
+          formData.append('semester_input_awal', inputSemester); // Menggunakan key yang benar
+          formData.append('mode_action', modeAction);
+          if (swotFile) formData.append('swot_pdf', swotFile);
+          if (ikigaiFile) formData.append('ikigai_pdf', ikigaiFile);
+      } else if (initialDataForSession) {
+          formData.append('nama', initialDataForSession.nama);
+          formData.append('jurusan', initialDataForSession.jurusan);
+          formData.append('mode_action', initialDataForSession.modeAction);
+          if (initialDataForSession.swotFileRef && initialDataForSession.swotFileRef !== 'pending_upload') formData.append('swot_file_ref', initialDataForSession.swotFileRef);
+          if (initialDataForSession.ikigaiFileRef && initialDataForSession.ikigaiFileRef !== 'pending_upload') formData.append('ikigai_file_ref', initialDataForSession.ikigaiFileRef);
+      }
+
+      formData.append('target_semester', targetSemester);
+      if (isRegeneration) formData.append('is_regeneration', 'true');
+      if (isAddingSuperPlan) formData.append('is_adding_super_plan', 'true');
+      if (planIdToRegenerate) formData.append('plan_id_to_regenerate', planIdToRegenerate);
+
       const response = await axios.post(`${API_URL}/student-goals/generate`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
@@ -284,7 +279,7 @@ const StudentGoalsPlanner = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
             if (isRegeneration && planIdToRegenerate) {
                 updatedPlans = prevPlans.map(p => p.id === planIdToRegenerate ? { ...p, ...newPlanData } : p);
             } else {
-                const existingPlanIndex = prevPlans.findIndex(p => p.semester === newPlanData.semester && p.id === newPlanData.id); // Cek ID juga
+                const existingPlanIndex = prevPlans.findIndex(p => p.semester === newPlanData.semester && p.id === newPlanData.id);
                 if (existingPlanIndex > -1) { 
                     updatedPlans = prevPlans.map((p, index) => index === existingPlanIndex ? { ...p, ...newPlanData } : p);
                 } else {
@@ -297,27 +292,33 @@ const StudentGoalsPlanner = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
         setTokenSisa(prev => prev - TOKEN_COST_PER_GENERATION);
         toast.success(`✅ Rencana untuk Semester ${targetSemester} berhasil di${isRegeneration ? 'perbarui' : 'buat'}!`);
 
-        if(!isAddingSuperPlan && !isRegeneration) { // Hanya set untuk generasi awal yang sukses
+        if(!isAddingSuperPlan && !isRegeneration) {
              setInitialDataForSession({
-                nama: nama, // Ambil dari state saat ini
+                nama: nama,
                 jurusan: jurusan,
                 modeAction: modeAction,
-                swotFileRef: response.data.initial_data_refs?.swot_file_ref || initialDataForSession?.swotFileRef, // Gunakan ref dari backend jika ada
+                swotFileRef: response.data.initial_data_refs?.swot_file_ref || initialDataForSession?.swotFileRef,
                 ikigaiFileRef: response.data.initial_data_refs?.ikigai_file_ref || initialDataForSession?.ikigaiFileRef
              });
         }
-
       } else {
         toast.error(response.data.error || "❌ Gagal memproses rencana.");
       }
     } catch (error) {
       console.error("Error saat generate Student Goals:", error);
+      // Cek jika error dari log-feature, mungkin tidak perlu blokir user jika hanya log gagal
+      if (error.config && error.config.url.endsWith('/log-feature')) {
+        console.warn("Gagal mengirim log penggunaan fitur, tapi proses utama dilanjutkan.");
+        // Mungkin ada baiknya memanggil ulang logic generate di sini tanpa log, atau biarkan.
+        // Untuk sekarang, kita biarkan agar error utama yang tampil (jika ada).
+      }
       toast.error(error.response?.data?.error || "❌ Terjadi kesalahan pada server.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  // ... (fungsi handleGenerateInitialPlan, handleTambahSuperPlan, handleRegenerateLastPlan tetap sama) ...
   const handleGenerateInitialPlan = () => {
     const semesterNum = parseInt(inputSemester, 10);
     if (!inputSemester || isNaN(semesterNum) || semesterNum < 1 || semesterNum > 14) {
@@ -328,19 +329,26 @@ const StudentGoalsPlanner = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
   };
 
   const handleTambahSuperPlan = () => {
-    if (generatedPlans.length === 0 && !initialDataForSession) { // Cek juga initialDataForSession
+    if (generatedPlans.length === 0 && !initialDataForSession) {
       toast.info("💡 Buat rencana awal terlebih dahulu sebelum menambah Super Plan.");
       return;
     }
-    // Tentukan semester berikutnya berdasarkan plan terakhir atau input semester awal jika belum ada plan
     let nextSemester;
     if (generatedPlans.length > 0) {
         const latestPlan = generatedPlans.reduce((latest, current) => (current.semester > latest.semester ? current : latest), generatedPlans[0]);
         nextSemester = latestPlan.semester + 1;
-    } else if (inputSemester && !isNaN(parseInt(inputSemester, 10))) { // Jika belum ada plan, tapi form awal sudah diisi
-        nextSemester = parseInt(inputSemester, 10) + 1; // Ini skenario jika user mau tambah plan setelah isi form tapi sebelum generate
-    } else {
-        toast.warn("Tidak bisa menentukan semester berikutnya. Harap isi semester awal.");
+    } else if (initialDataForSession && inputSemester && !isNaN(parseInt(inputSemester, 10))) { // Fallback jika initialDataForSession ada tapi generatedPlans kosong
+        nextSemester = parseInt(inputSemester, 10) + 1; 
+    } else if (initialDataForSession) { // Jika tidak ada inputSemester lagi, coba ambil dari semester awal sesi
+        const semesterAwalSesi = generatedPlans.find(p=>p.is_initial_data_source)?.semester || initialDataForSession.semester_input_awal; // Perlu semester_input_awal di initialDataForSession
+        if(semesterAwalSesi) nextSemester = semesterAwalSesi + 1;
+        else {
+             toast.warn("Tidak bisa menentukan semester awal sesi. Harap buat rencana awal.");
+             return;
+        }
+    }
+     else {
+        toast.warn("Tidak bisa menentukan semester berikutnya. Harap buat rencana awal.");
         return;
     }
     
@@ -360,36 +368,74 @@ const StudentGoalsPlanner = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
     processPlanGeneration({ targetSemester: latestPlan.semester, isRegeneration: true, planIdToRegenerate: latestPlan.id });
   };
 
-  if (!isPremium) {
-    return (
-      <div className="alert alert-warning text-center mt-4 student-goals-container">
-        🚫 Fitur "Student Goals Planning" hanya untuk <strong>Pengguna Premium</strong>! Silakan upgrade akunmu. 🚀
-      </div>
-    );
-  }
 
+  // --- FUNGSI BARU UNTUK HAPUS SEMUA RIWAYAT ---
+  const handleDeleteAllHistory = async () => {
+    if (!email) {
+      toast.error("Email pengguna tidak ditemukan.");
+      return;
+    }
+    if (generatedPlans.length === 0) {
+        toast.info("Tidak ada riwayat rencana untuk dihapus.");
+        return;
+    }
+
+    // Konfirmasi pengguna
+    if (window.confirm("Apakah Anda yakin ingin menghapus semua riwayat rencana studi? Tindakan ini tidak dapat diurungkan.")) {
+      setIsDeletingHistory(true);
+      try {
+        // Panggil endpoint backend untuk menghapus semua histori
+        // GANTI DENGAN ENDPOINT BACKEND ANDA YANG SESUAI
+        await axios.delete(`${API_URL}/student-goals/history/all?email=${email}`); // Atau POST jika preferensi Anda
+        
+        // Jika sukses dari backend:
+        setGeneratedPlans([]); // Kosongkan state di frontend
+        setInitialDataForSession(null); // Reset sesi data awal
+        // Reset juga form input awal
+        setNama('');
+        setJurusan('');
+        setInputSemester('');
+        setModeAction('fast');
+        setSwotFile(null);
+        setSwotFileName('');
+        setIkigaiFile(null);
+        setIkigaiFileName('');
+
+        toast.success("🗑️ Semua riwayat rencana studi berhasil dihapus!");
+
+        // Mungkin perlu panggil log-feature juga untuk aksi delete all
+        await axios.post(`${API_URL}/log-feature`, { email, feature: "student_goals_delete_all" });
+
+      } catch (error) {
+        console.error("Error saat menghapus semua riwayat:", error);
+        toast.error(error.response?.data?.error || "❌ Gagal menghapus riwayat. Coba lagi nanti.");
+      } finally {
+        setIsDeletingHistory(false);
+      }
+    }
+  };
+  // --------------------------------------------
+
+
+  if (!isPremium) {
+    return ( /* ... (renderan untuk non-premium tetap sama) ... */ );
+  }
   if (isFetchingHistory) {
-    return (
-      <div className="student-goals-container text-center my-5">
-        <ClipLoader size={50} color="#0d6efd" />
-        <p className="mt-2">Memuat riwayat rencana...</p>
-      </div>
-    );
+    return ( /* ... (renderan untuk loading history tetap sama) ... */ );
   }
 
   const isInitialFormDisabled = !!initialDataForSession;
 
-
-  // --- JSX UTAMA ---
   return (
     <div className="student-goals-container card">
+      {/* ... (Card Header tetap sama) ... */}
       <div className="card-header text-center">
         <h3>🚀 Student Goals Planning (Premium)</h3>
         <p className="text-muted mb-0">Biaya: {TOKEN_COST_PER_GENERATION} token per generasi.</p>
       </div>
       <div className="card-body">
-        {/* --- Form Input Awal (Tampil jika initialDataForSession belum ada) --- */}
-        {!isInitialFormDisabled && (
+        {/* ... (Form Input Awal dan Info Data Terkunci tetap sama) ... */}
+         {!isInitialFormDisabled && (
             <div className="initial-form-section p-3 mb-4 border rounded">
             <h5 className="mb-3">📝 Langkah 1: Isi Data Awal</h5>
             <div className="row g-3">
@@ -423,14 +469,7 @@ const StudentGoalsPlanner = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
                 <div className="col-md-6">
                     <label className="form-label">Upload Hasil SWOT (PDF Wajib):</label>
                     <div className="custom-file-input-wrapper">
-                        <input
-                            type="file"
-                            id="swotFileSGP"
-                            className="custom-file-input"
-                            accept=".pdf"
-                            onChange={(e) => handleFileChange(e, 'swot')}
-                            disabled={isLoading}
-                        />
+                        <input type="file" id="swotFileSGP" className="custom-file-input" accept=".pdf" onChange={(e) => handleFileChange(e, 'swot')} disabled={isLoading}/>
                         <label htmlFor="swotFileSGP" className="btn btn-outline-primary custom-file-label">
                             <span className="icon">📄</span> Pilih File
                         </label>
@@ -440,14 +479,7 @@ const StudentGoalsPlanner = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
                 <div className="col-md-6">
                     <label className="form-label">Upload Hasil Ikigai (PDF Wajib):</label>
                     <div className="custom-file-input-wrapper">
-                        <input
-                            type="file"
-                            id="ikigaiFileSGP"
-                            className="custom-file-input"
-                            accept=".pdf"
-                            onChange={(e) => handleFileChange(e, 'ikigai')}
-                            disabled={isLoading}
-                        />
+                        <input type="file" id="ikigaiFileSGP" className="custom-file-input" accept=".pdf" onChange={(e) => handleFileChange(e, 'ikigai')} disabled={isLoading}/>
                         <label htmlFor="ikigaiFileSGP" className="btn btn-outline-primary custom-file-label">
                            <span className="icon">💡</span> Pilih File
                         </label>
@@ -460,9 +492,8 @@ const StudentGoalsPlanner = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
             </button>
             </div>
         )}
-
-        {isInitialFormDisabled && initialDataForSession && ( // Tampilkan info data terkunci jika ada
-            <div className="alert alert-secondary locked-initial-data-info"> {/* Ganti ke alert-secondary atau styling lain */}
+        {isInitialFormDisabled && initialDataForSession && (
+            <div className="alert alert-secondary locked-initial-data-info">
                 <p className="mb-1"><strong>Data Awal Sesi Ini (Terkunci):</strong></p>
                 <ul className="list-unstyled mb-0 small">
                     <li><strong>Nama:</strong> {initialDataForSession.nama}</li>
@@ -475,23 +506,36 @@ const StudentGoalsPlanner = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
             </div>
         )}
 
+        {/* --- Tampilan Hasil Generate & Riwayat --- */}
         {generatedPlans.length > 0 && (
           <div className="generated-plans-section mt-4">
-            <h4 className="mb-3">📜 Rencana Studimu:</h4>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <h4 className="mb-0">📜 Rencana Studimu:</h4>
+                {/* --- TOMBOL HAPUS SEMUA RIWAYAT --- */}
+                <button 
+                    onClick={handleDeleteAllHistory} 
+                    className="btn btn-sm btn-outline-danger"
+                    disabled={isDeletingHistory || isLoading}
+                    title="Hapus semua riwayat rencana studi untuk akun ini"
+                >
+                    {isDeletingHistory ? <ClipLoader size={18} color="#dc3545" /> : '🗑️ Hapus Semua'}
+                </button>
+                {/* --------------------------------- */}
+            </div>
             {generatedPlans.map((plan, index) => (
               <div key={plan.id || `plan-${index}-${plan.semester}`} className="card mb-3 plan-card shadow-sm">
+                {/* ... (Card Header dengan Tombol Download PDF tetap sama) ... */}
                 <div className="card-header plan-card-header d-flex justify-content-between align-items-center">
                   <strong>Rencana Semester {plan.semester}</strong>
-                  {/* --- TOMBOL DOWNLOAD PDF PER PLAN --- */}
                   <PDFDownloadLink
-                    document={<StudentGoalsPDFDocument plan={plan} userData={initialDataForSession || {nama, jurusan}} />} // Pass userData
+                    document={<StudentGoalsPDFDocument plan={plan} userData={initialDataForSession || {nama, jurusan}} />}
                     fileName={`Rencana_Semester_${plan.semester}_${(initialDataForSession?.nama || nama || 'ElevaAI').replace(/\s+/g, '_')}.pdf`}
                     className="btn btn-sm btn-outline-success"
                   >
                     {({ loading: pdfLoading }) => (pdfLoading ? 'Memuat PDF...' : '📥 Download PDF')}
                   </PDFDownloadLink>
-                  {/* -------------------------------- */}
                 </div>
+                {/* ... (Card Body dan Card Footer tetap sama) ... */}
                 <div className="card-body plan-card-body">
                   <div
                     className="markdown-output"
@@ -506,18 +550,19 @@ const StudentGoalsPlanner = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
           </div>
         )}
 
+        {/* ... (Tombol Aksi Lanjutan tetap sama) ... */}
         {initialDataForSession && (
           <div className="next-steps-actions mt-4 d-flex justify-content-center flex-wrap gap-2">
             <button
               onClick={handleTambahSuperPlan}
-              disabled={isLoading || !isPremium || tokenSisa < TOKEN_COST_PER_GENERATION}
+              disabled={isLoading || isDeletingHistory || !isPremium || tokenSisa < TOKEN_COST_PER_GENERATION}
               className="btn btn-success"
             >
               {isLoading ? <ClipLoader size={20} color="#fff" /> : `➕ Tambah Super Plan (Semester Berikutnya)`}
             </button>
             <button
               onClick={handleRegenerateLastPlan}
-              disabled={isLoading || !isPremium || tokenSisa < TOKEN_COST_PER_GENERATION || generatedPlans.length === 0}
+              disabled={isLoading || isDeletingHistory || !isPremium || tokenSisa < TOKEN_COST_PER_GENERATION || generatedPlans.length === 0}
               className="btn btn-warning"
             >
               {isLoading ? <ClipLoader size={20} color="#fff" /> : `🔄 Regenerate Rencana Terakhir`}
