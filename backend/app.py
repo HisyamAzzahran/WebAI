@@ -282,7 +282,7 @@ Format output yang diinginkan adalah sebagai berikut (gunakan Markdown):
 ---
 **PENTING:** Gunakan tone bahasa yang santai, Gen Z-friendly, reflektif, namun tetap actionable. Hindari bahasa yang terlalu kaku atau formal. Buat perencanaan ini terasa personal, memotivasi, dan memberikan panduan yang jelas!
 """
-        plan_content = generate_openai_response(prompt, model="gpt-4o")
+        plan_content = generate_openai_response(prompt)
 
         current_timestamp_iso = datetime.now(timezone.utc).isoformat()
         plan_record_id = str(uuid.uuid4())
