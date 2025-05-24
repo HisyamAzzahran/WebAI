@@ -253,7 +253,7 @@ const StudentGoalsPlanner = ({ email, tokenSisa, setTokenSisa, isPremium }) => {
     if (!isAddingSuperPlan && !isRegeneration) {
         formData.append('nama', nama);
         formData.append('jurusan', jurusan);
-        formData.append('semester_input', inputSemester);
+        formData.append('semester_input_awal', inputSemester);
         formData.append('mode_action', modeAction);
         if (swotFile) formData.append('swot_pdf', swotFile);
         if (ikigaiFile) formData.append('ikigai_pdf', ikigaiFile);
