@@ -150,14 +150,12 @@ def register():
 
 @app.route("/student-goals/generate", methods=["POST"])
 def student_goals_generate():
-    # Menggunakan konstanta yang sudah didefinisikan di atas
-    # global TOKEN_COST_STUDENT_GOALS, UPLOADS_FOLDER_GOALS, DB_NAME, client
-
+    conn = None  # <--- TAMBAHKAN INISIALISASI INI
     try:
         email = request.form.get("email")
         nama = request.form.get("nama")
         jurusan = request.form.get("jurusan")
-        semester_input_awal_str = request.form.get("semester_input_awal") # Untuk generasi awal
+        semester_input_awal_str = request.form.get("semester_input_awal")
         target_semester_str = request.form.get("target_semester")
         mode_action = request.form.get("mode_action")
 
@@ -173,12 +171,12 @@ def student_goals_generate():
         is_initial_generation = not is_regeneration and not is_adding_super_plan
 
         if not email:
+            # Jika return di sini, 'conn' belum di-assign, tapi karena sudah None, 'finally' aman
             return jsonify({"error": "Email wajib diisi."}), 400
         if not target_semester_str or not target_semester_str.isdigit():
             return jsonify({"error": "Target semester tidak valid."}), 400
         target_semester = int(target_semester_str)
 
-        # Validasi input berdasarkan jenis aksi
         if is_initial_generation:
             if not all([nama, jurusan, semester_input_awal_str, mode_action]):
                 return jsonify({"error": "Data awal (nama, jurusan, semester input, mode action) tidak lengkap."}), 400
@@ -189,34 +187,32 @@ def student_goals_generate():
         elif (is_adding_super_plan or is_regeneration) and not all([nama, jurusan, mode_action]):
              return jsonify({"error": "Konteks data awal (nama, jurusan, mode action) diperlukan untuk menambah/regenerasi."}), 400
 
+        # 'conn' baru di-assign di sini
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
         cursor.execute("SELECT is_premium, tokens FROM users WHERE email = ?", (email,))
         user_data = cursor.fetchone()
 
         if not user_data:
-            conn.close()
+            # conn.close() tidak perlu di sini karena akan ditangani 'finally'
             return jsonify({"error": "User tidak ditemukan."}), 404
 
         is_premium_user, current_tokens = user_data
         if not is_premium_user:
-            conn.close()
+            # conn.close() tidak perlu di sini
             return jsonify({"error": "Fitur ini hanya untuk pengguna Premium."}), 403
         if current_tokens < TOKEN_COST_STUDENT_GOALS:
-            conn.close()
+            # conn.close() tidak perlu di sini
             return jsonify({"error": f"Token tidak cukup. Anda memerlukan {TOKEN_COST_STUDENT_GOALS} token."}), 403
 
-        # Penanganan File
         final_swot_file_ref = swot_file_ref_from_req
         final_ikigai_file_ref = ikigai_file_ref_from_req
-        initial_data_refs_for_response = {} # Untuk dikirim kembali ke frontend saat generasi awal
+        initial_data_refs_for_response = {}
 
         if is_initial_generation:
             swot_pdf_file = request.files['swot_pdf']
             ikigai_pdf_file = request.files['ikigai_pdf']
-
-            # Amankan nama file & simpan
-            # Tambahkan user_email atau ID unik ke nama file untuk menghindari konflik jika diperlukan
+            
             swot_filename = secure_filename(f"{uuid.uuid4().hex}_{swot_pdf_file.filename}")
             ikigai_filename = secure_filename(f"{uuid.uuid4().hex}_{ikigai_pdf_file.filename}")
             
@@ -227,15 +223,14 @@ def student_goals_generate():
                 swot_pdf_file.save(final_swot_file_ref)
                 ikigai_pdf_file.save(final_ikigai_file_ref)
                 initial_data_refs_for_response = {
-                    "swot_file_ref": final_swot_file_ref, # Frontend bisa simpan ini untuk request selanjutnya
+                    "swot_file_ref": final_swot_file_ref,
                     "ikigai_file_ref": final_ikigai_file_ref
                 }
             except Exception as e:
-                conn.close()
+                # conn.close() tidak perlu di sini
                 print(f"[File Save Error] {str(e)}")
                 return jsonify({"error": f"Gagal menyimpan file: {str(e)}"}), 500
         
-        # Buat Prompt untuk OpenAI
         prompt = f"""
 Data Pengguna:
 - Nama: {nama}
@@ -287,11 +282,10 @@ Format output yang diinginkan adalah sebagai berikut (gunakan Markdown):
 ---
 **PENTING:** Gunakan tone bahasa yang santai, Gen Z-friendly, reflektif, namun tetap actionable. Hindari bahasa yang terlalu kaku atau formal. Buat perencanaan ini terasa personal, memotivasi, dan memberikan panduan yang jelas!
 """
-        # Asumsi fungsi generate_openai_response sudah ada di kode Anda
-        plan_content = generate_openai_response(prompt, model="gpt-4o") # Atau model spesifik Anda
+        plan_content = generate_openai_response(prompt, model="gpt-4o")
 
         current_timestamp_iso = datetime.now(timezone.utc).isoformat()
-        plan_record_id = str(uuid.uuid4()) # ID untuk record plan baru
+        plan_record_id = str(uuid.uuid4())
 
         if is_regeneration and plan_id_to_regenerate:
             cursor.execute("""
@@ -299,15 +293,14 @@ Format output yang diinginkan adalah sebagai berikut (gunakan Markdown):
                 SET plan_content = ?, timestamp = ?
                 WHERE id = ? AND user_email = ?
             """, (plan_content, current_timestamp_iso, plan_id_to_regenerate, email))
-            plan_record_id = plan_id_to_regenerate # Gunakan ID lama untuk konsistensi di frontend
+            plan_record_id = plan_id_to_regenerate
         else:
-            # Data yang disimpan untuk referensi di masa depan jika ini adalah sumber data awal
             db_nama_input = nama if is_initial_generation else (cursor.execute("SELECT nama_input FROM student_goals_plans WHERE user_email = ? AND is_initial_data_source = TRUE ORDER BY timestamp DESC LIMIT 1", (email,)).fetchone() or [nama])[0]
             db_jurusan_input = jurusan if is_initial_generation else (cursor.execute("SELECT jurusan_input FROM student_goals_plans WHERE user_email = ? AND is_initial_data_source = TRUE ORDER BY timestamp DESC LIMIT 1", (email,)).fetchone() or [jurusan])[0]
-            db_semester_input_awal = int(semester_input_awal_str) if is_initial_generation else (cursor.execute("SELECT semester_input_awal FROM student_goals_plans WHERE user_email = ? AND is_initial_data_source = TRUE ORDER BY timestamp DESC LIMIT 1", (email,)).fetchone() or [int(semester_input_awal_str) if semester_input_awal_str else target_semester])[0]
+            db_semester_input_awal_val = int(semester_input_awal_str) if semester_input_awal_str else target_semester # Fallback jika semester_input_awal_str None
+            db_semester_input_awal = int(semester_input_awal_str) if is_initial_generation else (cursor.execute("SELECT semester_input_awal FROM student_goals_plans WHERE user_email = ? AND is_initial_data_source = TRUE ORDER BY timestamp DESC LIMIT 1", (email,)).fetchone() or [db_semester_input_awal_val])[0]
             db_mode_action_input = mode_action if is_initial_generation else (cursor.execute("SELECT mode_action_input FROM student_goals_plans WHERE user_email = ? AND is_initial_data_source = TRUE ORDER BY timestamp DESC LIMIT 1", (email,)).fetchone() or [mode_action])[0]
             
-            # Referensi file dari generasi awal, atau gunakan yang terbaru jika ada
             db_swot_file_ref = final_swot_file_ref if is_initial_generation else (cursor.execute("SELECT swot_file_ref FROM student_goals_plans WHERE user_email = ? AND is_initial_data_source = TRUE ORDER BY timestamp DESC LIMIT 1", (email,)).fetchone() or [final_swot_file_ref])[0]
             db_ikigai_file_ref = final_ikigai_file_ref if is_initial_generation else (cursor.execute("SELECT ikigai_file_ref FROM student_goals_plans WHERE user_email = ? AND is_initial_data_source = TRUE ORDER BY timestamp DESC LIMIT 1", (email,)).fetchone() or [final_ikigai_file_ref])[0]
 
@@ -319,7 +312,6 @@ Format output yang diinginkan adalah sebagai berikut (gunakan Markdown):
             """, (plan_record_id, email, db_nama_input, db_jurusan_input, db_semester_input_awal, db_mode_action_input,
                   db_swot_file_ref, db_ikigai_file_ref, target_semester, plan_content, is_initial_generation, current_timestamp_iso))
 
-        # Kurangi token pengguna
         new_token_balance = current_tokens - TOKEN_COST_STUDENT_GOALS
         cursor.execute("UPDATE users SET tokens = ? WHERE email = ?", (new_token_balance, email))
         conn.commit()
@@ -331,7 +323,7 @@ Format output yang diinginkan adalah sebagai berikut (gunakan Markdown):
                 "semester": target_semester,
                 "content": plan_content,
                 "timestamp": current_timestamp_iso,
-                "is_initial_data_source": is_initial_generation # Kirim status ini ke frontend
+                "is_initial_data_source": is_initial_generation
             },
             "new_token_balance": new_token_balance
         }
@@ -342,16 +334,16 @@ Format output yang diinginkan adalah sebagai berikut (gunakan Markdown):
 
     except sqlite3.Error as e:
         if conn:
-            conn.rollback() # Rollback jika ada error database
+            conn.rollback()
         print(f"[DB Error - /student-goals/generate] {str(e)}")
         return jsonify({"error": f"Kesalahan database: {str(e)}"}), 500
     except Exception as e:
         print(f"[Server Error - /student-goals/generate] {str(e)}")
+        # Jika conn belum diinisialisasi, pengecekan 'if conn:' di finally akan aman
         return jsonify({"error": f"Kesalahan server internal: {str(e)}"}), 500
     finally:
-        if conn:
+        if conn: # Sekarang 'conn' pasti sudah terdefinisi (meskipun bisa None)
             conn.close()
-
 
 @app.route("/student-goals/history", methods=["GET"])
 def student_goals_history():
